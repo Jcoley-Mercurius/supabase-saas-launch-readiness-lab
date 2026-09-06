@@ -99,10 +99,10 @@ releases:
 downstream:
   mds: {project_id: POB-2026-36-02-MDS, version: v1.0, status: implementation_ready, compatible_mps_version: v1.1, last_synchronized: "2026-09-05", open_product_gaps: []}
   mts:
-    status: capability_mapping_proposed
+    status: implementation_readiness_in_progress
     project_id: supabase-saas-launch-readiness-lab
-    version: v0.2-draft
-    last_synchronized: "2026-09-05"
+    version: v0.6-draft
+    last_synchronized: "2026-09-06"
     engineering_capability_signals:
       - Safe synthetic multi-tenant fixtures and negative-authorization execution
       - Deterministic webhook replay and idempotency evidence

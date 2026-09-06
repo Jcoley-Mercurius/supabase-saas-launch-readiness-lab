@@ -2,7 +2,7 @@
 
 Status: Approved — Gate 7 complete  
 System: Mercurius Design System v1.0  
-Product: MPS v1.0  
+Product: MPS v1.1
 Date: 2026-09-05
 
 ## Authority map

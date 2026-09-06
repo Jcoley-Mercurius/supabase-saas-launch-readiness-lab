@@ -152,7 +152,7 @@ research: []
 
 governance:
   decisions:
-    - {id: MTS-DEC-001, area: product_contract, key: consumed_mps, value: "MPS v1.0", status: observed, source: mps/MPS-PROJECT-STATE.yaml, rationale: "MPS is approved product authority."}
+    - {id: MTS-DEC-001, area: product_contract, key: consumed_mps, value: "MPS v1.1", status: observed, source: mps/MPS-PROJECT-STATE.yaml, rationale: "MPS is approved product authority."}
     - {id: MTS-DEC-002, area: design_contract, key: consumed_mds, value: "MDS v1.0", status: observed, source: mds/MDS-PROJECT-STATE.yaml, rationale: "MDS is approved and implementation-ready."}
     - {id: MTS-DEC-003, area: delivery, key: project_mode, value: greenfield, status: observed, source: repository_inspection, rationale: "No application repository, package manifest, runtime configuration, or deployment configuration exists in the supplied workspace."}
     - {id: MTS-DEC-004, area: data, key: demo_data_posture, value: synthetic_only, status: observed, source: [MPS-RULE-001, MPS-RULE-004], rationale: "R1 forbids production credentials, customer data, and buyer uploads."}
@@ -194,7 +194,7 @@ artifacts:
   build_roadmap: {path: mts/MERCURIUS-BUILD-ROADMAP.md, delivery: standalone_and_repository_copy, status: current}
   implementation_playbook: {path: mts/MERCURIUS-IMPLEMENTATION-PLAYBOOK.md, delivery: standalone_and_repository_copy, status: current}
   discovery_brief: {path: mts/DISCOVERY-BRIEF.md, status: current}
-  agents_md: {path: AGENTS.md, status: current, note: "MPS/MDS authority is current; approved MTS selections and Agent Skill Manifest references must be merged at Gate 7."}
+  agents_md: {path: AGENTS.md, status: current, note: "MPS v1.1, MDS v1.0, approved MTS selections, and Agent Skill Manifest guidance are merged; Gate 7 implementation readiness remains in progress."}
   qa_protocol: {path: mts/qa/MTS-QA.md, status: current}
   verification_report: {path: mts/qa/MTS-VERIFICATION.md, status: missing}
 

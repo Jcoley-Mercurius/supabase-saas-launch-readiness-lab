@@ -1,14 +1,14 @@
 # Supabase SaaS Launch-Readiness Lab — MTS Gate 6 Technology Approval
 
 Project ID: `supabase-saas-launch-readiness-lab`  
-MTS version: `v0.5-draft`  
+MTS version: `v0.6-draft`
 Gate: 6 — Approval  
-Status: Ready for final Gate 6 confirmation  
-Recommendation approval: Josh Coley, recorded 2026-09-06
+Status: Approved — Gate 6 complete
+Technology approval: Josh Coley, recorded 2026-09-06
 
-## Approved technology decision set pending Gate 6 confirmation
+## Approved technology decision set
 
-The Gate 5 recommendation is approved for formal technology selection review. The following set is intentionally coherent and limited to the R1 product boundary.
+Josh approved the Gate 5 recommendation as the formal Gate 6 technology selection. The following set is intentionally coherent and limited to the R1 product boundary.
 
 | Area | Proposed selection | Decision type | Scope |
 |---|---|---|---|
@@ -50,12 +50,12 @@ No paid upgrade, external account connection, domain configuration, or productio
 
 ## Gate 6 confirmation
 
-Final confirmation should approve the complete technology decision set above. Once confirmed, MTS will:
+Josh approved the complete technology decision set above on 2026-09-06. MTS subsequently:
 
-- mark Gate 6 complete;
-- propagate approved selections into the technology blueprint, integration manifest, security architecture, and Agent Skill Manifest;
-- begin Gate 7 implementation-readiness packaging;
-- retain unresolved account setup and repository bootstrap as implementation prerequisites rather than hidden assumptions.
+- marked Gate 6 complete;
+- propagated approved selections into the technology blueprint, integration manifest, security architecture, and Agent Skill Manifest;
+- began Gate 7 implementation-readiness packaging;
+- retained unresolved account setup and P0 agent verification as explicit implementation prerequisites.
 
 ## Authority and evidence
 

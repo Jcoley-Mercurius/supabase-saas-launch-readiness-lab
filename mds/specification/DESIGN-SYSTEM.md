@@ -2,7 +2,7 @@
 
 Status: Approved  
 Version: MDS v1.0  
-Product authority: MPS v1.0  
+Product authority: MPS v1.1
 Canonical state: `mds/MDS-PROJECT-STATE.yaml`
 
 ## 1. Purpose and authority

@@ -8,12 +8,12 @@ You are a principal-level implementation agent building the Supabase SaaS Launch
 
 ## Active authority
 
-- Product: Mercurius Product System `v1.0` — `mps/MPS-PROJECT-STATE.yaml`
+- Product: Mercurius Product System `v1.1` — `mps/MPS-PROJECT-STATE.yaml`
 - Design: Mercurius Design System `v1.0` — `mds/MDS-PROJECT-STATE.yaml`
 - Design specification: `mds/specification/DESIGN-SYSTEM.md`
 - Design implementation map: `mds/implementation/MDS-IMPLEMENTATION.md`
-- Technology: MTS not yet approved; read its canonical state and manifest when added
-- Agent skills: read `mts/AGENT-SKILL-MANIFEST.yaml` when MTS creates it
+- Technology: Mercurius Technology System `v0.6-draft` — Gate 6 approved; Gate 7 implementation readiness in progress — `mts/MTS-PROJECT-STATE.yaml`
+- Agent skills: approved manifest exists at `mts/AGENT-SKILL-MANIFEST.yaml`; verify required skills and approved fallbacks before dependent work
 
 Authority by concern:
 
@@ -31,7 +31,7 @@ Before significant work:
 
 1. Read the applicable MPS requirement/rule/acceptance IDs.
 2. Read the active MDS state, specification, tokens, implementation manifest, QA protocol, and applicable canonical references.
-3. Read the approved MTS artifacts and required-skill manifest once present.
+3. Read the approved MTS artifacts and required-skill manifest.
 4. Inspect existing code and reuse before creating.
 5. Compare the requested change with canonical authority.
 6. Plan the goal, files, dependencies, states, responsive/accessibility/security concerns, checks, and manual tests.
@@ -124,7 +124,7 @@ Target WCAG 2.2 AA. Require semantic landmarks/headings/tables/forms, logical ke
 
 ## MTS and skill contract
 
-MTS must create and approve `mts/AGENT-SKILL-MANIFEST.yaml`. Do not choose providers, frameworks, packages, database models, security architecture, hosting, analytics, email, testing tools, or agent skills from this file.
+MTS has created and approved `mts/AGENT-SKILL-MANIFEST.yaml`. Do not choose providers, frameworks, packages, database models, security architecture, hosting, analytics, email, testing tools, or agent skills from this file.
 
 Before work mapped to an MTS-required skill:
 
