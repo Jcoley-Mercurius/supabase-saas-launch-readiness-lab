@@ -1,69 +1,216 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import {
+  Container,
+  Section,
+  SectionEyebrow,
+} from "@/components/layout/container";
+import { AuthorizedReviewBand } from "@/components/layout/authorized-review-band";
+import { BoundaryNotes } from "@/components/layout/boundary-notes";
+import { ProofSteps } from "@/components/scenarios/proof-steps";
+import { ScenarioCard } from "@/components/scenarios/scenario-card";
+import { SyntheticContextPanel } from "@/components/scenarios/synthetic-context-panel";
+import { ButtonLink } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
+import { LimitationCallout } from "@/components/ui/limitation-callout";
+import { SCENARIOS } from "@/lib/content/scenarios";
+import { PRODUCT, RISK_PILLARS } from "@/lib/content/site";
 
-export default function Home() {
+/*
+ * Landing page — MDS COMPOSITION-PROPOSAL "Landing page shell", MDS-REF-002,
+ * MDS-REF-009 panel 1.
+ *
+ * Product trace: MPS-REQ-001 (purpose, buyer, risk areas, limitations),
+ * MPS-REQ-002 (synthetic context), MPS-REQ-009 (route to report and CTA),
+ * MPS-REQ-014 (authorization boundary); MPS-ACC-001 and MPS-ACC-010.
+ *
+ * Deferred by slice: the approved hero evidence snapshot and the report
+ * preview's severity table and RLS matrix excerpt read from real findings. No
+ * finding model exists before S2-S4, and fabricating one would breach
+ * MPS-RULE-007. Those regions are reported as an explicit S4 deferral rather
+ * than filled with invented content.
+ */
+
+export const metadata: Metadata = {
+  title: "Supabase launch-readiness evidence, before you launch",
+  description: PRODUCT.description,
+};
+
+export default function LandingPage() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full max-w-3xl flex-1 flex-col items-center justify-between bg-white px-16 py-32 sm:items-start dark:bg-black">
-        <Image
-          className="h-5 w-[100px] dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl leading-10 font-semibold tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <>
+      <Section tone="ink" className="desktop:py-20 py-14">
+        <Container>
+          <div className="desktop:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] desktop:gap-12 grid grid-cols-1 items-start gap-10">
+            <div>
+              <p className="text-label text-inverse/70 uppercase">
+                {PRODUCT.eyebrow}
+              </p>
+              <h1 className="text-display text-inverse mt-5">
+                Supabase SaaS{" "}
+                <span className="text-accent">Launch-Readiness Lab</span>
+              </h1>
+              <p className="text-body-lg text-inverse/85 mt-6 max-w-[56ch]">
+                {PRODUCT.description}
+              </p>
+
+              <div className="mt-8">
+                <BoundaryNotes tone="inverse" />
+              </div>
+
+              <div className="tablet:flex-row mt-8 flex flex-col gap-3">
+                <ButtonLink href="/scenarios" size="lg" trailingArrow>
+                  Explore the lab
+                </ButtonLink>
+                <ButtonLink href="/report" variant="inverse" size="lg">
+                  View sample report
+                </ButtonLink>
+              </div>
+            </div>
+
+            <SyntheticContextPanel />
+          </div>
+        </Container>
+      </Section>
+
+      <Section tone="canvas" aria-labelledby="risk-pillars">
+        <Container>
+          <SectionEyebrow>Focus areas</SectionEyebrow>
+          <h2 id="risk-pillars" className="text-h2 text-strong mt-3">
+            Four risk pillars, end to end
+          </h2>
+          <p className="text-body-lg text-subtle mt-3 max-w-[64ch]">
+            The lab covers the areas that most often block a Supabase SaaS
+            launch. Each pillar has a documented scenario with reproducible
+            evidence.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="bg-foreground text-background flex h-12 w-full items-center justify-center gap-2 rounded-full px-5 transition-colors hover:bg-[#383838] md:w-[158px] dark:hover:bg-[#ccc]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="h-[14px] w-4 dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] md:w-[158px] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+          <ul className="tablet:grid-cols-2 wide:grid-cols-4 mt-10 grid grid-cols-1 gap-6">
+            {RISK_PILLARS.map((pillar) => (
+              <Card as="li" key={pillar.title} className="flex flex-col p-6">
+                <span className="text-primary">
+                  <Icon name={pillar.icon} size={24} />
+                </span>
+                <h3 className="text-h4 text-strong mt-4">{pillar.title}</h3>
+                <p className="text-body-sm text-subtle mt-2">{pillar.body}</p>
+              </Card>
+            ))}
+          </ul>
+        </Container>
+      </Section>
+
+      <Section tone="base" aria-labelledby="how-the-proof-works">
+        <Container>
+          <div className="desktop:grid-cols-[minmax(0,290px)_minmax(0,1fr)] desktop:gap-12 grid grid-cols-1 gap-10">
+            <div>
+              <SectionEyebrow>How the proof works</SectionEyebrow>
+              <h2 id="how-the-proof-works" className="text-h2 text-strong mt-3">
+                One documented sequence, every scenario
+              </h2>
+              <p className="text-body-lg text-subtle mt-3">
+                Every scenario follows the same five steps, so a result can be
+                read the same way each time.
+              </p>
+              <ButtonLink
+                href="/method"
+                variant="secondary"
+                className="mt-6"
+                trailingArrow
+              >
+                Read the method
+              </ButtonLink>
+            </div>
+            <ProofSteps />
+          </div>
+        </Container>
+      </Section>
+
+      <Section tone="canvas" aria-labelledby="scenario-preview">
+        <Container>
+          <div className="tablet:flex-row tablet:items-end tablet:justify-between flex flex-col gap-4">
+            <div>
+              <SectionEyebrow>Scenarios</SectionEyebrow>
+              <h2 id="scenario-preview" className="text-h2 text-strong mt-3">
+                Four scenarios, a clearer path to launch
+              </h2>
+              <p className="text-body-lg text-subtle mt-3 max-w-[64ch]">
+                Each scenario includes a documented test, reproducible evidence,
+                and practical fixes.
+              </p>
+            </div>
+            <ButtonLink href="/scenarios" variant="quiet" trailingArrow>
+              View all scenarios
+            </ButtonLink>
+          </div>
+
+          <ul className="tablet:grid-cols-2 wide:grid-cols-4 tablet:grid-rows-[repeat(8,auto)] mt-10 grid grid-cols-1 gap-6">
+            {SCENARIOS.map((scenario) => (
+              <ScenarioCard key={scenario.slug} scenario={scenario} />
+            ))}
+          </ul>
+        </Container>
+      </Section>
+
+      <Section tone="base" spacing="compact" aria-labelledby="sample-report">
+        <Container>
+          <Card className="desktop:flex-row desktop:items-center desktop:justify-between flex flex-col gap-6 p-6">
+            <div className="flex items-start gap-4">
+              <span className="text-primary mt-1 shrink-0">
+                <Icon name="file-text" size={24} />
+              </span>
+              <div>
+                <h2 id="sample-report" className="text-h4 text-strong">
+                  See what a full report looks like
+                </h2>
+                <p className="text-body-sm text-subtle mt-1 max-w-[64ch]">
+                  The sample report ranks findings by severity and carries
+                  evidence, remediation direction, and the limitation for each
+                  one. It is reachable without running a single scenario.
+                </p>
+              </div>
+            </div>
+            <ButtonLink href="/report" variant="secondary" trailingArrow>
+              View sample report
+            </ButtonLink>
+          </Card>
+        </Container>
+      </Section>
+
+      <Section tone="canvas" aria-labelledby="service-boundary">
+        <Container>
+          <div className="max-w-[760px]">
+            <SectionEyebrow>Service boundary</SectionEyebrow>
+            <h2 id="service-boundary" className="text-h2 text-strong mt-3">
+              What this lab is, and what it is not
+            </h2>
+            <p className="text-body-lg text-subtle mt-4">
+              This is a launch-readiness review and remediation service, shown
+              through documented synthetic scenarios. It demonstrates how the
+              work is done and what the evidence looks like.
+            </p>
+            <LimitationCallout className="mt-6">
+              <p>
+                Every demonstration runs on synthetic data in an isolated
+                environment. It is not a certification, a compliance
+                attestation, a legal opinion, or a formal penetration test, and
+                it makes no claim about any system other than the documented
+                scenario. A demonstration here never authorizes testing of a
+                third-party system.
+              </p>
+            </LimitationCallout>
+            <ButtonLink
+              href="/about"
+              variant="secondary"
+              className="mt-6"
+              trailingArrow
+            >
+              About the service
+            </ButtonLink>
+          </div>
+        </Container>
+      </Section>
+
+      <AuthorizedReviewBand />
+    </>
   );
 }

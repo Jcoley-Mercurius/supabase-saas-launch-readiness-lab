@@ -3,9 +3,9 @@
 Status: Gate 7 implementation-readiness draft
 Consumed: MPS v1.1 → MDS v1.0 → MTS v0.6-draft
 Classification: greenfield
-Current phase: repository and handoff bootstrap
-Current slice: P0
-Readiness: ready after owner-owned repository/account setup
+Current phase: S1 public shell
+Current slice: S1 — implemented, awaiting owner approval
+Readiness: P0 verified; S1 implemented on branch `slice/s1-public-mds-shell` and awaiting the S1 approval checkpoint before S2 begins
 
 ## Approved route
 
@@ -31,6 +31,16 @@ Create the standalone Git repository, Vercel project, isolated Supabase environm
 
 The current manifest is mts/AGENT-SKILL-MANIFEST.yaml. Required skills are MTS methodology, framework guidance, and browser verification. Official documentation plus project AGENTS.md are approved fallbacks when an equivalent coding-agent skill is unavailable; missing required skills without that fallback block the dependent slice.
 
+## Slice status
+
+| Slice | Status | Evidence |
+|---|---|---|
+| P0 | verified | Clean baseline, canonical package, environment contract, skill fallbacks recorded |
+| S1 | implemented, awaiting owner approval | lint, typecheck, production build, and Playwright chromium desktop/wide/tablet/mobile plus firefox-desktop against the production build; WebKit remains CI-only under MTS-EXC-002 |
+| S2–S6 | not started | — |
+
+Open S1 items for the checkpoint are recorded as MTS-DEV-001, MTS-DEV-002, MTS-OBS-001, and MTS-OBS-002 in `mts/MTS-PROJECT-STATE.yaml`.
+
 ## Next action
 
-Begin with the playbook P0 handoff-verification prompt after repository and account prerequisites are ready.
+Review the S1 checkpoint report and decide on the open S1 deviations and observations. S2 does not begin until S1 is approved.
