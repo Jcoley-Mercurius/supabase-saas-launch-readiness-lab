@@ -101,6 +101,19 @@ export type ButtonProps = SharedProps & {
   /** Loading keeps the label in place and announces the change politely. */
   loading?: boolean;
   loadingLabel?: string;
+  /**
+   * Whether `loading` also sets the native disabled attribute. It does by
+   * default, which is right for a submit control.
+   *
+   * Set it to false where losing focus would be worse than the extra guard:
+   * disabling the element the buyer just activated makes the browser move
+   * focus to the body, and the approved MDS interaction rule is that focus
+   * moves only after deliberate navigation, submission, or recovery — not on
+   * a status update. When false the control stays focusable and is marked
+   * aria-disabled and aria-busy, so assistive technology still reports it as
+   * unavailable; the caller must guard against re-entry.
+   */
+  disableWhileLoading?: boolean;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "children">;
 
 export function Button({
@@ -109,16 +122,19 @@ export function Button({
   trailingArrow,
   loading = false,
   loadingLabel = "Working",
+  disableWhileLoading = true,
   children,
   className,
   disabled,
   type = "button",
   ...props
 }: ButtonProps) {
+  const blocked = disabled || (loading && disableWhileLoading);
   return (
     <button
       type={type}
-      disabled={disabled || loading}
+      disabled={blocked || undefined}
+      aria-disabled={!blocked && loading ? true : undefined}
       aria-busy={loading || undefined}
       className={classes({ variant, size, className })}
       {...props}

@@ -1,0 +1,1396 @@
+{
+  "$schema": "mercurius/evidence-transcript/1",
+  "recorded_at": "2026-09-06T19:49:59.432Z",
+  "engine": {
+    "product": "PostgreSQL",
+    "version": "17.6",
+    "host": "isolated local Supabase container",
+    "note": "No hosted Supabase project, production system, or third-party system was contacted."
+  },
+  "input_digest": "sha256:faf0308f7d4d8a73e858179a5e7bb9c0ec94ccd9e6df77f2dfd1f50ce4f9b016",
+  "modes": [
+    "vulnerable",
+    "remediated"
+  ],
+  "runs": {
+    "vulnerable": [
+      {
+        "rows": [
+          {
+            "id": "9f2e1c4a-0001-4000-8000-000000000001",
+            "full_name": "Alex Rivera",
+            "job_title": "Head of Product",
+            "tenant_id": "11111111-1111-4111-8111-111111111111"
+          },
+          {
+            "id": "3b7a9d0e-0001-4000-8000-000000000002",
+            "full_name": "Taylor Kim",
+            "job_title": "Data Engineer",
+            "tenant_id": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "title": "Read another tenant's member profiles",
+        "intent": "A member of Harbor Logistics asks the API for the profile rows belonging to Northwind Analytics.",
+        "case_id": "RLS-001",
+        "db_role": "authenticated",
+        "outcome": "rows_returned",
+        "resource": "synthetic.profiles",
+        "sql_text": "select id, tenant_id, full_name, job_title\n   from synthetic.profiles\n  where tenant_id = '11111111-1111-4111-8111-111111111111'\n  order by full_name",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 2,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "Every customer of the platform could read the names, roles, and contact records of every other customer.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "rows": [
+          {
+            "id": "5c1d8b22-0002-4000-8000-000000000003",
+            "full_name": "Priya Raghavan",
+            "job_title": "Operations Lead",
+            "tenant_id": "22222222-2222-4222-8222-222222222222"
+          },
+          {
+            "id": "7e4f6a91-0002-4000-8000-000000000004",
+            "full_name": "Sam Okafor",
+            "job_title": "Finance Manager",
+            "tenant_id": "22222222-2222-4222-8222-222222222222"
+          }
+        ],
+        "title": "Read the member's own tenant profiles",
+        "intent": "The same member asks for the profiles that belong to their own tenant. This confirms the policy constrains the boundary without breaking the product.",
+        "case_id": "RLS-002",
+        "db_role": "authenticated",
+        "outcome": "rows_returned",
+        "resource": "synthetic.profiles",
+        "sql_text": "select id, tenant_id, full_name, job_title\n   from synthetic.profiles\n  where tenant_id = '22222222-2222-4222-8222-222222222222'\n  order by full_name",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 2,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "If this path is blocked, the fix has broken legitimate access rather than closed the boundary.",
+        "expectation": "allow",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Modify another tenant's member profile",
+        "intent": "The member attempts to write to a Northwind profile row.",
+        "case_id": "RLS-003",
+        "db_role": "authenticated",
+        "outcome": "rows_written",
+        "resource": "synthetic.profiles",
+        "sql_text": "update synthetic.profiles\n      set job_title = 'Edited from another tenant'\n    where tenant_id = '11111111-1111-4111-8111-111111111111'",
+        "actor_key": "harbor_member",
+        "operation": "update",
+        "row_count": 2,
+        "error_code": null,
+        "verify_sql": "select id, tenant_id, full_name, job_title\n      from synthetic.profiles\n     where tenant_id = '11111111-1111-4111-8111-111111111111'\n     order by full_name",
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "A tenant could silently alter another tenant's records, with no audit trail on the victim's side.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": [
+          {
+            "id": "9f2e1c4a-0001-4000-8000-000000000001",
+            "full_name": "Alex Rivera",
+            "job_title": "Edited from another tenant",
+            "tenant_id": "11111111-1111-4111-8111-111111111111"
+          },
+          {
+            "id": "3b7a9d0e-0001-4000-8000-000000000002",
+            "full_name": "Taylor Kim",
+            "job_title": "Edited from another tenant",
+            "tenant_id": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "rows": [],
+        "title": "Delete another tenant's member profile",
+        "intent": "The member attempts to remove a Northwind profile row.",
+        "case_id": "RLS-004",
+        "db_role": "authenticated",
+        "outcome": "rows_written",
+        "resource": "synthetic.profiles",
+        "sql_text": "delete from synthetic.profiles\n    where tenant_id = '11111111-1111-4111-8111-111111111111'\n      and full_name = 'Taylor Kim'",
+        "actor_key": "harbor_member",
+        "operation": "delete",
+        "row_count": 1,
+        "error_code": null,
+        "verify_sql": "select id, tenant_id, full_name\n      from synthetic.profiles\n     where tenant_id = '11111111-1111-4111-8111-111111111111'\n     order by full_name",
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "A tenant could destroy another tenant's data, which is a data-loss incident as well as an isolation failure.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": [
+          {
+            "id": "9f2e1c4a-0001-4000-8000-000000000001",
+            "full_name": "Alex Rivera",
+            "tenant_id": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "rows": [
+          {
+            "id": "c0000001-0001-4000-8000-000000000001",
+            "tenant_id": "11111111-1111-4111-8111-111111111111",
+            "profile_id": "9f2e1c4a-0001-4000-8000-000000000001",
+            "member_role": "admin"
+          },
+          {
+            "id": "c0000002-0001-4000-8000-000000000002",
+            "tenant_id": "11111111-1111-4111-8111-111111111111",
+            "profile_id": "3b7a9d0e-0001-4000-8000-000000000002",
+            "member_role": "member"
+          }
+        ],
+        "title": "Enumerate another tenant's membership",
+        "intent": "The member asks which accounts belong to Northwind Analytics and what role each holds.",
+        "case_id": "RLS-005",
+        "db_role": "authenticated",
+        "outcome": "rows_returned",
+        "resource": "synthetic.org_members",
+        "sql_text": "select id, tenant_id, profile_id, member_role\n   from synthetic.org_members\n  where tenant_id = '11111111-1111-4111-8111-111111111111'\n  order by member_role",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 2,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "Membership and role data maps a competitor's org chart and identifies who to target for escalation.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "rows": [],
+        "title": "Move the member's own record into another tenant",
+        "intent": "The member updates a row they are allowed to read and writes a different tenant_id into it, granting themselves standing membership of another tenant. Reproducing this needs both a permissive read policy and a widened write check: PostgreSQL tests the new row against the SELECT policy as well.",
+        "case_id": "RLS-006",
+        "db_role": "authenticated",
+        "outcome": "rows_written",
+        "resource": "synthetic.org_members",
+        "sql_text": "update synthetic.org_members\n      set tenant_id = '11111111-1111-4111-8111-111111111111'\n    where profile_id = '5c1d8b22-0002-4000-8000-000000000003'",
+        "actor_key": "harbor_member",
+        "operation": "update",
+        "row_count": 1,
+        "error_code": null,
+        "verify_sql": "select id, tenant_id, profile_id, member_role\n      from synthetic.org_members\n     where profile_id = '5c1d8b22-0002-4000-8000-000000000003'",
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "A member could grant themselves standing membership of another tenant, turning a read boundary into a persistent account takeover.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": [
+          {
+            "id": "c0000003-0002-4000-8000-000000000003",
+            "tenant_id": "11111111-1111-4111-8111-111111111111",
+            "profile_id": "5c1d8b22-0002-4000-8000-000000000003",
+            "member_role": "member"
+          }
+        ],
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "rows": [
+          {
+            "id": "d0000001-0001-4000-8000-000000000001",
+            "number": "NW-2041",
+            "status": "paid",
+            "tenant_id": "11111111-1111-4111-8111-111111111111",
+            "amount_cents": 148000
+          },
+          {
+            "id": "d0000002-0001-4000-8000-000000000002",
+            "number": "NW-2042",
+            "status": "open",
+            "tenant_id": "11111111-1111-4111-8111-111111111111",
+            "amount_cents": 32500
+          }
+        ],
+        "title": "Read another tenant's invoices",
+        "intent": "The member asks for the billing records of Northwind Analytics.",
+        "case_id": "RLS-007",
+        "db_role": "authenticated",
+        "outcome": "rows_returned",
+        "resource": "synthetic.invoices",
+        "sql_text": "select id, tenant_id, number, amount_cents, status\n   from synthetic.invoices\n  where tenant_id = '11111111-1111-4111-8111-111111111111'\n  order by number",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 2,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "Revenue, customer count, and commercial terms would be readable by any other customer on the platform.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "rows": [
+          {
+            "id": "d0000003-0002-4000-8000-000000000003",
+            "number": "HL-0817",
+            "status": "paid",
+            "tenant_id": "22222222-2222-4222-8222-222222222222",
+            "amount_cents": 91200
+          },
+          {
+            "id": "d0000004-0002-4000-8000-000000000004",
+            "number": "HL-0818",
+            "status": "draft",
+            "tenant_id": "22222222-2222-4222-8222-222222222222",
+            "amount_cents": 15000
+          }
+        ],
+        "title": "Read the member's own tenant invoices",
+        "intent": "The same member asks for their own tenant's billing records.",
+        "case_id": "RLS-008",
+        "db_role": "authenticated",
+        "outcome": "rows_returned",
+        "resource": "synthetic.invoices",
+        "sql_text": "select id, tenant_id, number, amount_cents, status\n   from synthetic.invoices\n  where tenant_id = '22222222-2222-4222-8222-222222222222'\n  order by number",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 2,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "If this path is blocked, billing has been broken for legitimate users.",
+        "expectation": "allow",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [
+          {
+            "id": "e0000003-0002-4000-8000-000000000003",
+            "bucket_id": "tenant-documents",
+            "tenant_id": "22222222-2222-4222-8222-222222222222",
+            "visibility": "private",
+            "object_path": "harbor/carrier-contract.pdf"
+          },
+          {
+            "id": "e0000001-0001-4000-8000-000000000001",
+            "bucket_id": "tenant-documents",
+            "tenant_id": "11111111-1111-4111-8111-111111111111",
+            "visibility": "private",
+            "object_path": "northwind/q3-revenue-model.xlsx"
+          }
+        ],
+        "title": "Read a private tenant file as an anonymous visitor",
+        "intent": "An unauthenticated caller lists the private objects in the shared tenant-documents bucket.",
+        "case_id": "STO-001",
+        "db_role": "anon",
+        "outcome": "rows_returned",
+        "resource": "synthetic.storage_objects",
+        "sql_text": "select id, tenant_id, bucket_id, object_path, visibility\n   from synthetic.storage_objects\n  where bucket_id = 'tenant-documents'\n    and visibility = 'private'\n  order by object_path",
+        "actor_key": "anonymous_visitor",
+        "operation": "select",
+        "row_count": 2,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Anonymous visitor",
+        "consequence": "Private customer documents would be retrievable by anyone holding the public API URL, with no sign-in at all.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "rows": [
+          {
+            "id": "e0000001-0001-4000-8000-000000000001",
+            "bucket_id": "tenant-documents",
+            "tenant_id": "11111111-1111-4111-8111-111111111111",
+            "visibility": "private",
+            "object_path": "northwind/q3-revenue-model.xlsx"
+          }
+        ],
+        "title": "Read another tenant's private file while signed in",
+        "intent": "A signed-in member of Harbor Logistics asks for Northwind's private objects.",
+        "case_id": "STO-002",
+        "db_role": "authenticated",
+        "outcome": "rows_returned",
+        "resource": "synthetic.storage_objects",
+        "sql_text": "select id, tenant_id, bucket_id, object_path, visibility\n   from synthetic.storage_objects\n  where tenant_id = '11111111-1111-4111-8111-111111111111'\n    and visibility = 'private'\n  order by object_path",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 1,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "Any paying customer could download another customer's private files through the ordinary storage API.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "rows": [
+          {
+            "id": "e0000003-0002-4000-8000-000000000003",
+            "bucket_id": "tenant-documents",
+            "tenant_id": "22222222-2222-4222-8222-222222222222",
+            "visibility": "private",
+            "object_path": "harbor/carrier-contract.pdf"
+          }
+        ],
+        "title": "Read the member's own private file",
+        "intent": "The same member asks for their own tenant's private objects.",
+        "case_id": "STO-003",
+        "db_role": "authenticated",
+        "outcome": "rows_returned",
+        "resource": "synthetic.storage_objects",
+        "sql_text": "select id, tenant_id, bucket_id, object_path, visibility\n   from synthetic.storage_objects\n  where tenant_id = '22222222-2222-4222-8222-222222222222'\n    and visibility = 'private'\n  order by object_path",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 1,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "If this path is blocked, tenants can no longer reach their own uploads.",
+        "expectation": "allow",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [
+          {
+            "id": "e0000004-0002-4000-8000-000000000004",
+            "bucket_id": "public-assets",
+            "visibility": "public",
+            "object_path": "harbor/logo.svg"
+          },
+          {
+            "id": "e0000002-0001-4000-8000-000000000002",
+            "bucket_id": "public-assets",
+            "visibility": "public",
+            "object_path": "northwind/logo.svg"
+          }
+        ],
+        "title": "Read a deliberately public asset as an anonymous visitor",
+        "intent": "An unauthenticated caller reads objects that are marked public on purpose, such as brand assets.",
+        "case_id": "STO-004",
+        "db_role": "anon",
+        "outcome": "rows_returned",
+        "resource": "synthetic.storage_objects",
+        "sql_text": "select id, bucket_id, object_path, visibility\n   from synthetic.storage_objects\n  where visibility = 'public'\n  order by object_path",
+        "actor_key": "anonymous_visitor",
+        "operation": "select",
+        "row_count": 2,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Anonymous visitor",
+        "consequence": "If this path is blocked, the fix has over-corrected and broken public assets.",
+        "expectation": "allow",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Write a new object as an anonymous visitor",
+        "intent": "An unauthenticated caller attempts to add a row to the object table.",
+        "case_id": "STO-005",
+        "db_role": "anon",
+        "outcome": "rows_written",
+        "resource": "synthetic.storage_objects",
+        "sql_text": "insert into synthetic.storage_objects (id, tenant_id, bucket_id, object_path, visibility, byte_size)\n   values ('f0000009-0009-4000-8000-000000000009',\n           '11111111-1111-4111-8111-111111111111',\n           'tenant-documents', 'northwind/uploaded-by-anonymous.txt', 'private', 12)",
+        "actor_key": "anonymous_visitor",
+        "operation": "insert",
+        "row_count": 1,
+        "error_code": null,
+        "verify_sql": "select id, tenant_id, bucket_id, object_path\n      from synthetic.storage_objects\n     where object_path = 'northwind/uploaded-by-anonymous.txt'",
+        "actor_label": "Anonymous visitor",
+        "consequence": "An anonymous caller could plant files inside a customer's bucket, which is both a storage-cost and a content-trust problem.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": [
+          {
+            "id": "f0000009-0009-4000-8000-000000000009",
+            "bucket_id": "tenant-documents",
+            "tenant_id": "11111111-1111-4111-8111-111111111111",
+            "object_path": "northwind/uploaded-by-anonymous.txt"
+          }
+        ],
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "rows": [
+          {
+            "relation": "synthetic.invoices",
+            "row_security_enabled": false
+          }
+        ],
+        "title": "Find exposed tables with row level security switched off",
+        "intent": "A catalog inspection listing every fixture table that is reachable through a role grant but has no row level security enabled. An empty result is the expected state.",
+        "case_id": "CFG-001",
+        "db_role": "postgres",
+        "outcome": "rows_returned",
+        "resource": "configuration",
+        "sql_text": "select 'synthetic.' || c.relname as relation,\n          c.relrowsecurity          as row_security_enabled\n     from pg_catalog.pg_class c\n     join pg_catalog.pg_namespace n on n.oid = c.relnamespace\n    where n.nspname = 'synthetic'\n      and c.relkind = 'r'\n      and c.relname in ('profiles', 'org_members', 'invoices', 'storage_objects')\n      and not c.relrowsecurity\n    order by 1",
+        "actor_key": "configuration_review",
+        "operation": "configuration",
+        "row_count": 1,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Configuration review",
+        "consequence": "A table exposed by a grant with row level security switched off consults no policy at all, so the project looks protected in the dashboard while returning every row.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "rows": [
+          {
+            "grantee": "anon",
+            "relation": "synthetic.storage_objects",
+            "privilege": "insert"
+          }
+        ],
+        "title": "Find write privileges held by the anonymous role",
+        "intent": "A catalog inspection listing every insert, update, or delete privilege granted to the anonymous role. An empty result is the expected state.",
+        "case_id": "CFG-002",
+        "db_role": "postgres",
+        "outcome": "rows_returned",
+        "resource": "configuration",
+        "sql_text": "select g.table_schema || '.' || g.table_name as relation,\n          g.grantee,\n          lower(g.privilege_type)               as privilege\n     from information_schema.role_table_grants g\n    where g.table_schema = 'synthetic'\n      and g.grantee = 'anon'\n      and g.privilege_type in ('INSERT', 'UPDATE', 'DELETE')\n    order by 1, 3",
+        "actor_key": "configuration_review",
+        "operation": "configuration",
+        "row_count": 1,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Configuration review",
+        "consequence": "A write privilege on the anonymous role lets an unauthenticated caller change stored data regardless of how carefully the read policies were written.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "rows": [
+          {
+            "relation": "synthetic.org_members",
+            "policy_name": "org_members_insert",
+            "unconditional_clause": "with check"
+          },
+          {
+            "relation": "synthetic.org_members",
+            "policy_name": "org_members_select",
+            "unconditional_clause": "using"
+          },
+          {
+            "relation": "synthetic.org_members",
+            "policy_name": "org_members_update",
+            "unconditional_clause": "with check"
+          },
+          {
+            "relation": "synthetic.profiles",
+            "policy_name": "profiles_delete",
+            "unconditional_clause": "using"
+          },
+          {
+            "relation": "synthetic.profiles",
+            "policy_name": "profiles_select",
+            "unconditional_clause": "using"
+          },
+          {
+            "relation": "synthetic.profiles",
+            "policy_name": "profiles_update",
+            "unconditional_clause": "using"
+          },
+          {
+            "relation": "synthetic.storage_objects",
+            "policy_name": "storage_objects_delete",
+            "unconditional_clause": "using"
+          },
+          {
+            "relation": "synthetic.storage_objects",
+            "policy_name": "storage_objects_insert",
+            "unconditional_clause": "with check"
+          },
+          {
+            "relation": "synthetic.storage_objects",
+            "policy_name": "storage_objects_select",
+            "unconditional_clause": "using"
+          },
+          {
+            "relation": "synthetic.storage_objects",
+            "policy_name": "storage_objects_update",
+            "unconditional_clause": "using"
+          }
+        ],
+        "title": "Find policies whose predicate is unconditional",
+        "intent": "A catalog inspection listing every policy on a fixture table whose USING or WITH CHECK expression is the literal true. Such a policy satisfies the row level security requirement without constraining anything. An empty result is the expected state.",
+        "case_id": "CFG-003",
+        "db_role": "postgres",
+        "outcome": "rows_returned",
+        "resource": "configuration",
+        "sql_text": "select 'synthetic.' || c.relname as relation,\n          p.polname                 as policy_name,\n          case when pg_catalog.pg_get_expr(p.polqual, p.polrelid) = 'true'\n               then 'using' else 'with check' end as unconditional_clause\n     from pg_catalog.pg_policy p\n     join pg_catalog.pg_class c on c.oid = p.polrelid\n     join pg_catalog.pg_namespace n on n.oid = c.relnamespace\n    where n.nspname = 'synthetic'\n      and c.relname in ('profiles', 'org_members', 'invoices', 'storage_objects')\n      and (pg_catalog.pg_get_expr(p.polqual, p.polrelid) = 'true'\n        or pg_catalog.pg_get_expr(p.polwithcheck, p.polrelid) = 'true')\n    order by 1, 2",
+        "actor_key": "configuration_review",
+        "operation": "configuration",
+        "row_count": 10,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Configuration review",
+        "consequence": "A policy that reads using (true) makes the dashboard report row level security as enabled while every row remains readable. It is the failure that most often survives a launch review.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": false,
+        "evidence_state": "vulnerable"
+      }
+    ],
+    "remediated": [
+      {
+        "rows": [],
+        "title": "Read another tenant's member profiles",
+        "intent": "A member of Harbor Logistics asks the API for the profile rows belonging to Northwind Analytics.",
+        "case_id": "RLS-001",
+        "db_role": "authenticated",
+        "outcome": "no_rows",
+        "resource": "synthetic.profiles",
+        "sql_text": "select id, tenant_id, full_name, job_title\n   from synthetic.profiles\n  where tenant_id = '11111111-1111-4111-8111-111111111111'\n  order by full_name",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 0,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "Every customer of the platform could read the names, roles, and contact records of every other customer.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [
+          {
+            "id": "5c1d8b22-0002-4000-8000-000000000003",
+            "full_name": "Priya Raghavan",
+            "job_title": "Operations Lead",
+            "tenant_id": "22222222-2222-4222-8222-222222222222"
+          },
+          {
+            "id": "7e4f6a91-0002-4000-8000-000000000004",
+            "full_name": "Sam Okafor",
+            "job_title": "Finance Manager",
+            "tenant_id": "22222222-2222-4222-8222-222222222222"
+          }
+        ],
+        "title": "Read the member's own tenant profiles",
+        "intent": "The same member asks for the profiles that belong to their own tenant. This confirms the policy constrains the boundary without breaking the product.",
+        "case_id": "RLS-002",
+        "db_role": "authenticated",
+        "outcome": "rows_returned",
+        "resource": "synthetic.profiles",
+        "sql_text": "select id, tenant_id, full_name, job_title\n   from synthetic.profiles\n  where tenant_id = '22222222-2222-4222-8222-222222222222'\n  order by full_name",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 2,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "If this path is blocked, the fix has broken legitimate access rather than closed the boundary.",
+        "expectation": "allow",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Modify another tenant's member profile",
+        "intent": "The member attempts to write to a Northwind profile row.",
+        "case_id": "RLS-003",
+        "db_role": "authenticated",
+        "outcome": "no_rows",
+        "resource": "synthetic.profiles",
+        "sql_text": "update synthetic.profiles\n      set job_title = 'Edited from another tenant'\n    where tenant_id = '11111111-1111-4111-8111-111111111111'",
+        "actor_key": "harbor_member",
+        "operation": "update",
+        "row_count": 0,
+        "error_code": null,
+        "verify_sql": "select id, tenant_id, full_name, job_title\n      from synthetic.profiles\n     where tenant_id = '11111111-1111-4111-8111-111111111111'\n     order by full_name",
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "A tenant could silently alter another tenant's records, with no audit trail on the victim's side.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": [
+          {
+            "id": "9f2e1c4a-0001-4000-8000-000000000001",
+            "full_name": "Alex Rivera",
+            "job_title": "Head of Product",
+            "tenant_id": "11111111-1111-4111-8111-111111111111"
+          },
+          {
+            "id": "3b7a9d0e-0001-4000-8000-000000000002",
+            "full_name": "Taylor Kim",
+            "job_title": "Data Engineer",
+            "tenant_id": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Delete another tenant's member profile",
+        "intent": "The member attempts to remove a Northwind profile row.",
+        "case_id": "RLS-004",
+        "db_role": "authenticated",
+        "outcome": "no_rows",
+        "resource": "synthetic.profiles",
+        "sql_text": "delete from synthetic.profiles\n    where tenant_id = '11111111-1111-4111-8111-111111111111'\n      and full_name = 'Taylor Kim'",
+        "actor_key": "harbor_member",
+        "operation": "delete",
+        "row_count": 0,
+        "error_code": null,
+        "verify_sql": "select id, tenant_id, full_name\n      from synthetic.profiles\n     where tenant_id = '11111111-1111-4111-8111-111111111111'\n     order by full_name",
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "A tenant could destroy another tenant's data, which is a data-loss incident as well as an isolation failure.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": [
+          {
+            "id": "9f2e1c4a-0001-4000-8000-000000000001",
+            "full_name": "Alex Rivera",
+            "tenant_id": "11111111-1111-4111-8111-111111111111"
+          },
+          {
+            "id": "3b7a9d0e-0001-4000-8000-000000000002",
+            "full_name": "Taylor Kim",
+            "tenant_id": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Enumerate another tenant's membership",
+        "intent": "The member asks which accounts belong to Northwind Analytics and what role each holds.",
+        "case_id": "RLS-005",
+        "db_role": "authenticated",
+        "outcome": "no_rows",
+        "resource": "synthetic.org_members",
+        "sql_text": "select id, tenant_id, profile_id, member_role\n   from synthetic.org_members\n  where tenant_id = '11111111-1111-4111-8111-111111111111'\n  order by member_role",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 0,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "Membership and role data maps a competitor's org chart and identifies who to target for escalation.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Move the member's own record into another tenant",
+        "intent": "The member updates a row they are allowed to read and writes a different tenant_id into it, granting themselves standing membership of another tenant. Reproducing this needs both a permissive read policy and a widened write check: PostgreSQL tests the new row against the SELECT policy as well.",
+        "case_id": "RLS-006",
+        "db_role": "authenticated",
+        "outcome": "error",
+        "resource": "synthetic.org_members",
+        "sql_text": "update synthetic.org_members\n      set tenant_id = '11111111-1111-4111-8111-111111111111'\n    where profile_id = '5c1d8b22-0002-4000-8000-000000000003'",
+        "actor_key": "harbor_member",
+        "operation": "update",
+        "row_count": 0,
+        "error_code": "42501",
+        "verify_sql": "select id, tenant_id, profile_id, member_role\n      from synthetic.org_members\n     where profile_id = '5c1d8b22-0002-4000-8000-000000000003'",
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "A member could grant themselves standing membership of another tenant, turning a read boundary into a persistent account takeover.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": [
+          {
+            "id": "c0000003-0002-4000-8000-000000000003",
+            "tenant_id": "22222222-2222-4222-8222-222222222222",
+            "profile_id": "5c1d8b22-0002-4000-8000-000000000003",
+            "member_role": "member"
+          }
+        ],
+        "error_detail": "",
+        "error_message": "new row violates row-level security policy for table \"org_members\"",
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Read another tenant's invoices",
+        "intent": "The member asks for the billing records of Northwind Analytics.",
+        "case_id": "RLS-007",
+        "db_role": "authenticated",
+        "outcome": "no_rows",
+        "resource": "synthetic.invoices",
+        "sql_text": "select id, tenant_id, number, amount_cents, status\n   from synthetic.invoices\n  where tenant_id = '11111111-1111-4111-8111-111111111111'\n  order by number",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 0,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "Revenue, customer count, and commercial terms would be readable by any other customer on the platform.",
+        "expectation": "deny",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [
+          {
+            "id": "d0000003-0002-4000-8000-000000000003",
+            "number": "HL-0817",
+            "status": "paid",
+            "tenant_id": "22222222-2222-4222-8222-222222222222",
+            "amount_cents": 91200
+          },
+          {
+            "id": "d0000004-0002-4000-8000-000000000004",
+            "number": "HL-0818",
+            "status": "draft",
+            "tenant_id": "22222222-2222-4222-8222-222222222222",
+            "amount_cents": 15000
+          }
+        ],
+        "title": "Read the member's own tenant invoices",
+        "intent": "The same member asks for their own tenant's billing records.",
+        "case_id": "RLS-008",
+        "db_role": "authenticated",
+        "outcome": "rows_returned",
+        "resource": "synthetic.invoices",
+        "sql_text": "select id, tenant_id, number, amount_cents, status\n   from synthetic.invoices\n  where tenant_id = '22222222-2222-4222-8222-222222222222'\n  order by number",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 2,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "If this path is blocked, billing has been broken for legitimate users.",
+        "expectation": "allow",
+        "scenario_id": "authorization-and-rls",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Read a private tenant file as an anonymous visitor",
+        "intent": "An unauthenticated caller lists the private objects in the shared tenant-documents bucket.",
+        "case_id": "STO-001",
+        "db_role": "anon",
+        "outcome": "no_rows",
+        "resource": "synthetic.storage_objects",
+        "sql_text": "select id, tenant_id, bucket_id, object_path, visibility\n   from synthetic.storage_objects\n  where bucket_id = 'tenant-documents'\n    and visibility = 'private'\n  order by object_path",
+        "actor_key": "anonymous_visitor",
+        "operation": "select",
+        "row_count": 0,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Anonymous visitor",
+        "consequence": "Private customer documents would be retrievable by anyone holding the public API URL, with no sign-in at all.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Read another tenant's private file while signed in",
+        "intent": "A signed-in member of Harbor Logistics asks for Northwind's private objects.",
+        "case_id": "STO-002",
+        "db_role": "authenticated",
+        "outcome": "no_rows",
+        "resource": "synthetic.storage_objects",
+        "sql_text": "select id, tenant_id, bucket_id, object_path, visibility\n   from synthetic.storage_objects\n  where tenant_id = '11111111-1111-4111-8111-111111111111'\n    and visibility = 'private'\n  order by object_path",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 0,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "Any paying customer could download another customer's private files through the ordinary storage API.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [
+          {
+            "id": "e0000003-0002-4000-8000-000000000003",
+            "bucket_id": "tenant-documents",
+            "tenant_id": "22222222-2222-4222-8222-222222222222",
+            "visibility": "private",
+            "object_path": "harbor/carrier-contract.pdf"
+          }
+        ],
+        "title": "Read the member's own private file",
+        "intent": "The same member asks for their own tenant's private objects.",
+        "case_id": "STO-003",
+        "db_role": "authenticated",
+        "outcome": "rows_returned",
+        "resource": "synthetic.storage_objects",
+        "sql_text": "select id, tenant_id, bucket_id, object_path, visibility\n   from synthetic.storage_objects\n  where tenant_id = '22222222-2222-4222-8222-222222222222'\n    and visibility = 'private'\n  order by object_path",
+        "actor_key": "harbor_member",
+        "operation": "select",
+        "row_count": 1,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Priya Raghavan · member of Harbor Logistics",
+        "consequence": "If this path is blocked, tenants can no longer reach their own uploads.",
+        "expectation": "allow",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [
+          {
+            "id": "e0000004-0002-4000-8000-000000000004",
+            "bucket_id": "public-assets",
+            "visibility": "public",
+            "object_path": "harbor/logo.svg"
+          },
+          {
+            "id": "e0000002-0001-4000-8000-000000000002",
+            "bucket_id": "public-assets",
+            "visibility": "public",
+            "object_path": "northwind/logo.svg"
+          }
+        ],
+        "title": "Read a deliberately public asset as an anonymous visitor",
+        "intent": "An unauthenticated caller reads objects that are marked public on purpose, such as brand assets.",
+        "case_id": "STO-004",
+        "db_role": "anon",
+        "outcome": "rows_returned",
+        "resource": "synthetic.storage_objects",
+        "sql_text": "select id, bucket_id, object_path, visibility\n   from synthetic.storage_objects\n  where visibility = 'public'\n  order by object_path",
+        "actor_key": "anonymous_visitor",
+        "operation": "select",
+        "row_count": 2,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Anonymous visitor",
+        "consequence": "If this path is blocked, the fix has over-corrected and broken public assets.",
+        "expectation": "allow",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Write a new object as an anonymous visitor",
+        "intent": "An unauthenticated caller attempts to add a row to the object table.",
+        "case_id": "STO-005",
+        "db_role": "anon",
+        "outcome": "error",
+        "resource": "synthetic.storage_objects",
+        "sql_text": "insert into synthetic.storage_objects (id, tenant_id, bucket_id, object_path, visibility, byte_size)\n   values ('f0000009-0009-4000-8000-000000000009',\n           '11111111-1111-4111-8111-111111111111',\n           'tenant-documents', 'northwind/uploaded-by-anonymous.txt', 'private', 12)",
+        "actor_key": "anonymous_visitor",
+        "operation": "insert",
+        "row_count": 0,
+        "error_code": "42501",
+        "verify_sql": "select id, tenant_id, bucket_id, object_path\n      from synthetic.storage_objects\n     where object_path = 'northwind/uploaded-by-anonymous.txt'",
+        "actor_label": "Anonymous visitor",
+        "consequence": "An anonymous caller could plant files inside a customer's bucket, which is both a storage-cost and a content-trust problem.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": [],
+        "error_detail": "",
+        "error_message": "permission denied for table storage_objects",
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Find exposed tables with row level security switched off",
+        "intent": "A catalog inspection listing every fixture table that is reachable through a role grant but has no row level security enabled. An empty result is the expected state.",
+        "case_id": "CFG-001",
+        "db_role": "postgres",
+        "outcome": "no_rows",
+        "resource": "configuration",
+        "sql_text": "select 'synthetic.' || c.relname as relation,\n          c.relrowsecurity          as row_security_enabled\n     from pg_catalog.pg_class c\n     join pg_catalog.pg_namespace n on n.oid = c.relnamespace\n    where n.nspname = 'synthetic'\n      and c.relkind = 'r'\n      and c.relname in ('profiles', 'org_members', 'invoices', 'storage_objects')\n      and not c.relrowsecurity\n    order by 1",
+        "actor_key": "configuration_review",
+        "operation": "configuration",
+        "row_count": 0,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Configuration review",
+        "consequence": "A table exposed by a grant with row level security switched off consults no policy at all, so the project looks protected in the dashboard while returning every row.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Find write privileges held by the anonymous role",
+        "intent": "A catalog inspection listing every insert, update, or delete privilege granted to the anonymous role. An empty result is the expected state.",
+        "case_id": "CFG-002",
+        "db_role": "postgres",
+        "outcome": "no_rows",
+        "resource": "configuration",
+        "sql_text": "select g.table_schema || '.' || g.table_name as relation,\n          g.grantee,\n          lower(g.privilege_type)               as privilege\n     from information_schema.role_table_grants g\n    where g.table_schema = 'synthetic'\n      and g.grantee = 'anon'\n      and g.privilege_type in ('INSERT', 'UPDATE', 'DELETE')\n    order by 1, 3",
+        "actor_key": "configuration_review",
+        "operation": "configuration",
+        "row_count": 0,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Configuration review",
+        "consequence": "A write privilege on the anonymous role lets an unauthenticated caller change stored data regardless of how carefully the read policies were written.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      },
+      {
+        "rows": [],
+        "title": "Find policies whose predicate is unconditional",
+        "intent": "A catalog inspection listing every policy on a fixture table whose USING or WITH CHECK expression is the literal true. Such a policy satisfies the row level security requirement without constraining anything. An empty result is the expected state.",
+        "case_id": "CFG-003",
+        "db_role": "postgres",
+        "outcome": "no_rows",
+        "resource": "configuration",
+        "sql_text": "select 'synthetic.' || c.relname as relation,\n          p.polname                 as policy_name,\n          case when pg_catalog.pg_get_expr(p.polqual, p.polrelid) = 'true'\n               then 'using' else 'with check' end as unconditional_clause\n     from pg_catalog.pg_policy p\n     join pg_catalog.pg_class c on c.oid = p.polrelid\n     join pg_catalog.pg_namespace n on n.oid = c.relnamespace\n    where n.nspname = 'synthetic'\n      and c.relname in ('profiles', 'org_members', 'invoices', 'storage_objects')\n      and (pg_catalog.pg_get_expr(p.polqual, p.polrelid) = 'true'\n        or pg_catalog.pg_get_expr(p.polwithcheck, p.polrelid) = 'true')\n    order by 1, 2",
+        "actor_key": "configuration_review",
+        "operation": "configuration",
+        "row_count": 0,
+        "error_code": null,
+        "verify_sql": null,
+        "actor_label": "Configuration review",
+        "consequence": "A policy that reads using (true) makes the dashboard report row level security as enabled while every row remains readable. It is the failure that most often survives a launch review.",
+        "expectation": "deny",
+        "scenario_id": "storage-and-configuration",
+        "verify_rows": null,
+        "error_detail": null,
+        "error_message": null,
+        "expectation_met": true,
+        "evidence_state": "remediated"
+      }
+    ]
+  },
+  "privileges": {
+    "vulnerable": {
+      "relations": [
+        {
+          "grants": [
+            {
+              "grantee": "authenticated",
+              "privilege": "select"
+            }
+          ],
+          "policies": [],
+          "resource": "synthetic.invoices",
+          "row_security": false
+        },
+        {
+          "grants": [
+            {
+              "grantee": "authenticated",
+              "privilege": "delete"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "insert"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "select"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "update"
+            }
+          ],
+          "policies": [
+            {
+              "name": "org_members_delete",
+              "using": "(tenant_id = synthetic.current_tenant_id())",
+              "command": "delete",
+              "with_check": null
+            },
+            {
+              "name": "org_members_insert",
+              "using": null,
+              "command": "insert",
+              "with_check": "true"
+            },
+            {
+              "name": "org_members_select",
+              "using": "true",
+              "command": "select",
+              "with_check": null
+            },
+            {
+              "name": "org_members_update",
+              "using": "(tenant_id = synthetic.current_tenant_id())",
+              "command": "update",
+              "with_check": "true"
+            }
+          ],
+          "resource": "synthetic.org_members",
+          "row_security": true
+        },
+        {
+          "grants": [
+            {
+              "grantee": "authenticated",
+              "privilege": "delete"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "select"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "update"
+            }
+          ],
+          "policies": [
+            {
+              "name": "profiles_delete",
+              "using": "true",
+              "command": "delete",
+              "with_check": null
+            },
+            {
+              "name": "profiles_select",
+              "using": "true",
+              "command": "select",
+              "with_check": null
+            },
+            {
+              "name": "profiles_update",
+              "using": "true",
+              "command": "update",
+              "with_check": null
+            }
+          ],
+          "resource": "synthetic.profiles",
+          "row_security": true
+        },
+        {
+          "grants": [
+            {
+              "grantee": "anon",
+              "privilege": "insert"
+            },
+            {
+              "grantee": "anon",
+              "privilege": "select"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "delete"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "insert"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "select"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "update"
+            }
+          ],
+          "policies": [
+            {
+              "name": "storage_objects_delete",
+              "using": "true",
+              "command": "delete",
+              "with_check": null
+            },
+            {
+              "name": "storage_objects_insert",
+              "using": null,
+              "command": "insert",
+              "with_check": "true"
+            },
+            {
+              "name": "storage_objects_select",
+              "using": "true",
+              "command": "select",
+              "with_check": null
+            },
+            {
+              "name": "storage_objects_update",
+              "using": "true",
+              "command": "update",
+              "with_check": null
+            }
+          ],
+          "resource": "synthetic.storage_objects",
+          "row_security": true
+        }
+      ]
+    },
+    "remediated": {
+      "relations": [
+        {
+          "grants": [
+            {
+              "grantee": "authenticated",
+              "privilege": "select"
+            }
+          ],
+          "policies": [
+            {
+              "name": "invoices_select",
+              "using": "(tenant_id = synthetic.current_tenant_id())",
+              "command": "select",
+              "with_check": null
+            }
+          ],
+          "resource": "synthetic.invoices",
+          "row_security": true
+        },
+        {
+          "grants": [
+            {
+              "grantee": "authenticated",
+              "privilege": "delete"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "insert"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "select"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "update"
+            }
+          ],
+          "policies": [
+            {
+              "name": "org_members_delete",
+              "using": "(tenant_id = synthetic.current_tenant_id())",
+              "command": "delete",
+              "with_check": null
+            },
+            {
+              "name": "org_members_insert",
+              "using": null,
+              "command": "insert",
+              "with_check": "(tenant_id = synthetic.current_tenant_id())"
+            },
+            {
+              "name": "org_members_select",
+              "using": "(tenant_id = synthetic.current_tenant_id())",
+              "command": "select",
+              "with_check": null
+            },
+            {
+              "name": "org_members_update",
+              "using": "(tenant_id = synthetic.current_tenant_id())",
+              "command": "update",
+              "with_check": "(tenant_id = synthetic.current_tenant_id())"
+            }
+          ],
+          "resource": "synthetic.org_members",
+          "row_security": true
+        },
+        {
+          "grants": [
+            {
+              "grantee": "authenticated",
+              "privilege": "delete"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "select"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "update"
+            }
+          ],
+          "policies": [
+            {
+              "name": "profiles_delete",
+              "using": "(tenant_id = synthetic.current_tenant_id())",
+              "command": "delete",
+              "with_check": null
+            },
+            {
+              "name": "profiles_select",
+              "using": "(tenant_id = synthetic.current_tenant_id())",
+              "command": "select",
+              "with_check": null
+            },
+            {
+              "name": "profiles_update",
+              "using": "(tenant_id = synthetic.current_tenant_id())",
+              "command": "update",
+              "with_check": "(tenant_id = synthetic.current_tenant_id())"
+            }
+          ],
+          "resource": "synthetic.profiles",
+          "row_security": true
+        },
+        {
+          "grants": [
+            {
+              "grantee": "anon",
+              "privilege": "select"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "delete"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "insert"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "select"
+            },
+            {
+              "grantee": "authenticated",
+              "privilege": "update"
+            }
+          ],
+          "policies": [
+            {
+              "name": "storage_objects_delete",
+              "using": "(tenant_id = synthetic.current_tenant_id())",
+              "command": "delete",
+              "with_check": null
+            },
+            {
+              "name": "storage_objects_insert",
+              "using": null,
+              "command": "insert",
+              "with_check": "(tenant_id = synthetic.current_tenant_id())"
+            },
+            {
+              "name": "storage_objects_select",
+              "using": "((visibility = 'public'::text) OR (tenant_id = synthetic.current_tenant_id()))",
+              "command": "select",
+              "with_check": null
+            },
+            {
+              "name": "storage_objects_update",
+              "using": "(tenant_id = synthetic.current_tenant_id())",
+              "command": "update",
+              "with_check": "(tenant_id = synthetic.current_tenant_id())"
+            }
+          ],
+          "resource": "synthetic.storage_objects",
+          "row_security": true
+        }
+      ]
+    }
+  }
+}

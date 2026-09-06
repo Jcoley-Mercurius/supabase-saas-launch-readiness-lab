@@ -14,3 +14,8 @@ AGENTS.md
 # CLAUDE.md hosts the Next.js-managed `nextjs-agent-rules` block, which must stay
 # byte-identical to what `next dev` generates or it gets rewritten on every run.
 CLAUDE.md
+
+# The recorded evidence transcript is written by scripts/record-evidence.mjs and
+# compared byte-for-byte against a fresh recording. The recorder is its only
+# author; reformatting it here would make the verifier's diff meaningless.
+lib/evidence/recorded/

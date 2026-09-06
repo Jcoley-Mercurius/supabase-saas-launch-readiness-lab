@@ -11,6 +11,11 @@
     "typecheck": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "db:start": "supabase start -x realtime,storage-api,imgproxy,studio,edge-runtime,logflare,vector,supavisor,mailpit,postgres-meta,gotrue,postgrest,kong",
+    "db:stop": "supabase stop",
+    "evidence:record": "node scripts/record-evidence.mjs",
+    "evidence:verify": "node scripts/verify-evidence.mjs",
+    "test:unit": "playwright test --config playwright.unit.config.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {
