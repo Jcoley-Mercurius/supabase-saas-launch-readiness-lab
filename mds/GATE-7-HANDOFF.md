@@ -1,7 +1,7 @@
 # Supabase SaaS Launch-Readiness Lab — Gate 7 Handoff
 
 Status: Approved — Gate 7 complete  
-MPS: v1.1
+MPS: v1.1  
 MDS: v1.0  
 Next system: Mercurius Technology System
 

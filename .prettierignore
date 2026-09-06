@@ -1,0 +1,16 @@
+# Build output and dependencies
+.next/
+node_modules/
+pnpm-lock.yaml
+
+# Canonical Mercurius governance artifacts are change-controlled.
+# They are authored deliberately (including trailing-space line breaks)
+# and must not be reformatted by tooling.
+mps/
+mds/
+mts/
+AGENTS.md
+
+# CLAUDE.md hosts the Next.js-managed `nextjs-agent-rules` block, which must stay
+# byte-identical to what `next dev` generates or it gets rewritten on every run.
+CLAUDE.md
