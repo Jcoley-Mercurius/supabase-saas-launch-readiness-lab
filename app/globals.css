@@ -1,26 +1,193 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Mercurius Design System v1.0 — runtime token layer.
+ *
+ * Authority: mds/tokens/tokens.json and mds/specification/DESIGN-SYSTEM.md.
+ * Every value below is transcribed from an approved token or an approved
+ * specification table. Do not add, rename, or re-tune a value here without a
+ * corresponding approved MDS change — an undefined reusable value is an MDS
+ * gap, not an implementation choice.
+ */
+
+@theme {
+  /* --- Breakpoints (MDS responsive.breakpoints) -------------------------
+   * Tailwind's stock sm/md/lg/xl scale is cleared so only the four approved
+   * MDS composition thresholds can be expressed: mobile 0-639, tablet
+   * 640-959, desktop 960-1279, wide 1280+.
+   */
+  --breakpoint-*: initial;
+  --breakpoint-tablet: 640px;
+  --breakpoint-desktop: 960px;
+  --breakpoint-wide: 1280px;
+
+  /* --- Color: brand (color.brand.*) ----------------------------------- */
+  --color-ink: #0b1220;
+  --color-primary: #087a5b;
+  --color-primary-hover: #066449;
+  --color-accent: #19a974;
+
+  /* --- Color: surfaces (color.surface.*) ------------------------------ */
+  --color-canvas: #f4f7f9;
+  --color-base: #ffffff;
+  --color-muted: #eef2f5;
+  --color-evidence: #111827;
+
+  /* --- Color: text (color.text.*) ------------------------------------- */
+  --color-strong: #111827;
+  --color-subtle: #596579;
+  --color-inverse: #ffffff;
+
+  /* --- Color: borders (color.border.*) -------------------------------- */
+  --color-line: #d6dee7;
+  --color-focus: #2563eb;
+
+  /* --- Color: evidence state (color.status.*) -------------------------
+   * Colour never carries state alone. Each of these is only ever used
+   * alongside the approved icon/shape, label, and explanation.
+   */
+  --color-remediated: #087a55;
+  --color-vulnerable: #b42318;
+  --color-warning: #9a5b00;
+  --color-info: #175cd3;
+  --color-untested: #667085;
+
+  /* --- Typography families (font.*) ----------------------------------- */
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --font-mono:
+    var(--font-geist-mono), ui-monospace, "SFMono-Regular", "Menlo", monospace;
+
+  --font-weight-display: 650;
+
+  /* --- Type scale (DESIGN-SYSTEM.md §5) -------------------------------
+   * Sizes are rem-derived from the approved px values so that browser text
+   * scaling and 200% zoom reflow correctly (WCAG 2.2 AA 1.4.4 / 1.4.10).
+   */
+  --text-display: 3.5rem; /* 56 */
+  --text-display--line-height: 4rem; /* 64 */
+  --text-display--letter-spacing: -0.025em;
+  --text-display--font-weight: 650;
+
+  --text-h1: 2.75rem; /* 44 */
+  --text-h1--line-height: 3.25rem; /* 52 */
+  --text-h1--letter-spacing: -0.015em;
+  --text-h1--font-weight: 650;
+
+  --text-h2: 2rem; /* 32 */
+  --text-h2--line-height: 2.5rem; /* 40 */
+  --text-h2--letter-spacing: -0.015em;
+  --text-h2--font-weight: 650;
+
+  --text-h3: 1.5rem; /* 24 */
+  --text-h3--line-height: 2rem; /* 32 */
+  --text-h3--letter-spacing: -0.015em;
+  --text-h3--font-weight: 600;
+
+  --text-h4: 1.25rem; /* 20 */
+  --text-h4--line-height: 1.75rem; /* 28 */
+  --text-h4--letter-spacing: -0.015em;
+  --text-h4--font-weight: 600;
+
+  --text-body-lg: 1.125rem; /* 18 */
+  --text-body-lg--line-height: 1.875rem; /* 30 */
+
+  --text-body: 1rem; /* 16 */
+  --text-body--line-height: 1.625rem; /* 26 */
+
+  --text-body-sm: 0.875rem; /* 14 */
+  --text-body-sm--line-height: 1.375rem; /* 22 */
+
+  --text-label: 0.8125rem; /* 13 */
+  --text-label--line-height: 1.125rem; /* 18 */
+  --text-label--letter-spacing: 0.01em;
+  --text-label--font-weight: 600;
+
+  --text-mono: 0.8125rem; /* 13 */
+  --text-mono--line-height: 1.3125rem; /* 21 */
+
+  /* --- Shape (radius.*) ----------------------------------------------- */
+  --radius-small: 6px;
+  --radius-control: 10px;
+  --radius-card: 14px;
+  --radius-pill: 999px;
+
+  /* --- Elevation (DESIGN-SYSTEM.md §6) --------------------------------
+   * Border-first. The card shadow is a low-spread hairline; the overlay
+   * shadow is reserved for menus and dialogs.
+   */
+  --shadow-card: 0 1px 2px rgba(11, 18, 32, 0.04);
+  --shadow-overlay: 0 12px 32px rgba(11, 18, 32, 0.12);
+
+  /* --- Motion (motion.*) ----------------------------------------------- */
+  --motion-fast: 120ms;
+  --motion-default: 180ms;
+  --motion-slow: 200ms;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+/*
+ * Mobile type overrides (MDS responsive.rules.typography):
+ * "Display reduces to 40/46 and H1 to 34/40 on mobile." Body never drops
+ * below 16px in a primary reading context.
+ */
+@media (width < 640px) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --text-display: 2.5rem; /* 40 */
+    --text-display--line-height: 2.875rem; /* 46 */
+    --text-h1: 2.125rem; /* 34 */
+    --text-h1--line-height: 2.5rem; /* 40 */
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    background-color: var(--color-canvas);
+    color: var(--color-strong);
+    /* Approved composition changes are driven by width, not device. */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-strong);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+  }
+
+  /*
+   * Visible keyboard focus on every interactive control (MDS accessibility;
+   * WCAG 2.2 AA 2.4.7 / 2.4.11). The ring pairs a colour with a shape offset
+   * so focus never depends on colour alone.
+   */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-small);
+  }
+
+  /* Dark evidence and ink surfaces need a focus ring that survives them. */
+  .on-ink :focus-visible {
+    outline-color: #ffffff;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
+  }
+}
+
+/*
+ * Reduced motion (MDS accessibility; MDS-DEC-013). Motion is functional only
+ * and carries no essential meaning, so it can be removed outright.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
