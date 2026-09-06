@@ -66,13 +66,26 @@ export default defineConfig({
         viewport: { width: 1200, height: 900 },
       },
     },
-    // WebKit binaries are installed but need system libraries that are not
-    // present on this WSL/Ubuntu host. Enable after `sudo pnpm exec playwright
-    // install-deps webkit` (an owner action - it installs OS packages).
-    // {
-    //   name: 'webkit-desktop',
-    //   use: { ...devices['Desktop Safari'], viewport: { width: 1200, height: 900 } },
-    // },
+    // WebKit runs in CI only, not on this workstation.
+    //
+    // Its binaries are installed, but it needs 121 system packages on this
+    // Ubuntu 26.04 host (the full GStreamer stack, Mesa, GTK4, ONNX Runtime).
+    // Owner decision: do not install those locally; get WebKit evidence from a
+    // CI runner using a Playwright image that ships the dependencies.
+    //
+    // CI enables this project via PLAYWRIGHT_WEBKIT=1. Wiring the workflow
+    // itself belongs to S6 (release and combined verification).
+    ...(process.env.PLAYWRIGHT_WEBKIT
+      ? [
+          {
+            name: "webkit-desktop",
+            use: {
+              ...devices["Desktop Safari"],
+              viewport: { width: 1200, height: 900 },
+            },
+          },
+        ]
+      : []),
   ],
 
   webServer: {

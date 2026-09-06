@@ -74,16 +74,35 @@ pnpm dev          # http://localhost:3000
 
 ### Checks
 
-| Command                             | Covers                                                                |
-| ----------------------------------- | --------------------------------------------------------------------- |
-| `pnpm lint`                         | ESLint via `eslint-config-next`                                       |
-| `pnpm typecheck`                    | `next typegen` then `tsc --noEmit`                                    |
-| `pnpm build`                        | Production build                                                      |
-| `pnpm format` / `pnpm format:check` | Prettier over application code only                                   |
-| `pnpm test:e2e`                     | Playwright — **requires `playwright.config.ts`, which lands with S1** |
+| Command                             | Covers                              |
+| ----------------------------------- | ----------------------------------- |
+| `pnpm lint`                         | ESLint via `eslint-config-next`     |
+| `pnpm typecheck`                    | `next typegen` then `tsc --noEmit`  |
+| `pnpm build`                        | Production build                    |
+| `pnpm format` / `pnpm format:check` | Prettier over application code only |
+| `pnpm test:e2e`                     | Playwright browser verification     |
 
-Playwright browsers are not installed yet; run `pnpm exec playwright install` before the first
-browser-verification slice.
+### Browser verification
+
+`playwright.config.ts` is a baseline harness only — it asserts no product behavior. Viewport
+projects match the approved MDS breakpoints (mobile 390, tablet 768, desktop 1200, wide 1440) and
+run on Chromium and Firefox. `e2e/smoke.spec.ts` confirms the app serves and the pipeline runs;
+scenario, evidence, report, and inquiry specs arrive with their own slices.
+
+The per-test timeout is 60s because Next's dev server compiles routes on demand and parallel
+workers otherwise exceed Playwright's 30s default on a cold start.
+
+**WebKit runs in CI only.** Its binaries are installed here, but it needs 121 system packages on
+this Ubuntu 26.04 host (the full GStreamer stack, Mesa, GTK4, ONNX Runtime). The owner decision is
+to skip that local install and take WebKit evidence from a CI runner using a Playwright image that
+ships the dependencies. Set `PLAYWRIGHT_WEBKIT=1` to add the `webkit-desktop` project:
+
+```bash
+PLAYWRIGHT_WEBKIT=1 pnpm test:e2e
+```
+
+The CI workflow itself is not wired yet — that belongs to S6 (release and combined verification),
+along with recording this verification decision in the MTS canonical state.
 
 `pnpm typecheck` runs `next typegen` first because Next generates route types (`LayoutProps` and
 friends) into `.next/types`; a bare `tsc --noEmit` fails on a clean tree without it.
