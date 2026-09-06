@@ -5,172 +5,135 @@ import type { SVGProps } from "react";
  * 16/20/24px sizes (MDS-DEC-011).
  *
  * MDS records `icons.implementation: mts_to_select`, and the approved MTS
- * technology set (mts/TECHNOLOGY-BLUEPRINT.md) names no icon package. Adding
- * a dependency would be an unapproved technology selection, so S1 draws the
- * required glyphs inline in the approved outline style. This is reported as an
- * open MTS decision, not a design change.
+ * technology set (mts/TECHNOLOGY-BLUEPRINT.md) names no icon package. Adding a
+ * dependency would be an unapproved technology selection, so the required
+ * glyphs are inlined here using the geometry of the Lucide outline set (ISC
+ * licence), which is what the approved canonical references render. Each glyph
+ * below was compared against its appearance in MDS-REF-002 and MDS-REF-005.
  *
- * Icons are decorative by default (aria-hidden). Every evidence state pairs its
- * icon with a visible text label and explanation, so meaning never depends on
- * the glyph or on colour (MDS-PRI-003, MDS-DONT-002).
+ * These are the general-purpose outline icons. Evidence state does NOT use
+ * them: the approved references render evidence states as filled semantic
+ * badges with a knocked-out glyph, which live in `state-glyph.tsx`.
+ *
+ * Icons are decorative by default (aria-hidden); adjacent text always carries
+ * the meaning, so nothing depends on the glyph or on colour (MDS-DONT-002).
  *
  * Prohibited motifs — shields, locks, bugs, keyholes, hacker silhouettes,
  * neon circuitry — are absent by construction (mds/specification/DO-DONT.md).
  */
 
 const ICON_PATHS = {
-  // --- Risk pillars -------------------------------------------------------
+  // --- Risk pillars (MDS-REF-002 pillar row) ------------------------------
   users: (
     <>
-      <path d="M16 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-6A3.5 3.5 0 0 0 3 17.5V19" />
-      <circle cx="9.5" cy="8" r="3.5" />
-      <path d="M21 19v-1.5a3.5 3.5 0 0 0-2.6-3.4" />
-      <path d="M15.5 4.7a3.5 3.5 0 0 1 0 6.6" />
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </>
   ),
   database: (
     <>
-      <ellipse cx="12" cy="6" rx="7.5" ry="3" />
-      <path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6" />
-      <path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6" />
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M3 5v14a9 3 0 0 0 18 0V5" />
+      <path d="M3 12a9 3 0 0 0 18 0" />
     </>
   ),
   webhook: (
     <>
-      <path d="M9.4 9.2a3.2 3.2 0 1 1 4.4 3l-2.6 4.6" />
-      <path d="M14.6 14.8a3.2 3.2 0 1 1 1.6 5.2H10.9" />
-      <path d="M9.4 20a3.2 3.2 0 1 1-2.8-4.8l2.7-4.6" />
+      <path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2" />
+      <path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06" />
+      <path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8" />
     </>
   ),
   settings: (
     <>
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
       <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 14.5a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a1.9 1.9 0 0 1-3.8 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3.4a1.9 1.9 0 0 1 0-3.8h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3.4a1.9 1.9 0 0 1 3.8 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a1.9 1.9 0 0 1 0 3.8h-.1a1.6 1.6 0 0 0-1.5 1Z" />
+    </>
+  ),
+  /** Reliability & recovery uses the clock on the scenario cards (MDS-REF-005). */
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
     </>
   ),
 
-  // --- Evidence-state vocabulary (DESIGN-SYSTEM.md §7 / §9) --------------
-  "check-circle": (
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="m8.2 12.2 2.6 2.6 5-5.2" />
-    </>
-  ),
-  "alert-triangle": (
-    <>
-      <path d="M10.6 4.1 2.9 17a1.6 1.6 0 0 0 1.4 2.4h15.4a1.6 1.6 0 0 0 1.4-2.4L13.4 4.1a1.6 1.6 0 0 0-2.8 0Z" />
-      <path d="M12 9.5v4" />
-      <path d="M12 17h.01" />
-    </>
-  ),
-  "minus-circle": (
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M8.4 12h7.2" />
-    </>
-  ),
-  "slash-circle": (
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="m5.6 18.4 12.8-12.8" />
-    </>
-  ),
-  loader: (
-    <>
-      <path d="M12 3v3.5" />
-      <path d="M12 17.5V21" />
-      <path d="M5.6 5.6 8 8" />
-      <path d="m16 16 2.4 2.4" />
-      <path d="M3 12h3.5" />
-      <path d="M17.5 12H21" />
-      <path d="M5.6 18.4 8 16" />
-      <path d="M16 8l2.4-2.4" />
-    </>
-  ),
-  "cloud-off": (
-    <>
-      <path d="M7 17.5h9.5a4 4 0 0 0 1.6-7.7 6 6 0 0 0-8.3-4.2" />
-      <path d="M7.2 9.1A4.7 4.7 0 0 0 7 17.5" />
-      <path d="m3.5 3.5 17 17" />
-    </>
-  ),
-  "alert-circle": (
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7.8v4.6" />
-      <path d="M12 16.2h.01" />
-    </>
-  ),
-  info: (
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 11v5.2" />
-      <path d="M12 7.8h.01" />
-    </>
-  ),
-
-  // --- Synthetic context and boundary ------------------------------------
+  // --- Synthetic context and boundary (MDS-REF-005 context panel) ---------
   flask: (
     <>
-      <path d="M9.5 3v5.6L4.4 17a1.7 1.7 0 0 0 1.5 2.6h12.2A1.7 1.7 0 0 0 19.6 17l-5.1-8.4V3" />
-      <path d="M8.4 3h7.2" />
-      <path d="M7.3 13.4h9.4" />
+      <path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2" />
+      <path d="M6.453 15h11.094" />
+      <path d="M8.5 2h7" />
     </>
   ),
   user: (
     <>
-      <path d="M19 19.5v-1.2a4.3 4.3 0 0 0-4.3-4.3H9.3A4.3 4.3 0 0 0 5 18.3v1.2" />
-      <circle cx="12" cy="8" r="3.8" />
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </>
   ),
   "credit-card": (
     <>
-      <rect x="2.8" y="5.2" width="18.4" height="13.6" rx="2.2" />
-      <path d="M2.8 10h18.4" />
-      <path d="M6.6 14.6h3" />
+      <rect width="20" height="14" x="2" y="5" rx="2" />
+      <path d="M2 10h20" />
     </>
   ),
   "file-text": (
     <>
-      <path d="M14 3H7.4A1.9 1.9 0 0 0 5.5 4.9v14.2A1.9 1.9 0 0 0 7.4 21h9.2a1.9 1.9 0 0 0 1.9-1.9V7.3Z" />
-      <path d="M14 3v4.3h4.5" />
-      <path d="M9 12.5h6" />
-      <path d="M9 16h4.5" />
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M10 9H8" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
     </>
   ),
   route: (
     <>
-      <circle cx="6" cy="18" r="2.6" />
-      <circle cx="18" cy="6" r="2.6" />
-      <path d="M15.4 6H10a3.2 3.2 0 0 0 0 6.4h4a3.2 3.2 0 0 1 0 6.4H8.6" />
+      <circle cx="6" cy="19" r="3" />
+      <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+      <circle cx="18" cy="5" r="3" />
     </>
   ),
+
+  /** Outline info circle — approved boundary chips (MDS-REF-002/005). */
+  info: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
+    </>
+  ),
+
+  // --- Running state: a spinner, per DESIGN-SYSTEM section 7 --------------
+  loader: <path d="M21 12a9 9 0 1 1-6.219-8.56" />,
 
   // --- Navigation ---------------------------------------------------------
   "arrow-right": (
     <>
-      <path d="M4.5 12h15" />
-      <path d="m13.2 5.7 6.3 6.3-6.3 6.3" />
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
     </>
   ),
   "arrow-left": (
     <>
-      <path d="M19.5 12h-15" />
-      <path d="M10.8 5.7 4.5 12l6.3 6.3" />
+      <path d="m12 19-7-7 7-7" />
+      <path d="M19 12H5" />
     </>
   ),
-  "chevron-right": <path d="m9 5.5 6.5 6.5L9 18.5" />,
+  "chevron-right": <path d="m9 18 6-6-6-6" />,
   menu: (
     <>
-      <path d="M4 7h16" />
+      <path d="M4 6h16" />
       <path d="M4 12h16" />
-      <path d="M4 17h16" />
+      <path d="M4 18h16" />
     </>
   ),
   close: (
     <>
+      <path d="M18 6 6 18" />
       <path d="m6 6 12 12" />
-      <path d="m18 6-12 12" />
     </>
   ),
 } as const;
@@ -183,7 +146,7 @@ export type IconProps = {
   size?: 16 | 20 | 24;
   /**
    * Accessible name. Omit it (the default) whenever adjacent text already
-   * carries the meaning, which is the case for every evidence state.
+   * carries the meaning, which is the case everywhere in the shell.
    */
   label?: string;
 } & Omit<SVGProps<SVGSVGElement>, "children" | "name">;
@@ -196,7 +159,7 @@ export function Icon({ name, size = 20, label, ...props }: IconProps) {
       height={size}
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.75}
+      strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
       role={label ? "img" : undefined}

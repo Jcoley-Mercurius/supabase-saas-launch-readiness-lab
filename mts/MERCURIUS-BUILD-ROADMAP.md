@@ -39,7 +39,7 @@ The current manifest is mts/AGENT-SKILL-MANIFEST.yaml. Required skills are MTS m
 | S1 | implemented, awaiting owner approval | lint, typecheck, production build, and Playwright chromium desktop/wide/tablet/mobile plus firefox-desktop against the production build; WebKit remains CI-only under MTS-EXC-002 |
 | S2–S6 | not started | — |
 
-Open S1 items for the checkpoint are recorded as MTS-DEV-001, MTS-DEV-002, MTS-OBS-001, and MTS-OBS-002 in `mts/MTS-PROJECT-STATE.yaml`.
+Open S1 items for the checkpoint are recorded as MTS-DEV-001, MTS-DEV-002, MTS-OBS-001 through MTS-OBS-004, and the MDS gaps MDS-GAP-S1-001 and MDS-GAP-S1-002 in `mts/MTS-PROJECT-STATE.yaml`.
 
 ## Next action
 

@@ -1,4 +1,5 @@
-import { Icon, type IconName } from "@/components/ui/icon";
+import { Icon } from "@/components/ui/icon";
+import { StateGlyph, type StateGlyphShape } from "@/components/ui/state-glyph";
 
 /*
  * Evidence-state indicator — the single source of the approved evidence
@@ -9,6 +10,10 @@ import { Icon, type IconName } from "@/components/ui/icon";
  * Each state always combines four carriers: icon/shape, exact text label,
  * explanation, and semantic colour (MDS-PRI-003, MDS-DONT-002). Meaning
  * survives with colour and animation removed.
+ *
+ * The glyph is the filled semantic badge the approved references render (see
+ * state-glyph.tsx), except for `running`, which DESIGN-SYSTEM section 7 defines
+ * as a loader plus text.
  *
  * The labels below are canonical and must not be paraphrased. "Secure",
  * "certified", "compliant", "guaranteed", and an unqualified "passed" are
@@ -26,7 +31,8 @@ export type EvidenceState =
 
 type StateSpec = {
   label: string;
-  icon: IconName;
+  /** Filled evidence badge, or `null` for the running spinner. */
+  glyph: StateGlyphShape | null;
   /** Text/icon colour utility. */
   fg: string;
   /** Tinted surface used by the block variant. */
@@ -36,43 +42,45 @@ type StateSpec = {
 const STATES: Record<EvidenceState, StateSpec> = {
   vulnerable: {
     label: "Vulnerable — test succeeded unexpectedly",
-    icon: "alert-triangle",
+    glyph: "exclamation-circle",
     fg: "text-vulnerable",
     surface: "bg-vulnerable/6 border-vulnerable/35",
   },
   remediated: {
     label: "Remediated — documented test blocked",
-    icon: "check-circle",
+    glyph: "check-circle",
     fg: "text-remediated",
     surface: "bg-remediated/6 border-remediated/35",
   },
   untested: {
     label: "Untested",
-    icon: "minus-circle",
+    glyph: "ring-circle",
     fg: "text-untested",
-    surface: "bg-muted border-line",
+    // `canvas`, not `muted`: the untested token measures 4.42:1 on muted,
+    // just under the AA 4.5:1 body threshold, and 4.63:1 on canvas.
+    surface: "bg-canvas border-line",
   },
   "not-applicable": {
     label: "Not applicable",
-    icon: "slash-circle",
+    glyph: "minus-circle",
     fg: "text-untested",
-    surface: "bg-muted border-line",
+    surface: "bg-canvas border-line",
   },
   running: {
     label: "Running documented test",
-    icon: "loader",
+    glyph: null,
     fg: "text-info",
     surface: "bg-info/6 border-info/35",
   },
   unavailable: {
     label: "Evidence unavailable",
-    icon: "cloud-off",
+    glyph: "exclamation-triangle",
     fg: "text-warning",
     surface: "bg-warning/8 border-warning/35",
   },
   warning: {
     label: "Review required",
-    icon: "alert-circle",
+    glyph: "exclamation-triangle",
     fg: "text-warning",
     surface: "bg-warning/8 border-warning/35",
   },
@@ -109,11 +117,11 @@ export function StatusIndicator({
       } ${className}`.trim()}
     >
       <span className={`mt-0.5 shrink-0 ${spec.fg}`}>
-        <Icon
-          name={spec.icon}
-          size={20}
-          className={state === "running" ? "animate-spin" : undefined}
-        />
+        {spec.glyph ? (
+          <StateGlyph shape={spec.glyph} size={20} />
+        ) : (
+          <Icon name="loader" size={20} className="animate-spin" />
+        )}
       </span>
       <span className="flex flex-col gap-0.5">
         <span className={`text-body-sm font-semibold ${spec.fg}`}>

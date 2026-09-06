@@ -71,7 +71,9 @@ export const SCENARIOS: readonly Scenario[] = [
     slug: "reliability-and-recovery",
     order: 4,
     pillar: "Reliability & recovery",
-    icon: "settings",
+    // The approved scenario cards use the clock here; the landing pillar row
+    // uses the gear (MDS-REF-005 vs MDS-REF-002).
+    icon: "clock",
     summary:
       "Check backups, monitoring, rate limits, and operational readiness for common failure scenarios.",
     documentedTest:

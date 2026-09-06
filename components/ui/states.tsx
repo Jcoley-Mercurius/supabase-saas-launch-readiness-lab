@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
+import { StateGlyph } from "@/components/ui/state-glyph";
 import { Card } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
 
@@ -73,7 +74,11 @@ export function ErrorState({
 }) {
   return (
     <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-      <Icon name="alert-circle" size={24} className="text-vulnerable" />
+      <StateGlyph
+        shape="exclamation-circle"
+        size={24}
+        className="text-vulnerable"
+      />
       <p className="text-h4 text-strong">{title}</p>
       <p className="text-body-sm text-subtle max-w-[52ch]">{description}</p>
       <div className="mt-2 flex flex-wrap justify-center gap-3">
