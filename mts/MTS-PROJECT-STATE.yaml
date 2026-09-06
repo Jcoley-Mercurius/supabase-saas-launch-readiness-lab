@@ -12,6 +12,7 @@ mts:
   mds_version: "v1.0"
   created_at: "2026-09-06T02:03:56.269684+00:00"
   updated_at: "2026-09-06"
+  last_verification: {stage: P0, by: Claude, at: "2026-09-06", result: passed}
 
 project:
   name: "Supabase SaaS Launch-Readiness Lab"
@@ -63,8 +64,10 @@ existing_system:
   agent_capabilities:
     - {name: Codex, status: observed, role: planning_and_implementation}
     - {name: Claude, status: observed, role: implementation}
-  agent_skill_inventory: []
-  environment_variable_names: []
+  agent_skill_inventory:
+    - {environment: Claude, observed_at: "2026-09-06", sources: ["built-in skill roster", "~/.claude/skills", "~/.claude/plugins", "project .claude (absent)"], mts_named_skills_present: none, note: "No MTS-named skill exists in Claude; every required skill runs on its manifest-approved fallback. Manifest environment tags are authored for Codex and are not a Claude availability claim."}
+  environment_variable_names: [NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, RESEND_API_KEY, RESEND_FROM_EMAIL, INQUIRY_NOTIFICATION_TO, PLAYWRIGHT_BASE_URL, PLAYWRIGHT_WEBKIT]
+  environment_variable_names_conditional: [SUPABASE_SERVICE_ROLE_KEY]
 
 capabilities:
   - {id: MTS-CAP-001, name: "Responsive public application delivery", family: application, need_status: required, priority: must, source: [MPS-REQ-001, MPS-REQ-009, MDS-v1.0], delivery_decision: research_build_and_buy_layers, approved_selection: null, implementation_status: absent, validation_status: unverified}
@@ -106,12 +109,14 @@ architecture:
 
 delivery:
   project_mode: greenfield
-  workspace: {path: /workspace/scratch/aa3fcbeccf87, status: governance_source_package, git_repository: absent, remote_repository: present, remote: "https://github.com/Jcoley-Mercurius/supabase-saas-launch-readiness-lab.git"}
-  runtime_versions: {node: "20.9 or current supported LTS verified at bootstrap"}
+  workspace: {path: "~/projects/Supabase SaaS Launch Readiness Lab", status: initialized_application_repository, git_repository: present, default_branch: main, remote_repository: present, remote: "https://github.com/Jcoley-Mercurius/supabase-saas-launch-readiness-lab.git", verified_at: "2026-09-06", verified_by: "Claude P0 verification"}
+  runtime_versions: {node_requirement: "20.9+", node_observed: "v24.17.0", pnpm_observed: "12.3.4", git_observed: "2.53.0", supabase_cli_observed: "2.111.0", playwright_observed: "1.63.0", verified_at: "2026-09-06"}
   package_manager: pnpm
   lockfile: pnpm-lock.yaml
-  framework_initialization: {command_source: official_Next.js_installation_docs, status: planned}
+  framework_initialization: {command_source: official_Next.js_installation_docs, status: complete, next: "16.3.4", react: "19.2.8", typescript: "^5", tailwind: "^4", bundler: turbopack, verified_at: "2026-09-06"}
   package_groups: [next_typescript, supabase_ssr_and_client, zod, resend, playwright, formatting_and_qa]
+  package_groups_status: installed_and_frozen_lockfile_verified
+  package_scripts: [dev, build, start, lint, typecheck, format, "format:check", "test:e2e"]
   agent_capabilities: []
   agent_skills:
     - {id: MTS-SKL-001, family: mts_methodology, criticality: required, selection: approved, availability: verified}
@@ -119,12 +124,20 @@ delivery:
     - {id: MTS-SKL-003, family: browser_verification, criticality: required, selection: approved, availability: available, fallback: Playwright_CLI_and_manual_evidence}
     - {id: MTS-SKL-004, family: hosting_deployment_guidance, criticality: recommended, selection: approved, availability: available}
     - {id: MTS-SKL-005, family: security_review_guidance, criticality: recommended, selection: approved, availability: available}
-  environments: []
-  external_setup: []
+  environments:
+    - {name: local, status: available, data: synthetic_fixtures_only, supabase: not_yet_provisioned, secrets: none_present}
+    - {name: preview, status: not_provisioned, blocked_by: owner_external_setup}
+    - {name: production, status: not_provisioned, blocked_by: owner_external_setup}
+  environment_contract: {path: .env.example, status: present, content: variable_names_only, values_committed: false, gitignore_whitelisted: true, verified_at: "2026-09-06"}
+  external_setup:
+    - {item: vercel_project, owner: Josh Coley, status: pending, needed_by: S6}
+    - {item: supabase_isolated_environments, owner: Josh Coley, status: pending, needed_by: "S2 local or S5 hosted", note: "CLI authenticated to org Mercurius; no lab project exists and no supabase/ directory is initialized; reusing an existing product project is prohibited by the isolation boundary."}
+    - {item: resend_verified_domain_and_preview_safe_destination, owner: Josh Coley, status: pending, needed_by: S5}
+    - {item: private_environment_values, owner: Josh Coley, status: pending, needed_by: S5}
   phases: []
   vertical_slices: []
-  current_phase: null
-  current_slice: null
+  current_phase: P0
+  current_slice: {id: P0, status: verified, checkpoint: awaiting_owner_approval_to_begin_S1}
   rollout: {}
   rollback: {}
   roadmap_freshness: current_for_approved_architecture
@@ -168,10 +181,13 @@ governance:
     - {id: MTS-RISK-002, area: evidence_integrity, statement: "Precomputed or non-deterministic evidence could undermine buyer trust if it is presented as a real test run.", severity: high, status: open}
     - {id: MTS-RISK-003, area: privacy, statement: "Inquiry storage, logs, analytics, or delivery could retain more personal data than the portfolio use requires.", severity: high, status: open}
     - {id: MTS-RISK-004, area: scope, statement: "Adding real payment processing or live-target scanning would violate R1 and increase security and operational burden.", severity: high, status: controlled_by_mps}
-    - {id: MTS-RISK-005, area: agent_delivery, statement: "Assuming a skill available in Codex also works in Claude could make the implementation playbook non-executable.", severity: medium, status: open}
-  exceptions: []
+    - {id: MTS-RISK-005, area: agent_delivery, statement: "Assuming a skill available in Codex also works in Claude could make the implementation playbook non-executable.", severity: medium, status: closed, closed_at: "2026-09-06", resolution: "P0 verification enumerated the Claude skill roster directly. No MTS-named skill exists in Claude, so the risk is confirmed real, but every required skill (MTS-SKL-001/002/003) has a manifest-approved fallback that was verified present and working: project-local MTS artifacts, Next.js docs bundled at node_modules/next/dist/docs, and Playwright 1.63.0 with installed browsers. The playbook is executable in Claude on fallbacks. Owner ruling: manifest environment tags are Codex-side authoring metadata and are not corrected here."}
+  exceptions:
+    - {id: MTS-EXC-001, area: repository_layout, approved_by: Josh Coley, approved_at: "2026-09-06", statement: "The application is flattened to the repository root (app/, e2e/) rather than the src/app/ and tests/ paths planned in INTEGRATION-MANIFEST.md and IMPLEMENTATION-PLAN.md.", rationale: "Owner accepted the flattened layout established in commit 06f7a57; it does not change the approved architecture, server/client boundaries, or any security control.", impact: "Planned-path columns in mts/INTEGRATION-MANIFEST.md and the layout block in mts/IMPLEMENTATION-PLAN.md read src/-prefixed; implementation uses the root-relative equivalents (app/, lib/, e2e/). Traceability is otherwise unchanged.", status: approved}
+    - {id: MTS-EXC-002, area: browser_verification, approved_by: Josh Coley, approved_at: "2026-09-06", statement: "WebKit browser verification runs in CI only and is not executed on the workstation.", rationale: "WebKit needs 121 system packages on this Ubuntu 26.04 host; owner declined local installation. Binaries are installed and the project is enabled by PLAYWRIGHT_WEBKIT=1.", impact: "Local browser evidence covers Chromium (4 viewport projects) and Firefox. WebKit evidence depends on the S6 CI workflow, which is not yet wired.", status: approved}
   deviations: []
-  changes: []
+  changes:
+    - {id: MTS-CHG-001, at: "2026-09-06", by: Claude, stage: P0, summary: "Refreshed stale delivery facts (workspace path, git repository presence, runtime versions, framework initialization, package scripts), recorded the observed Claude skill inventory and environment-variable contract, added .env.example as the environment contract, opened current_phase P0, closed MTS-RISK-005, and recorded MTS-EXC-001 and MTS-EXC-002.", authority: "Owner instruction 2026-09-06", scope_note: "Delivery and governance bookkeeping only. No capability, architecture, security, or approved-selection decision was changed; mts_version remains v0.6-draft."}
   versions:
     - {version: v0.1-draft, date: "2026-09-05", reason: "Initialized MTS discovery from approved MPS v1.0 and MDS v1.0."}
     - {version: v0.2-draft, date: "2026-09-05", reason: "Completed provider-neutral Gate 3 capability mapping and agent-capability inventory."}
