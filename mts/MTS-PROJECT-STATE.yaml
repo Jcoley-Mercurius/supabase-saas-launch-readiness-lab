@@ -1,0 +1,219 @@
+mts:
+  system: Mercurius Technology System
+  schema_version: "1.3"
+  project_id: "supabase-saas-launch-readiness-lab"
+  project_name: "Supabase SaaS Launch-Readiness Lab"
+  lifecycle: draft
+  mts_version: v0.6-draft
+  current_gate: implementation_readiness
+  mps_project_id: "POB-2026-36-02"
+  mps_version: "v1.1"
+  mds_project_id: "POB-2026-36-02-MDS"
+  mds_version: "v1.0"
+  created_at: "2026-09-06T02:03:56.269684+00:00"
+  updated_at: "2026-09-06"
+
+project:
+  name: "Supabase SaaS Launch-Readiness Lab"
+  description: "A public service-proof product combining a guided synthetic SaaS audit lab, buyer-readable evidence, a sample report, and an authorized-engagement inquiry path."
+  product_type: public portfolio experience and synthetic audit lab
+  users:
+    - SaaS founders and product owners
+    - Agencies and development teams
+    - Upwork prospects and portfolio reviewers
+    - Josh Coley as operator and service provider
+  platforms: [responsive_web, upwork_portfolio]
+  business_stage: greenfield_production_planning
+  scope:
+    - Public positioning and guided scenario entry
+    - Synthetic multi-tenant context and deterministic evidence
+    - Authorization, RLS, storage, configuration, webhook, and recovery proof
+    - Severity-ranked sample report and case study
+    - Authorized-review inquiry path
+  out_of_scope:
+    - Live scanning, buyer uploads, production credentials, and customer data
+    - Client accounts, client portal, billing, scheduling, and contracts
+    - Formal penetration testing, certification, and compliance attestation
+    - Automated buyer risk scoring
+  constraints:
+    - Synthetic or explicitly authorized data only
+    - Public R1 requires no buyer account
+    - No real payment processing is required for the synthetic webhook proof
+    - Vulnerable, remediated, untested, unavailable, running, and not-applicable states remain distinct
+    - Inquiry acknowledgement cannot imply engagement acceptance, price, timeline, or outcome
+    - Duplicate inquiries cannot create or imply duplicate engagements
+    - Target WCAG 2.2 AA and the approved evidence-preserving responsive composition
+    - Josh works from WSL/Ubuntu and uses Codex and Claude as implementation agents
+  scale_assumptions:
+    - {statement: "R1 is a low-traffic public portfolio product, not a high-volume customer platform.", status: approved, approved_by: Josh Coley}
+    - {statement: "Target a $50 monthly operating ceiling at launch while preserving an incremental scaling path.", status: approved, approved_by: Josh Coley}
+  regulatory_context:
+    - "No regulated, customer, payment-card, or production SaaS data is approved for R1."
+    - "High-level inquiry contact data is the only intended personal data class; MPS v1.1 limits inquiry-content retention to 12 months after latest activity or earlier manual deletion."
+
+existing_system:
+  repositories:
+    - {url: "https://github.com/Jcoley-Mercurius/supabase-saas-launch-readiness-lab.git", classification: APPROVED_HANDOFF_REPOSITORY, observation: "Owner-created standalone repository; canonical governance-only baseline prepared before application source."}
+  runtime: {}
+  deployment: {}
+  packages: []
+  services: []
+  data_stores: []
+  integrations: []
+  agent_capabilities:
+    - {name: Codex, status: observed, role: planning_and_implementation}
+    - {name: Claude, status: observed, role: implementation}
+  agent_skill_inventory: []
+  environment_variable_names: []
+
+capabilities:
+  - {id: MTS-CAP-001, name: "Responsive public application delivery", family: application, need_status: required, priority: must, source: [MPS-REQ-001, MPS-REQ-009, MDS-v1.0], delivery_decision: research_build_and_buy_layers, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-002, name: "Bounded synthetic tenant and authorization evidence", family: data_security, need_status: required, priority: must, source: [MPS-REQ-002, MPS-REQ-003, MPS-REQ-004], delivery_decision: custom_implementation_plus_researched_data_runtime, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-003, name: "Secret-safe storage and configuration evidence", family: security, need_status: required, priority: must, source: [MPS-REQ-005, MPS-REQ-013], delivery_decision: custom_implementation_plus_security_controls, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-004, name: "Webhook replay and idempotency evidence", family: events, need_status: required, priority: must, source: [MPS-REQ-006], delivery_decision: custom_implementation_plus_researched_persistence, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-005, name: "Failure injection and recovery evidence", family: reliability, need_status: required, priority: must, source: [MPS-REQ-007, MPS-REQ-012], delivery_decision: custom_implementation, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-006, name: "Report and evidence publication", family: content, need_status: required, priority: must, source: [MPS-REQ-008, MPS-REQ-009], delivery_decision: custom_implementation, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-007, name: "Privacy-aware inquiry capture and operator handling", family: messaging_data, need_status: required, priority: must, source: [MPS-REQ-010, MPS-REQ-011, MPS-REQ-012, MPS-REQ-014, MPS-REQ-015, MPS-ACC-016], delivery_decision: custom_workflow_plus_researched_services, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-008, name: "Privacy-safe product measurement", family: analytics, need_status: required, priority: should, source: [MPS-MET-001, MPS-MET-002, MPS-MET-003, MPS-MET-004, MPS-MET-005], delivery_decision: custom_taxonomy_plus_researched_collection, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-009, name: "Accessible responsive and reference verification", family: quality, need_status: required, priority: must, source: [MDS-CAPSIG-002, MDS-CAPSIG-003, MDS-CAPSIG-004], delivery_decision: researched_packages_tools_and_agent_skills, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-010, name: "Secret log and dependency safety verification", family: security_quality, need_status: required, priority: must, source: [MPS-REQ-013, MPS-ACC-015], delivery_decision: researched_packages_tools_and_agent_skills, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-011, name: "Preview production CI release and rollback controls", family: delivery_operations, need_status: required, priority: must, source: [MPS-REL-001, MDS-v1.0], delivery_decision: researched_production_service_and_packages, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-012, name: "Operator inquiry retention and recovery operations", family: internal_operations, need_status: required, priority: must, source: [MPS-REQ-015, MPS-ACC-016], delivery_decision: custom_implementation_plus_researched_service, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-013, name: "Deterministic fixtures automated tests and reset controls", family: test_data_quality, need_status: required, priority: must, source: [MPS-ACC-002, MPS-ACC-016], delivery_decision: custom_implementation_plus_researched_packages, approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-014, name: "Static downloadable report artifact", family: content_delivery, need_status: optional, priority: could, source: [MPS-MET-004], approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-015, name: "Additional uptime and error alerting", family: observability, need_status: optional, priority: could, source: [MPS-REL-001], approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-016, name: "Expanded or customer-specific scenario library", family: data_security, need_status: deferred, priority: later, source: ["mps/SCOPE-RELEASE-PLAN.md — R2"], approved_selection: null, implementation_status: absent, validation_status: unverified}
+  - {id: MTS-CAP-017, name: "Client workspace and saved audits", family: identity_collaboration, need_status: deferred, priority: later, source: ["mps/SCOPE-RELEASE-PLAN.md — R2"], approved_selection: null, implementation_status: absent, validation_status: unverified}
+
+architecture:
+  environments: [local, preview, production]
+  runtime: {framework: "Next.js App Router", language: TypeScript, node_requirement: "20.9+", package_manager: pnpm}
+  deployment: {provider: Vercel, model: repository_driven_preview_and_production, rollback: prior_known_good_deployment}
+  data: {primary: Supabase Postgres, inquiry_store_isolated: true, synthetic_fixture_store_isolated: true}
+  identity: {buyer_authentication: not_applicable_r1, operator_access: owner_controlled_external_operations}
+  authorization: {database: PostgreSQL_grants_and_Supabase_RLS, public_vulnerable_endpoint: prohibited}
+  tenancy: {demo: synthetic_bounded_fixture, inquiry: operator_scoped}
+  services: [Vercel, Supabase, Resend, optional_PostHog]
+  integrations: [server_side_Resend_notification, conditional_measurement_boundary]
+  apis: [inquiry_route, bounded_evidence_routes]
+  events: [synthetic_replay_events, inquiry_delivery_events]
+  jobs: [retention_cleanup, optional_delivery_retry]
+  observability: {logs: secret_safe, alerts: optional_post_r1}
+  analytics: {boundary: first_party, provider: conditional_PostHog, prohibited_fields: [inquiry_text, secrets, credentials, raw_evidence_payloads]}
+  ai: {}
+  reliability: {}
+  recovery: {}
+
+delivery:
+  project_mode: greenfield
+  workspace: {path: /workspace/scratch/aa3fcbeccf87, status: governance_source_package, git_repository: absent, remote_repository: present, remote: "https://github.com/Jcoley-Mercurius/supabase-saas-launch-readiness-lab.git"}
+  runtime_versions: {node: "20.9 or current supported LTS verified at bootstrap"}
+  package_manager: pnpm
+  lockfile: pnpm-lock.yaml
+  framework_initialization: {command_source: official_Next.js_installation_docs, status: planned}
+  package_groups: [next_typescript, supabase_ssr_and_client, zod, resend, playwright, formatting_and_qa]
+  agent_capabilities: []
+  agent_skills:
+    - {id: MTS-SKL-001, family: mts_methodology, criticality: required, selection: approved, availability: verified}
+    - {id: MTS-SKL-002, family: framework_guidance, criticality: required, selection: approved, availability: available, fallback: official_docs}
+    - {id: MTS-SKL-003, family: browser_verification, criticality: required, selection: approved, availability: available, fallback: Playwright_CLI_and_manual_evidence}
+    - {id: MTS-SKL-004, family: hosting_deployment_guidance, criticality: recommended, selection: approved, availability: available}
+    - {id: MTS-SKL-005, family: security_review_guidance, criticality: recommended, selection: approved, availability: available}
+  environments: []
+  external_setup: []
+  phases: []
+  vertical_slices: []
+  current_phase: null
+  current_slice: null
+  rollout: {}
+  rollback: {}
+  roadmap_freshness: current_for_approved_architecture
+
+security:
+  actors: [public_buyer, Josh_operator, external_service]
+  roles: []
+  assets: [synthetic_scenario_data, evidence_records, inquiry_records, operational_logs]
+  data_classes:
+    - {name: synthetic_demo_data, sensitivity: public_or_internal_synthetic, status: observed}
+    - {name: inquiry_contact_data, sensitivity: personal, status: observed}
+    - {name: credentials_and_secrets, sensitivity: restricted, status: prohibited_from_public_client_and_evidence}
+  trust_boundaries:
+    - public_browser_to_application
+    - application_to_data_store
+    - application_to_inquiry_delivery
+    - external_event_to_webhook_handler
+  secret_controls: []
+  access_controls: []
+  privacy_controls: []
+  ai_controls: []
+  operational_controls: []
+
+research: []
+
+governance:
+  decisions:
+    - {id: MTS-DEC-001, area: product_contract, key: consumed_mps, value: "MPS v1.0", status: observed, source: mps/MPS-PROJECT-STATE.yaml, rationale: "MPS is approved product authority."}
+    - {id: MTS-DEC-002, area: design_contract, key: consumed_mds, value: "MDS v1.0", status: observed, source: mds/MDS-PROJECT-STATE.yaml, rationale: "MDS is approved and implementation-ready."}
+    - {id: MTS-DEC-003, area: delivery, key: project_mode, value: greenfield, status: observed, source: repository_inspection, rationale: "No application repository, package manifest, runtime configuration, or deployment configuration exists in the supplied workspace."}
+    - {id: MTS-DEC-004, area: data, key: demo_data_posture, value: synthetic_only, status: observed, source: [MPS-RULE-001, MPS-RULE-004], rationale: "R1 forbids production credentials, customer data, and buyer uploads."}
+    - {id: MTS-DEC-005, area: delivery, key: cost_scale_posture, value: "$50/month lean launch with incremental scaling", status: approved, source: "Josh Gate 1 approval", rationale: "Avoid speculative capacity while preserving a practical growth path.", approved_at: "2026-09-05"}
+    - {id: MTS-DEC-006, area: privacy, key: inquiry_retention, value: "12 months after latest activity; earlier manual deletion; minimal operational deduplication metadata afterward", status: approved, source: "MPS v1.1 / Josh Gate 1 approval", rationale: "Balance freelance follow-up with data minimization.", approved_at: "2026-09-05"}
+    - {id: MTS-DEC-007, area: delivery, key: repository_posture, value: "standalone Git repository with preview and production environments", status: approved, source: "Josh Gate 1 approval", rationale: "Keep the lab independently deployable and preserve the full handoff package.", approved_at: "2026-09-05"}
+  gaps:
+    - {id: MTS-GAP-001, owner: MPS, area: privacy, statement: "Inquiry retention and deletion policy is not defined.", status: resolved, resolution: "MPS v1.1 limits inquiry content to 12 months after latest activity, permits earlier deletion, and allows only minimal operational deduplication metadata afterward."}
+    - {id: MTS-GAP-002, owner: MTS, area: delivery_constraints, statement: "R1 cost ceiling and initial traffic assumption require owner approval.", status: resolved, resolution: "Josh approved the $50/month lean-launch posture with incremental scaling."}
+    - {id: MTS-GAP-003, owner: implementation, area: repository, statement: "The approved standalone Git repository and baseline branch have not yet been created.", status: resolved, resolution: "Josh created the standalone GitHub repository; Codex prepared the canonical governance-only baseline on main before application implementation."}
+  risks:
+    - {id: MTS-RISK-001, area: security, statement: "A deliberately vulnerable demo could expose an exploitable public path if vulnerable behavior is implemented as an unrestricted live backend.", severity: critical, status: open}
+    - {id: MTS-RISK-002, area: evidence_integrity, statement: "Precomputed or non-deterministic evidence could undermine buyer trust if it is presented as a real test run.", severity: high, status: open}
+    - {id: MTS-RISK-003, area: privacy, statement: "Inquiry storage, logs, analytics, or delivery could retain more personal data than the portfolio use requires.", severity: high, status: open}
+    - {id: MTS-RISK-004, area: scope, statement: "Adding real payment processing or live-target scanning would violate R1 and increase security and operational burden.", severity: high, status: controlled_by_mps}
+    - {id: MTS-RISK-005, area: agent_delivery, statement: "Assuming a skill available in Codex also works in Claude could make the implementation playbook non-executable.", severity: medium, status: open}
+  exceptions: []
+  deviations: []
+  changes: []
+  versions:
+    - {version: v0.1-draft, date: "2026-09-05", reason: "Initialized MTS discovery from approved MPS v1.0 and MDS v1.0."}
+    - {version: v0.2-draft, date: "2026-09-05", reason: "Completed provider-neutral Gate 3 capability mapping and agent-capability inventory."}
+    - {version: v0.3-draft, date: "2026-09-06", reason: "Corrected project-scoped capability matrix identity, completed Gate 4 first-party research, and recorded a proposed candidate architecture."}
+    - {version: v0.4-draft, date: "2026-09-06", reason: "Completed Gate 5 recommendation with proposed application, hosting, data, inquiry, measurement, verification, security, cost, and agent-skill decisions."}
+    - {version: v0.5-draft, date: "2026-09-06", reason: "Recorded Gate 5 approval and prepared the formal Gate 6 technology-selection approval record."}
+    - {version: v0.6-draft, date: "2026-09-06", reason: "Gate 6 approved; produced the Gate 7 technology blueprint, integration/security contracts, skill manifest, implementation plan, roadmap, playbook, QA protocol, and merged AGENTS.md guidance."}
+
+artifacts:
+  state: {path: mts/MTS-PROJECT-STATE.yaml, status: current}
+  technology_blueprint: {path: mts/TECHNOLOGY-BLUEPRINT.md, status: current}
+  capability_matrix: {path: mts/SUPABASE-LAUNCH-READINESS-CAPABILITY-MATRIX.md, artifact_id: MTS-CAPABILITY-MATRIX-SUPABASE-LAUNCH-READINESS, status: current}
+  gate_4_research: {path: mts/GATE-4-RESEARCH.md, status: current}
+  gate_5_recommendation: {path: mts/GATE-5-RECOMMENDATION.md, status: current}
+  gate_6_approval: {path: mts/GATE-6-APPROVAL.md, status: current}
+  integration_manifest: {path: mts/INTEGRATION-MANIFEST.md, status: current}
+  agent_skill_manifest: {path: mts/AGENT-SKILL-MANIFEST.yaml, status: current}
+  security_architecture: {path: mts/SECURITY-ARCHITECTURE.md, status: current}
+  implementation_plan: {path: mts/IMPLEMENTATION-PLAN.md, status: current}
+  build_roadmap: {path: mts/MERCURIUS-BUILD-ROADMAP.md, delivery: standalone_and_repository_copy, status: current}
+  implementation_playbook: {path: mts/MERCURIUS-IMPLEMENTATION-PLAYBOOK.md, delivery: standalone_and_repository_copy, status: current}
+  discovery_brief: {path: mts/DISCOVERY-BRIEF.md, status: current}
+  agents_md: {path: AGENTS.md, status: current, note: "MPS/MDS authority is current; approved MTS selections and Agent Skill Manifest references must be merged at Gate 7."}
+  qa_protocol: {path: mts/qa/MTS-QA.md, status: current}
+  verification_report: {path: mts/qa/MTS-VERIFICATION.md, status: missing}
+
+gates:
+  discovery: {status: complete, requirements: [product, users, platform, stage, delivery_constraints, regulatory_context, scale, budget, team_capability, approved_inputs], blocking_items: [], completed_at: "2026-09-05"}
+  inspection: {status: complete, requirements: [repository, runtime, packages, configuration, deployment, services, agent_capabilities], blocking_items: [], completed_at: "2026-09-05", result: "Greenfield planning workspace; no implementation technology exists to keep, extend, replace, deprecate, or remove."}
+  capability_mapping: {status: complete, requirements: [required_optional_deferred_not_applicable_capabilities, product_traceability, design_delivery_signals, agent_capability_inventory], blocking_items: [], completed_at: "2026-09-06", result: "Supabase Lab-specific matrix identity corrected and validated."}
+  research: {status: complete, requirements: [current_primary_sources, security_cost_reliability_portability, production_service_and_sdk_separation, agent_skill_evaluation], blocking_items: [], completed_at: "2026-09-06"}
+  recommendation: {status: complete, requirements: [candidate_comparison, keep_build_buy_decisions, security_privacy, cost_scale, reliability_operations, portability, user_facing_states, agent_skill_criticality], blocking_items: [], completed_at: "2026-09-06"}
+  approval: {status: complete, requirements: [provider_selection, persistent_dependencies, data_flow, recurring_cost, security_rules, agent_skill_selection], blocking_items: [], completed_at: "2026-09-06", result: "Gate 6 technology set approved by Josh Coley."}
+  implementation_readiness: {status: in_progress, requirements: [blueprint, integration_manifest, security_architecture, agent_skill_manifest, implementation_plan, build_roadmap, implementation_playbook, qa_protocol, merged_agents_md], blocking_items: [p0_agent_verification, owner_external_account_setup], completed_at: null}
+  verification: {status: not_started, requirements: [], blocking_items: [], completed_at: null}
+
+verification:
+  architecture: null
+  integration_data: null
+  security_privacy: null
+  reliability_operations: null
+  mps_synchronization: consumed_v1.1
+  mds_synchronization: consumed_v1.0
+  overall_status: gates_1_through_6_complete_gate_7_in_progress
+  reviewed_at: null

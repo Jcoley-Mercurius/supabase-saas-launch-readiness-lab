@@ -1,0 +1,165 @@
+mps:
+  system: Mercurius Product System
+  schema_version: "1.1"
+  project_id: POB-2026-36-02
+  project_name: Supabase SaaS Launch-Readiness Lab
+  lifecycle: approved
+  mps_version: v1.1
+  current_gate: approval_handoff
+  created_at: "2026-09-05"
+  updated_at: "2026-09-05"
+
+project:
+  product_type: service-proof portfolio product and synthetic audit lab
+  business_stage: production design
+  platforms: [web, Upwork portfolio]
+  decision_owners: [Josh Coley]
+  purpose: Help SaaS founders and agencies identify launch-blocking Supabase, payment-integrity, data-isolation, and reliability failures before real users are affected.
+  value_proposition: Reproducible negative tests, before/after remediation proof, severity-ranked findings, and implementation-aware guidance in a buyer-readable experience.
+  constraints:
+    - Synthetic data and authorized testing only.
+    - No formal penetration testing, certification, compliance attestation, legal opinion, or guaranteed launch-readiness claim.
+    - No production credentials, buyer application uploads, or real customer records in R1.
+    - Vulnerable, remediated, untested, and unavailable evidence states remain distinct.
+
+outcomes:
+  - {id: MPS-OUT-001, type: user, statement: "A founder or agency can understand whether representative authorization, tenant-isolation, payment-state, and reliability controls are launch-ready.", status: approved}
+  - {id: MPS-OUT-002, type: user, statement: "A buyer can reproduce representative failures and verify the documented remediation.", status: approved}
+  - {id: MPS-OUT-003, type: business, statement: "Josh gains differentiated proof for winning Supabase launch-readiness and remediation work on Upwork.", status: approved}
+  - {id: MPS-OUT-004, type: business, statement: "The lab reveals which proof formats and risk concerns generate qualified freelance interest.", status: approved}
+
+actors:
+  - {id: MPS-ACT-001, name: "SaaS founder or product owner", type: primary_user, status: approved}
+  - {id: MPS-ACT-002, name: "Agency or development team", type: primary_user, status: approved}
+  - {id: MPS-ACT-003, name: "Josh / auditor-developer", type: operator, status: approved}
+  - {id: MPS-ACT-004, name: "Upwork prospect or portfolio reviewer", type: affected_non_user, status: approved}
+
+scope:
+  release: MPS-REL-001
+  capabilities:
+    - {id: MPS-CAP-001, name: "Synthetic SaaS launch-risk demonstration", status: approved}
+    - {id: MPS-CAP-002, name: "Authorization and tenant-isolation verification", status: approved}
+    - {id: MPS-CAP-003, name: "Payment and webhook-integrity verification", status: approved}
+    - {id: MPS-CAP-004, name: "Reliability and recovery verification", status: approved}
+    - {id: MPS-CAP-005, name: "Buyer-readable audit evidence and remediation reporting", status: approved}
+    - {id: MPS-CAP-006, name: "Portfolio conversion and authorized-engagement path", status: approved}
+  r1_includes:
+    - One coherent synthetic multi-tenant SaaS
+    - RLS, cross-tenant, storage, and configuration-boundary proof
+    - Webhook replay and idempotency proof
+    - One representative reliability and recovery scenario
+    - Severity-ranked sample report and case study
+    - Inquiry CTA for an authorized review or remediation engagement
+  r1_excludes:
+    - Live-system testing or buyer uploads
+    - Production credentials and customer data
+    - Certification, compliance attestation, and formal penetration testing
+    - Client portal, billing, scheduling, contracts, and automated buyer risk scoring
+
+workflows:
+  - {id: MPS-WFL-001, name: "Discover proof and request an authorized engagement", status: approved, artifact: mps/WORKFLOW-CATALOG.md}
+
+business_rules:
+  - {id: MPS-RULE-001, statement: "Synthetic or explicitly authorized data only.", status: approved}
+  - {id: MPS-RULE-002, statement: "Vulnerable, remediated, untested, and unavailable states remain distinct.", status: approved}
+  - {id: MPS-RULE-003, statement: "A demonstration does not authorize third-party testing.", status: approved}
+  - {id: MPS-RULE-004, statement: "R1 has no buyer upload or production-credential path.", status: approved}
+  - {id: MPS-RULE-005, statement: "Inquiry acknowledgement is not engagement acceptance or a guarantee.", status: approved}
+  - {id: MPS-RULE-006, statement: "Duplicate inquiries must not create duplicate engagements.", status: approved}
+  - {id: MPS-RULE-007, statement: "Fixed, passed, and launch-ready claims apply only to documented or authorized scope.", status: approved}
+  - {id: MPS-RULE-008, statement: "Inquiry records are retained for no more than 12 months after latest activity, may be manually deleted earlier, and may leave only minimal operational deduplication metadata afterward.", status: approved}
+
+requirements:
+  - {id: MPS-REQ-001, release: R1, status: approved}
+  - {id: MPS-REQ-002, release: R1, status: approved}
+  - {id: MPS-REQ-003, release: R1, status: approved}
+  - {id: MPS-REQ-004, release: R1, status: approved}
+  - {id: MPS-REQ-005, release: R1, status: approved}
+  - {id: MPS-REQ-006, release: R1, status: approved}
+  - {id: MPS-REQ-007, release: R1, status: approved}
+  - {id: MPS-REQ-008, release: R1, status: approved}
+  - {id: MPS-REQ-009, release: R1, status: approved}
+  - {id: MPS-REQ-010, release: R1, status: approved}
+  - {id: MPS-REQ-011, release: R1, status: approved}
+  - {id: MPS-REQ-012, release: R1, status: approved}
+  - {id: MPS-REQ-013, release: R1, status: approved}
+  - {id: MPS-REQ-014, release: R1, status: approved}
+  - {id: MPS-REQ-015, release: R1, status: approved}
+
+metrics:
+  - {id: MPS-MET-001, outcome: MPS-OUT-001, name: "proof comprehension", target: baseline_pending, status: approved}
+  - {id: MPS-MET-002, outcome: MPS-OUT-002, name: "scenario completion", target: baseline_pending, status: approved}
+  - {id: MPS-MET-003, outcome: MPS-OUT-003, name: "qualified inquiry conversion", target: baseline_pending, status: approved}
+  - {id: MPS-MET-004, outcome: MPS-OUT-003, name: "proposal proof reuse", target: directional_increase, status: approved}
+  - {id: MPS-MET-005, outcome: MPS-OUT-004, name: "buyer signal capture", target: baseline_pending, status: approved}
+
+releases:
+  - {id: MPS-REL-001, name: "Portfolio Launch-Readiness Proof", status: approved}
+
+downstream:
+  mds: {project_id: POB-2026-36-02-MDS, version: v1.0, status: implementation_ready, compatible_mps_version: v1.1, last_synchronized: "2026-09-05", open_product_gaps: []}
+  mts:
+    status: capability_mapping_proposed
+    project_id: supabase-saas-launch-readiness-lab
+    version: v0.2-draft
+    last_synchronized: "2026-09-05"
+    engineering_capability_signals:
+      - Safe synthetic multi-tenant fixtures and negative-authorization execution
+      - Deterministic webhook replay and idempotency evidence
+      - Secret-safe evidence and redacted telemetry
+      - Reliable inquiry delivery, deduplication, recovery, and measurement
+  implementation: {status: not_started, manifest: mps/implementation/PRODUCT-IMPLEMENTATION.md}
+
+governance:
+  decisions:
+    - {id: MPS-DEC-001, statement: "Move POB-2026-36-02 into production.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-05"}
+    - {id: MPS-DEC-002, statement: "Use a narrowly scoped Upwork launch-readiness proof product.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-05"}
+    - {id: MPS-DEC-003, statement: "R1 combines an interactive synthetic lab with an audit report and case study.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-05"}
+    - {id: MPS-DEC-004, statement: "The buyer journey ends in an authorized review or remediation inquiry.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-05"}
+    - {id: MPS-DEC-005, statement: "Position as launch-readiness review and remediation, not certification or formal penetration testing.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-05"}
+    - {id: MPS-DEC-006, statement: "Approve the proposed buyer workflow, R1 boundary, requirements, rules, and acceptance criteria and proceed to MDS.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-05"}
+    - {id: MPS-DEC-007, statement: "Retain inquiry records for no more than 12 months after latest activity, allow earlier manual deletion, and retain only minimal operational deduplication metadata afterward when necessary.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-05"}
+  assumptions:
+    - {id: MPS-ASM-001, statement: "Synthetic proof can attract authorized work.", status: open, blocking: false}
+    - {id: MPS-ASM-002, statement: "Buyers value reproducible remediation proof over a checklist alone.", status: open, blocking: false}
+  gaps: []
+  risks:
+    - {id: MPS-RISK-001, area: credibility, statement: "A toy-like demo could reduce buyer confidence.", severity: high, status: open}
+    - {id: MPS-RISK-002, area: safety, statement: "Poorly bounded exploit language could imply unauthorized testing.", severity: high, status: controlled_by_rules}
+    - {id: MPS-RISK-003, area: scope, statement: "Trying to prove every concern could delay R1.", severity: high, status: controlled_by_release_boundary}
+  exceptions: []
+  deviations: []
+  changes: []
+  versions:
+    - {version: v0.1-draft, date: "2026-09-05", reason: "Initial proposed definition."}
+    - {version: v1.0, date: "2026-09-05", reason: "Owner-approved R1 and MDS handoff."}
+    - {version: v1.1, date: "2026-09-05", reason: "Added the owner-approved R1 inquiry retention and deletion policy discovered during MTS Gate 1."}
+
+artifacts:
+  state: {path: mps/MPS-PROJECT-STATE.yaml, status: current}
+  product_blueprint: {path: mps/PRODUCT-BLUEPRINT.md, status: current}
+  outcomes_metrics: {path: mps/OUTCOMES-METRICS.md, status: current}
+  user_role_model: {path: mps/USER-ROLE-MODEL.md, status: current}
+  scope_release_plan: {path: mps/SCOPE-RELEASE-PLAN.md, status: current}
+  workflow_catalog: {path: mps/WORKFLOW-CATALOG.md, status: current}
+  requirements_rules: {path: mps/REQUIREMENTS-RULES.md, status: current}
+  acceptance_criteria: {path: mps/ACCEPTANCE-CRITERIA.md, status: current}
+  product_implementation: {path: mps/implementation/PRODUCT-IMPLEMENTATION.md, status: current}
+  agents_md: {path: AGENTS.md, status: missing, note: "Deferred until MDS and MTS can be merged."}
+  qa_protocol: {path: mps/qa/MPS-QA.md, status: current}
+  validation_report: {path: mps/qa/MPS-VALIDATION.md, status: not_applicable}
+
+gates:
+  discovery: {status: completed, completed_at: "2026-09-05", blocking_items: []}
+  outcomes: {status: completed, completed_at: "2026-09-05", blocking_items: []}
+  users: {status: completed, completed_at: "2026-09-05", blocking_items: []}
+  scope_priority: {status: completed, completed_at: "2026-09-05", blocking_items: []}
+  workflows_states: {status: completed, completed_at: "2026-09-05", blocking_items: []}
+  requirements_acceptance: {status: completed, completed_at: "2026-09-05", blocking_items: []}
+  approval_handoff: {status: completed, completed_at: "2026-09-05", blocking_items: []}
+  product_validation: {status: not_started, blocking_items: [implementation_not_started]}
+
+validation:
+  outcome_measurement_readiness: defined_not_implemented
+  downstream_synchronization: mds_v1.0_compatible_mts_v0.1_initialized
+  overall_status: awaiting_implementation

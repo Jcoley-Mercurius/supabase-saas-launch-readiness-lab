@@ -1,0 +1,87 @@
+schema_version: "1.0"
+project_id: supabase-saas-launch-readiness-lab
+mps_version: v1.1
+mds_version: v1.0
+mts_version: v0.6-draft
+verified_at: "2026-09-06"
+skills:
+  - id: MTS-SKL-001
+    skill: mercurius-technology-system
+    capability: MTS-CAP-001
+    category: methodology
+    criticality: required
+    selection: approved
+    availability: verified
+    source: "Approved MTS skill"
+    environments: [Codex]
+    stages: [bootstrap, architecture, all_slices, final_verification]
+    fallback: "Project-local MTS artifacts and AGENTS.md; stop for unapproved architecture changes."
+    owner: Josh Coley
+  - id: MTS-SKL-002
+    skill: nextjs-guidance
+    capability: MTS-CAP-001
+    category: framework
+    criticality: required
+    selection: approved
+    availability: available
+    source: "Codex available skill and official Next.js documentation"
+    environments: [Codex, Claude]
+    stages: [P0, S1, S5]
+    invoke_when: ["routing, server/client boundaries, route handlers, rendering, or deployment is implemented"]
+    verification: "Confirm skill availability or use official Next.js docs before the slice."
+    fallback: "Official Next.js docs plus root AGENTS.md and MTS implementation plan."
+    owner: Implementation agent
+  - id: MTS-SKL-003
+    skill: browser-verification
+    capability: MTS-CAP-009
+    category: qa_verification
+    criticality: required
+    selection: approved
+    availability: available
+    source: "Codex browser verification capability and Playwright official documentation"
+    environments: [Codex, Claude]
+    stages: [S1, S2, S3, S4, S5, S6, final_verification]
+    invoke_when: ["a local or preview application is available"]
+    verification: "Run a non-destructive smoke test and record browser/report output."
+    fallback: "Playwright CLI and documented manual viewport/keyboard evidence."
+    owner: Implementation agent
+  - id: MTS-SKL-004
+    skill: vercel-deployment-guidance
+    capability: MTS-CAP-011
+    category: delivery_operations
+    criticality: recommended
+    selection: approved
+    availability: available
+    source: "Codex Vercel guidance and official Vercel documentation"
+    environments: [Codex, Claude]
+    stages: [P0, S6]
+    invoke_when: ["preview deployment, promotion, or rollback is prepared"]
+    verification: "Inspect deployment status and environment scopes without exposing values."
+    fallback: "Official Vercel docs and dashboard owner actions."
+    owner: Josh Coley / implementation agent
+  - id: MTS-SKL-005
+    skill: security-review-guidance
+    capability: MTS-CAP-010
+    category: security
+    criticality: recommended
+    selection: approved
+    availability: available
+    source: "MTS security standard and project-local security architecture"
+    environments: [Codex, Claude]
+    stages: [S2, S3, S5, S6]
+    invoke_when: ["authorization, secrets, webhooks, inquiry data, or release security changes"]
+    verification: "Run repository-local checks and report actual findings."
+    fallback: "MTS SECURITY-ARCHITECTURE.md and official provider security documentation."
+    owner: Implementation agent
+  - id: MTS-SKL-006
+    skill: external-security-plugin
+    capability: MTS-CAP-010
+    category: plugin_connector
+    criticality: rejected
+    selection: rejected
+    availability: unknown
+    source: "Evaluated candidate; no R1 need established"
+    environments: []
+    stages: []
+    fallback: "Project-local controls and approved QA checks."
+    owner: Josh Coley

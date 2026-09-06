@@ -1,0 +1,417 @@
+mds:
+  system: Mercurius Design System
+  schema_version: "1.2"
+  project_id: POB-2026-36-02-MDS
+  project_name: Supabase SaaS Launch-Readiness Lab
+  lifecycle: approved
+  mds_version: v1.0
+  current_gate: implementation_readiness
+  mps_project_id: POB-2026-36-02
+  mps_version: v1.0
+  created_at: "2026-09-05"
+  updated_at: "2026-09-05"
+
+project:
+  name: Supabase SaaS Launch-Readiness Lab
+  description: A public service-proof product combining a guided synthetic SaaS audit lab, buyer-readable evidence, a sample report, and an authorized-engagement inquiry path.
+  product_type: public portfolio experience and interactive evidence lab
+  audience:
+    - SaaS founders and product owners
+    - Agencies and development teams
+    - Upwork prospects and portfolio reviewers
+  platforms: [responsive_web]
+  primary_experience: Understand the risk, inspect reproducible evidence, compare vulnerable and remediated states, review the report, and request an authorized engagement.
+  scope:
+    - Public positioning and guided scenario entry
+    - Synthetic SaaS context
+    - Authorization and RLS evidence
+    - Storage and configuration evidence
+    - Webhook integrity evidence
+    - Reliability and recovery evidence
+    - Severity-ranked report and case study
+    - Inquiry CTA and form states
+  out_of_scope:
+    - Client portal and authenticated buyer workspace
+    - Buyer application uploads and production credentials
+    - Billing, scheduling, contracts, and certification UI
+  status: design_approved
+
+identity:
+  logo: null
+  personality: [credible, rigorous, calm, transparent, implementation-aware]
+  brand_adjectives: [technical, trustworthy, evidence-led, precise, commercially_clear]
+  emotional_response: [confidence, clarity, controlled_urgency]
+  visual_direction: "Evidence-led technical studio; polished enough for buyers, rigorous enough for engineers, and distinct from a generic admin dashboard or theatrical hacker aesthetic."
+  principles:
+    - {id: MDS-PRI-001, statement: "Evidence is the hero.", status: approved}
+    - {id: MDS-PRI-002, statement: "Make risk legible without oversimplifying it.", status: approved}
+    - {id: MDS-PRI-003, statement: "Trust comes from explicit state and limitation.", status: approved}
+    - {id: MDS-PRI-004, statement: "The buyer path stays clear beside technical depth.", status: approved}
+  references: []
+
+color:
+  primary: {name: brand.primary, value: "#087A5B", role: primary_action, status: approved}
+  secondary: {name: brand.ink, value: "#0B1220", role: framing_and_strong_emphasis, status: approved}
+  accent: {name: brand.accent, value: "#19A974", role: small_highlights_and_progress, status: approved}
+  neutrals: {canvas: "#F4F7F9", base: "#FFFFFF", muted: "#EEF2F5", evidence: "#111827"}
+  semantic:
+    success: {value: "#087A55", label: remediated_documented_test_blocked, status: approved}
+    warning: {value: "#9A5B00", label: caution, status: approved}
+    error: {value: "#B42318", label: vulnerable, status: approved}
+    info: {value: "#175CD3", label: information, status: approved}
+    untested: {value: "#667085", label: untested, status: approved}
+  surfaces: {canvas: "#F4F7F9", base: "#FFFFFF", muted: "#EEF2F5", evidence: "#111827"}
+  text: {strong: "#111827", muted: "#596579", inverse: "#FFFFFF"}
+  borders: {default: "#D6DEE7", focus: "#2563EB"}
+  usage_rules:
+    - {statement: "Communicate evidence state with color, icon or shape, label, and explanatory text.", status: approved}
+    - {statement: "Use brand accent for small emphasis, not body text on white.", status: approved}
+
+typography:
+  display_family: {value: "Geist Sans", status: approved}
+  ui_family: {value: "Geist Sans", status: approved}
+  mono_family: {value: "Geist Mono", status: approved}
+  weights: {regular: 400, medium: 500, semibold: 600, display: 650}
+  scale: {display: 56, h1: 44, h2: 32, h3: 24, h4: 20, body_large: 18, body: 16, body_small: 14, label: 13, mono: 13}
+  line_heights: {display: 64, h1: 52, h2: 40, h3: 32, h4: 28, body_large: 30, body: 26, body_small: 22, label: 18, mono: 21}
+  letter_spacing: {display: "-0.025em", headings: "-0.015em", body: normal, label: "0.01em", mono: normal}
+  roles: {marketing_and_headings: "Geist Sans", ui_and_body: "Geist Sans", evidence_and_code: "Geist Mono"}
+  usage_rules:
+    - {statement: "Use restrained display scale; hierarchy and whitespace establish credibility.", status: approved}
+    - {statement: "Body text remains at least 16px in primary reading contexts.", status: approved}
+
+spacing:
+  base_unit: {value: 4, unit: px, status: approved}
+  scale: {1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48, 16: 64, 20: 80, 24: 96}
+  page_rules: {mobile_gutter: 24, tablet_gutter: 32, desktop_gutter: 48}
+  section_rules: {mobile_major: "56-64", desktop_major: "80-96"}
+  component_rules: {interior_default: "12-24"}
+shape:
+  radius: {small: 6, control: 10, card: 14, pill: 999}
+  borders: {default: "1px solid border.default", evidence: "tonal separation plus border"}
+  dividers: {default: "1px solid border.default"}
+  shadows: {card: subtle_low_spread, overlay: restrained_elevated}
+  elevation: {philosophy: "Borders and tonal separation first; shadows reserved for true overlays.", status: approved}
+icons:
+  family: {value: "Lucide-style outline", status: approved}
+  implementation: mts_to_select
+  stroke_style: "1.75-2px consistent outline"
+  fill_style: minimal
+  sizes: {small: 16, default: 20, large: 24}
+  custom_icon_rules: []
+  usage_rules:
+    - {statement: "Material evidence states always have adjacent accessible labels.", status: approved}
+
+components:
+  button: {applicability: required, status: approved}
+  input: {applicability: required, status: approved}
+  textarea: {applicability: required, status: approved}
+  select: {applicability: required, status: approved}
+  checkbox: {applicability: required, status: approved}
+  badge: {applicability: required, status: approved}
+  status_indicator: {applicability: required, status: approved}
+  card: {applicability: required, status: approved}
+  tabs: {applicability: required, status: approved}
+  alert: {applicability: required, status: approved}
+  table_matrix: {applicability: required, status: approved}
+  navigation: {applicability: required, status: approved}
+  evidence_panel: {applicability: required, status: approved}
+  before_after_comparison: {applicability: required, status: approved}
+  scenario_stepper: {applicability: required, status: approved}
+  finding_summary: {applicability: required, status: approved}
+  code_or_log_excerpt: {applicability: required, status: approved}
+  dialog: {applicability: optional, status: approved}
+  pagination: {applicability: not_applicable, status: undefined}
+  authentication: {applicability: not_applicable, status: undefined}
+
+layout:
+  max_content_width: {marketing: 1200, evidence: 1360, reading: 760, status: approved}
+  grid: {desktop_columns: 12, desktop_gap: 24, tablet_columns: 8, tablet_gap: 20, mobile_columns: 4, mobile_gap: 16, status: approved}
+  gutters: {desktop: 48, tablet: 32, mobile: 24}
+  header: {model: "compact global header with product identity, report link, and authorized-review CTA", status: approved}
+  sidebar: {model: "scenario navigation rail on wide screens; collapses to selector on tablet/mobile", status: approved}
+  footer: {model: "limitations, privacy/contact, and Josh/Mercurius endorsement", status: approved}
+  section_spacing: {desktop: "80-96", mobile: "56-64", status: approved}
+  page_shells:
+    public_marketing: {status: approved}
+    guided_lab: {status: approved}
+    report_case_study: {status: approved}
+    inquiry: {status: approved}
+
+responsive:
+  breakpoints: {mobile: 0, tablet: 640, desktop: 960, wide: 1280}
+  rules:
+    stacking:
+      - {statement: "Paired proof becomes ordered vulnerable-then-remediated flow below desktop.", status: approved}
+      - {statement: "Report and inquiry sidebars move inline below desktop.", status: approved}
+    navigation:
+      - {statement: "Desktop global navigation stays visible; mobile uses a compact accessible menu without hiding the report or CTA.", status: approved}
+    sidebar:
+      - {statement: "Scenario rail becomes an in-flow scenario selector below 960px.", status: approved}
+    grid:
+      - {statement: "Four scenario cards render 4-up wide, 2-up tablet/desktop, and 1-up mobile.", status: approved}
+    typography:
+      - {statement: "Display reduces to 40/46 and H1 to 34/40 on mobile.", status: approved}
+    spacing:
+      - {statement: "Use approved 24/32/48px page gutters by viewport.", status: approved}
+    visibility:
+      - {statement: "Never hide evidence state, limitation, recovery action, or primary CTA solely for viewport size.", status: approved}
+    media:
+      - {statement: "Matrices may scroll horizontally only with row identity and status labels preserved.", status: approved}
+    touch:
+      - {statement: "Primary touch targets remain at least 44 by 44 CSS pixels.", status: approved}
+
+patterns:
+  landing: {applicability: required, status: approved}
+  dashboard: {applicability: not_applicable, status: undefined}
+  search_results: {applicability: not_applicable, status: undefined}
+  detail: {applicability: required, status: approved}
+  forms: {applicability: required, status: approved}
+  authentication: {applicability: not_applicable, status: undefined}
+  empty: {applicability: required, status: approved}
+  error: {applicability: required, status: approved}
+  loading: {applicability: required, status: approved}
+  custom:
+    scenario_index: {applicability: required, status: approved}
+    scenario_evidence: {applicability: required, status: approved}
+    audit_report: {applicability: required, status: approved}
+
+visual_language:
+  personality: "Calm technical authority with visible evidence hierarchy."
+  density: "Moderate overall; high only inside evidence tables and code/log panels."
+  contrast: "Strong text and status contrast without neon cyber-security styling."
+  surface_philosophy: "Light buyer surfaces with deep-ink framing and dark evidence panels."
+  border_philosophy: "Borders and tonal separation carry structure."
+  shadow_philosophy: "Restrained; reserve elevation for overlays and menus."
+  color_philosophy: "Light-first buyer experience, deep-ink framing, and dark evidence panels."
+  typography_character: "Restrained grotesk sans with monospace reserved for evidence."
+  icon_character: "Precise outline icons without security clichés."
+  whitespace_philosophy: "Generous narrative rhythm with controlled density inside evidence."
+
+guidance:
+  do:
+    - {id: MDS-DO-001, statement: "Use plain-language consequence beside technical evidence.", status: approved}
+    - {id: MDS-DO-002, statement: "Keep evidence state and limitation visible in the same composition.", status: approved}
+    - {id: MDS-DO-003, statement: "Maintain a clear route from proof to the report and engagement CTA.", status: approved}
+  dont:
+    - {id: MDS-DONT-001, statement: "Do not use hacker clichés, fear-first visuals, or theatrical exploit language.", status: approved}
+    - {id: MDS-DONT-002, statement: "Do not rely on red and green alone to communicate evidence state.", status: approved}
+    - {id: MDS-DONT-003, statement: "Do not make marketing chrome compete with proof content.", status: approved}
+
+accessibility:
+  target: "WCAG 2.2 AA"
+  contrast: "AA for text, controls, and meaningful status indicators"
+  focus: "Visible keyboard focus across all interactive proof controls"
+  keyboard: "Complete scenario, tabs, comparison, report, and form path"
+  touch_targets: "Minimum 44 by 44 CSS pixels for primary touch controls"
+  motion: "No essential meaning depends on animation; reduced-motion support"
+  semantic_markup: "Structured headings, landmarks, tables, lists, and form semantics"
+  screen_reader: "Textual names and announcements for evidence state changes"
+  image_alternatives: "Evidence remains understandable without decorative imagery"
+  additional_rules: []
+
+references:
+  - id: MDS-REF-001
+    name: Core Design System v2
+    type: design_system
+    source: mds/references/core-design-system-v2.png
+    status: approved
+    canonical: true
+    applies_to: [identity, foundations, components, evidence_patterns]
+    observations:
+      - "Consolidates the approved palette, typography, spacing, radius, controls, evidence states, comparison pattern, and RLS matrix into one visual sheet."
+      - "Typography and radius captions were reconciled to the exact approved tokens after the first generation."
+    authority_rule: "Written MDS state and tokens remain authoritative for exact values; this image is the approved visual interpretation."
+  - id: MDS-REF-002
+    name: Landing Page Desktop v1
+    type: homepage
+    source: mds/references/landing-desktop-v1.png
+    status: approved
+    canonical: true
+    applies_to: [public_marketing, landing, buyer_journey]
+    observations:
+      - "Demonstrates the approved evidence-led narrative shell, launch-risk pillars, proof flow, report preview, service boundary, and authorized-review CTA."
+      - "Unsupported runtime and confidence claims were removed, and the product mark was reconciled to the approved boundary/check-path concept."
+    authority_rule: "Written MDS and MPS scope, copy, and claims remain authoritative; this image is the approved visual interpretation."
+  - id: MDS-REF-003
+    name: Component Library v2
+    type: component_library
+    source: mds/references/component-library-v2.png
+    status: approved
+    canonical: true
+    applies_to: [components, component_states, evidence_patterns]
+    observations:
+      - "Shows the required primitives, evidence components, five-step scenario pattern, and supporting empty, loading, and error states."
+      - "Stepper vocabulary and finding-summary language were reconciled to approved MDS terminology."
+    authority_rule: "Exact labels, tokens, and behavior remain governed by written MDS state."
+  - id: MDS-REF-004
+    name: Layout and Responsive Behavior v1
+    type: responsive_behavior
+    source: mds/references/layout-behavior-v1.png
+    status: approved
+    canonical: true
+    applies_to: [layout, responsive, guided_lab, landing, matrices]
+    observations:
+      - "Demonstrates desktop, tablet, and mobile shell transformations and evidence-preserving responsive behavior."
+    authority_rule: "Approved breakpoint and responsive rules remain exact authority."
+  - id: MDS-REF-005
+    name: Scenario Index Desktop v2
+    type: scenario_index
+    source: mds/references/scenario-index-desktop-v2.png
+    status: approved
+    canonical: true
+    applies_to: [scenario_index, public_marketing, buyer_journey]
+    observations:
+      - "Shows synthetic context, optional recommended path, four consistent scenarios, evidence-explored language, report route, service boundary, and CTA."
+      - "Authorization scenario's initial state was corrected to the neutral untested treatment."
+    authority_rule: "Example scenario copy is illustrative; MPS scope and acceptance criteria remain authoritative."
+  - id: MDS-REF-006
+    name: Guided Authorization and RLS Desktop v2
+    type: guided_lab
+    source: mds/references/guided-rls-desktop-v2.png
+    status: approved
+    canonical: true
+    applies_to: [guided_lab, evidence, before_after, matrix, recovery]
+    observations:
+      - "Shows the approved five-step evidence path, vulnerable/remediated proof, matrix, limitation, retry, report, and authorized-review routes."
+      - "Not-applicable matrix symbols were corrected to the approved neutral minus treatment."
+    authority_rule: "Code, table rows, timestamps, and findings are synthetic examples rather than implementation data."
+  - id: MDS-REF-007
+    name: Sample Audit Report Desktop v1
+    type: audit_report
+    source: mds/references/audit-report-desktop-v1.png
+    status: approved
+    canonical: true
+    applies_to: [report_case_study, findings, methodology, limitations]
+    observations:
+      - "Shows a severity-ranked, buyer-readable sample report with evidence, remediation, repeated-test result, and persistent limitations."
+    authority_rule: "All counts, dates, findings, and evidence are illustrative synthetic content."
+  - id: MDS-REF-008
+    name: Inquiry Desktop v1
+    type: inquiry
+    source: mds/references/inquiry-desktop-v1.png
+    status: approved
+    canonical: true
+    applies_to: [inquiry, acknowledgement, submission_failure]
+    observations:
+      - "Shows a high-level inquiry form, explicit no-secrets guidance, four review pillars, acknowledgement, and recoverable submission failure."
+    authority_rule: "The form does not establish response times, pricing, engagement outcomes, or authorization to test."
+  - id: MDS-REF-009
+    name: Mobile Experience v4
+    type: mobile_reference
+    source: mds/references/mobile-experience-v4.png
+    status: approved
+    canonical: true
+    applies_to: [landing, scenario_index, guided_lab, inquiry, mobile]
+    observations:
+      - "Shows four 390px mobile compositions and the approved evidence-preserving reading order."
+      - "Rebuilt from approved references after the prior edit target retained a rejected padlock glyph."
+      - "Uses the approved information-circle callout, synthetic scenario language, five-step lab sequence, and evidence-preserving mobile reading order."
+    authority_rule: "The written MDS remains authoritative for exact breakpoints, tokens, content, and behavior."
+
+technical:
+  framework: null
+  framework_version: null
+  language: null
+  styling_system: null
+  component_system: null
+  repository_structure: null
+  token_location: null
+  component_location: null
+  global_style_location: null
+  layout_location: null
+  deployment_target: null
+  accessibility_tools: []
+  test_tools: []
+  design_delivery_capability_signals:
+    - {id: MDS-CAPSIG-001, capability: "Canonical responsive UI reference generation", stage: references, evidence_required: "Approved reference sheets reconciled against MDS state"}
+    - {id: MDS-CAPSIG-002, capability: "Browser-based responsive and interaction inspection", stage: implementation_and_qa, evidence_required: "Desktop, tablet, and mobile rendered checks"}
+    - {id: MDS-CAPSIG-003, capability: "Accessibility validation", stage: implementation_and_qa, evidence_required: "Keyboard, semantic, contrast, and automated evidence"}
+    - {id: MDS-CAPSIG-004, capability: "Screenshot comparison against canonical references", stage: qa, evidence_required: "Recorded visual comparison results"}
+
+governance:
+  decisions:
+    - {id: MDS-DEC-001, area: product_contract, key: consumed_mps, value: "MPS v1.0", status: approved, source: mps/MPS-PROJECT-STATE.yaml, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-002, area: scope, key: platform, value: responsive_web, status: approved, source: "MPS v1.0", approved_at: "2026-09-05"}
+    - {id: MDS-DEC-003, area: scope, key: public_no_account_experience, value: true, status: approved, source: "MPS v1.0", approved_at: "2026-09-05"}
+    - {id: MDS-DEC-004, area: visual_direction, key: design_posture, value: "evidence-led technical studio", status: approved, source: MDS_discovery, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-005, area: composition, key: experience_model, value: "public narrative shell flowing into a guided lab workspace", status: approved, source: MDS_discovery, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-006, area: identity, key: branding_relationship, value: "standalone lab identity with a discreet Mercurius/Josh endorsement", status: approved, source: MDS_discovery, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-007, area: color, key: palette, value: "light-first with deep ink framing, green primary action, and dark evidence panels", status: approved, source: mds/FOUNDATIONS-PROPOSAL.md, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-008, area: typography, key: families, value: "Geist Sans plus Geist Mono", status: approved, source: mds/FOUNDATIONS-PROPOSAL.md, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-009, area: spacing, key: base_unit, value: "4px", status: approved, source: mds/FOUNDATIONS-PROPOSAL.md, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-010, area: shape, key: shape_and_elevation, value: "6/10/14px radii with border-first restrained elevation", status: approved, source: mds/FOUNDATIONS-PROPOSAL.md, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-011, area: iconography, key: icon_character, value: "Lucide-style outline with labeled evidence states", status: approved, source: mds/FOUNDATIONS-PROPOSAL.md, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-012, area: identity, key: product_mark, value: "boundary frame intersected by a verified check path", status: approved, source: mds/FOUNDATIONS-PROPOSAL.md, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-013, area: motion, key: motion_posture, value: "functional 120-200ms transitions with reduced-motion support", status: approved, source: mds/FOUNDATIONS-PROPOSAL.md, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-014, area: components, key: component_model, value: "evidence-first component inventory, variants, and states", status: approved, source: mds/COMPONENTS-PROPOSAL.md, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-015, area: composition, key: responsive_composition, value: "public narrative, scenario index, guided lab, report, and inquiry shells with evidence-preserving responsive transformations", status: approved, source: mds/COMPOSITION-PROPOSAL.md, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-016, area: references, key: visual_reference_set, value: "core design system, component library, layout and behavior, landing, scenario index, guided lab, report, inquiry, and mobile references", status: approved, source: mds/VISUAL-REFERENCE-BRIEF.md, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-017, area: references, key: first_visual_pair, value: "Core Design System v2 and Landing Page Desktop v1", status: approved, source: "Gate 5 visual checkpoint", approved_at: "2026-09-05"}
+    - {id: MDS-DEC-018, area: references, key: second_visual_set, value: "Component Library v2, Layout and Responsive Behavior v1, Scenario Index Desktop v2, Guided Authorization and RLS Desktop v2, Sample Audit Report Desktop v1, and Inquiry Desktop v1", status: approved, source: "Gate 5 visual checkpoint", approved_at: "2026-09-05"}
+    - {id: MDS-DEC-019, area: references, key: mobile_reference, value: "Mobile Experience v4 with information-circle privacy callout", status: approved, source: "Gate 5 mobile correction", approved_at: "2026-09-05"}
+    - {id: MDS-DEC-020, area: approval, key: initial_release, value: "Mercurius Design System v1.0", status: approved, source: mds/GATE-6-APPROVAL.md, approved_at: "2026-09-05"}
+    - {id: MDS-DEC-021, area: implementation_readiness, key: gate_7_handoff, value: "Approve the MDS implementation package and authorize MTS initiation", status: approved, source: mds/GATE-7-HANDOFF.md, approved_at: "2026-09-05"}
+  gaps:
+    - {id: MDS-GAP-001, area: brand, statement: "No existing logo, brand palette, or visual reference has been supplied.", status: resolved, resolution: "Create a standalone lab identity; existing brand assets are not required."}
+    - {id: MDS-GAP-002, area: foundations, statement: "Visual direction, brand relationship, color, typography, shape, and elevation await approval.", status: resolved, resolution: "Gate 2 foundation package approved in full on 2026-09-05."}
+    - {id: MDS-GAP-003, area: composition, statement: "The primary experience model awaits approval before page shells and responsive behavior are defined.", status: resolved, resolution: "Approved public narrative shell flowing into a guided lab workspace, report, and engagement path."}
+    - {id: MDS-GAP-004, area: components, statement: "Gate 3 component inventory, variants, and state behavior await approval.", status: resolved, resolution: "Gate 3 approved in full on 2026-09-05."}
+    - {id: MDS-GAP-005, area: composition, statement: "Gate 4 layout, page-shell, responsive, navigation, and interaction rules await approval.", status: resolved, resolution: "Gate 4 approved in full on 2026-09-05."}
+    - {id: MDS-GAP-006, area: references, statement: "Canonical visual references must be generated, reconciled, and approved.", status: resolved, resolution: "All nine required references were reconciled and approved; Mobile Experience v4 replaced the rejected v3 composition."}
+  exceptions: []
+  deviations: []
+  changes: []
+  versions:
+    - {version: v0.1-draft, date: "2026-09-05", reason: "MDS initialized from approved MPS v1.0."}
+    - {version: v1.0, date: "2026-09-05", reason: "Josh approved the complete initial design system at Gate 6."}
+  approval_note: "Josh approved MDS v1.0 at Gate 6 and the complete Gate 7 implementation-readiness handoff on 2026-09-05. MDS is ready for MTS; Gate 8 awaits implementation."
+
+artifacts:
+  discovery_brief: {path: mds/DISCOVERY-BRIEF.md, status: current}
+  foundations_proposal: {path: mds/FOUNDATIONS-PROPOSAL.md, status: current}
+  components_proposal: {path: mds/COMPONENTS-PROPOSAL.md, status: current}
+  composition_proposal: {path: mds/COMPOSITION-PROPOSAL.md, status: current}
+  visual_reference_brief: {path: mds/VISUAL-REFERENCE-BRIEF.md, status: current}
+  reference_prompt_set: {path: mds/REFERENCE-PROMPT-SET.md, status: current}
+  design_specification: {path: mds/specification/DESIGN-SYSTEM.md, status: current}
+  principles: {path: mds/specification/PRINCIPLES.md, status: current}
+  do_dont: {path: mds/specification/DO-DONT.md, status: current}
+  tokens: {path: mds/tokens/tokens.json, status: current}
+  core_reference: {path: mds/references/core-design-system-v2.png, status: current}
+  layout_reference: {path: mds/references/layout-behavior-v1.png, status: current}
+  component_reference: {path: mds/references/component-library-v2.png, status: current}
+  ui_references:
+    - {id: MDS-REF-002, path: mds/references/landing-desktop-v1.png, viewport: desktop, status: current}
+    - {id: MDS-REF-005, path: mds/references/scenario-index-desktop-v2.png, viewport: desktop, status: current}
+    - {id: MDS-REF-006, path: mds/references/guided-rls-desktop-v2.png, viewport: desktop, status: current}
+    - {id: MDS-REF-007, path: mds/references/audit-report-desktop-v1.png, viewport: desktop, status: current}
+    - {id: MDS-REF-008, path: mds/references/inquiry-desktop-v1.png, viewport: desktop, status: current}
+    - {id: MDS-REF-009, path: mds/references/mobile-experience-v4.png, viewport: mobile, status: current}
+  reference_reconciliation: {path: mds/REFERENCE-RECONCILIATION.md, status: current}
+  gate_6_approval: {path: mds/GATE-6-APPROVAL.md, status: current}
+  gate_7_handoff: {path: mds/GATE-7-HANDOFF.md, status: current}
+  agents_md: {path: AGENTS.md, status: current, note: "MDS/MPS instructions approved; MTS must merge approved stack and Agent Skill Manifest references into this single file."}
+  implementation_manifest: {path: mds/implementation/MDS-IMPLEMENTATION.md, status: current}
+  qa_protocol: {path: mds/qa/MDS-QA.md, status: current}
+  compliance_report: {path: mds/qa/MDS-COMPLIANCE.md, status: missing}
+
+gates:
+  discovery: {status: complete, requirements: [project, audience, platform, workflow, scope, references], blocking_items: [], completed_at: "2026-09-05"}
+  foundations: {status: complete, requirements: [identity, principles, color, typography, spacing, shape, icons, accessibility], blocking_items: [], completed_at: "2026-09-05"}
+  components: {status: complete, requirements: [applicability, variants, sizes, states], blocking_items: [], completed_at: "2026-09-05"}
+  composition: {status: complete, requirements: [page_shells, layout, responsive, interaction], blocking_items: [], completed_at: "2026-09-05"}
+  references: {status: complete, requirements: [core, layout, components, canonical_ui], blocking_items: [], completed_at: "2026-09-05"}
+  approval: {status: complete, requirements: [approved_system, resolved_blocking_gaps], blocking_items: [], completed_at: "2026-09-05"}
+  implementation_readiness: {status: complete, requirements: [manifest, agents, qa, build_roadmap_input], blocking_items: [], completed_at: "2026-09-05"}
+  compliance: {status: not_started, requirements: [implemented_product], blocking_items: [implementation_not_started], completed_at: null}
+
+compliance:
+  gate_1: null
+  gate_2: null
+  gate_3: null
+  overall_status: null
+  open_gaps: 0
+  approved_exceptions: 0
+  open_deviations: 0
+  reviewed_at: null
