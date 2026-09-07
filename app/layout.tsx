@@ -55,7 +55,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </a>
 
         <SiteHeader />
-        <main id="main-content" className="flex-1">
+        {/*
+         * min-w-0: a flex child defaults to min-width:auto, which lets a wide
+         * descendant (an evidence code line, a matrix) widen the whole page
+         * instead of scrolling inside its own container. The approved rule is
+         * that those regions may scroll themselves; the page body may not.
+         */}
+        <main id="main-content" className="min-w-0 flex-1">
           {children}
         </main>
         <SiteFooter />

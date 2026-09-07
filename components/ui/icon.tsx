@@ -136,6 +136,32 @@ const ICON_PATHS = {
       <path d="m6 6 12 12" />
     </>
   ),
+
+  // --- Guided lab controls (MDS-REF-006) ---------------------------------
+  /** Copy action on the code/log evidence panel. */
+  copy: (
+    <>
+      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    </>
+  ),
+  /** Confirmation after a copy. */
+  check: <path d="M20 6 9 17l-5-5" />,
+  /** "Reset and retry" in the recovery panel (MDS-REF-006). */
+  "rotate-ccw": (
+    <>
+      <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+      <path d="M3 3v5h5" />
+    </>
+  ),
+  /** Policy / documented scope. */
+  "file-check": (
+    <>
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v5h5" />
+      <path d="m9 15 2 2 4-4" />
+    </>
+  ),
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;
