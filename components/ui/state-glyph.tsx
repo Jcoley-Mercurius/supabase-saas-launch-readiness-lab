@@ -11,13 +11,22 @@
  * Shape carries the state independently of colour, so the meaning survives for
  * a viewer who cannot distinguish the semantic hues (MDS-DONT-002):
  *
- *   vulnerable      filled circle, exclamation
+ *   vulnerable      filled TRIANGLE, exclamation
  *   remediated      filled circle, check
  *   untested        filled circle, open ring   (visibly "no result", not a mark)
  *   not applicable  filled circle, minus
- *   unavailable     filled triangle, exclamation
- *   warning         filled triangle, exclamation
+ *   warning         filled circle, exclamation
+ *   unavailable     filled circle, cloud with a slash
  *   running         outline spinner (DESIGN-SYSTEM section 7: "loader plus text")
+ *
+ * These are the assignments in mds/COMPONENTS-PROPOSAL.md ("Evidence-state
+ * system"): vulnerable alert-triangle, warning alert-circle, unavailable
+ * cloud-off. S1 shipped vulnerable and warning inverted, which left warning and
+ * unavailable rendering identically - same glyph, same hue, same tinted surface
+ * - so the two were separated only by their label text (MTS-OBS-017).
+ * Owner-approved on 2026-09-06, closing MDS-GAP-S1-002. The written component
+ * spec supplies the shapes; the canonical references supply the filled-badge
+ * treatment they are drawn in. Every state now has its own silhouette or mark.
  *
  * The glyph is always decorative; the adjacent canonical label and explanation
  * carry the meaning.
@@ -29,6 +38,7 @@ export type StateGlyphShape =
   | "check-circle"
   | "ring-circle"
   | "minus-circle"
+  | "cloud-off-circle"
   | "exclamation-triangle";
 
 export function StateGlyph({
@@ -93,6 +103,27 @@ export function StateGlyph({
         </>
       ) : null}
       {shape === "minus-circle" ? <path d="M7.8 12h8.4" {...mark} /> : null}
+      {/*
+       * Unavailable: a cloud with a slash through it. Drawn thinner than the
+       * other marks (1.9 against 2.25) because it carries more line in the
+       * same 24px badge, and the slash runs corner to corner so the state
+       * reads as "not retrievable" even at the 16px size.
+       */}
+      {shape === "cloud-off-circle" ? (
+        <>
+          <path
+            d="M8.4 15.8h6.9a2.6 2.6 0 0 0 .3-5.2 4 4 0 0 0-6.6-2.2"
+            {...mark}
+            strokeWidth={1.9}
+          />
+          <path
+            d="M8.4 15.8a2.6 2.6 0 0 1-.3-5.2"
+            {...mark}
+            strokeWidth={1.9}
+          />
+          <path d="M6.9 6.9l10.2 10.2" {...mark} strokeWidth={1.9} />
+        </>
+      ) : null}
       {/*
        * Untested renders as a thick annulus — a knocked-out hole rather than a
        * mark — so "no result" reads as an absence at a glance and can never be

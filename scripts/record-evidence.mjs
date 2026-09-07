@@ -24,16 +24,14 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { TESTS, inputDigest } from "./evidence-inputs.mjs";
 
 const DB_URL =
   process.env.EVIDENCE_DATABASE_URL ??
   "postgresql://postgres:postgres@127.0.0.1:56322/postgres";
 
-const MIGRATIONS = "supabase/migrations";
-const TESTS = "supabase/tests/documented-tests.sql";
 const OUT_DIR = "lib/evidence/recorded";
 // `--out <path>` lets the verifier record to a scratch file and diff it
 // against the committed transcript without disturbing it.
@@ -62,17 +60,6 @@ function psql(sql, { file = false, params = {} } = {}) {
 
 function json(sql) {
   return JSON.parse(psql(sql));
-}
-
-/** Everything that can change a result, hashed so a stale transcript is detectable. */
-function inputDigest() {
-  const hash = createHash("sha256");
-  for (const name of readdirSync(MIGRATIONS).sort()) {
-    hash.update(name);
-    hash.update(readFileSync(join(MIGRATIONS, name)));
-  }
-  hash.update(readFileSync(TESTS));
-  return `sha256:${hash.digest("hex")}`;
 }
 
 /*

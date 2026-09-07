@@ -62,7 +62,7 @@ color:
     untested: {value: "#667085", label: untested, status: approved}
   surfaces: {canvas: "#F4F7F9", base: "#FFFFFF", muted: "#EEF2F5", evidence: "#111827"}
   text: {strong: "#111827", muted: "#596579", inverse: "#FFFFFF"}
-  borders: {default: "#D6DEE7", focus: "#2563EB"}
+  borders: {default: "#D6DEE7", control: "#667085", focus: "#2563EB"}
   usage_rules:
     - {statement: "Communicate evidence state with color, icon or shape, label, and explanatory text.", status: approved}
     - {statement: "Use brand accent for small emphasis, not body text on white.", status: approved}
@@ -358,10 +358,13 @@ governance:
     - {id: MDS-GAP-003, area: composition, statement: "The primary experience model awaits approval before page shells and responsive behavior are defined.", status: resolved, resolution: "Approved public narrative shell flowing into a guided lab workspace, report, and engagement path."}
     - {id: MDS-GAP-004, area: components, statement: "Gate 3 component inventory, variants, and state behavior await approval.", status: resolved, resolution: "Gate 3 approved in full on 2026-09-05."}
     - {id: MDS-GAP-005, area: composition, statement: "Gate 4 layout, page-shell, responsive, navigation, and interaction rules await approval.", status: resolved, resolution: "Gate 4 approved in full on 2026-09-05."}
+    - {id: MDS-GAP-S1-001, area: design_accessibility, statement: "border.default (#D6DEE7) measures 1.36:1 against surface.base. Where that border is the only boundary identifying a control, it is below the 3:1 WCAG 2.2 AA 1.4.11 non-text threshold.", observed_at: "2026-09-06", raised_by: "S1 implementation, measured contrast audit", status: resolved, resolution: "Approved by Josh Coley on 2026-09-06. Added color.border.control = #667085, measured 4.97:1 on surface.base, 4.62:1 on surface.canvas and 4.42:1 on surface.muted. Scoped to controls whose edge is the only thing identifying them as controls: the secondary button today, and form inputs in a later release. Decorative boundaries keep border.default, which 1.4.11 does not govern, so no card, table, panel, or divider changed. The value is the neutral already approved as status.untested, so the palette gained a name and no new colour."}
+    - {id: MDS-GAP-S1-002, area: evidence_vocabulary, statement: "No distinct symbol was defined for the warning state ('Review required') as implemented.", observed_at: "2026-09-06", raised_by: "S1 implementation", status: resolved, resolution: "Approved by Josh Coley on 2026-09-06. Investigation found the gap statement stale and the real collision elsewhere: warning and unavailable rendered identically (same glyph, same hue, same tinted surface), separated only by label text, while vulnerable and warning were already distinct. Resolved by applying the shape assignments COMPONENTS-PROPOSAL already specifies - vulnerable alert-triangle, warning alert-circle, unavailable cloud-off - drawn in the filled-badge treatment the canonical references render. All seven evidence states now differ by silhouette or mark. No new MDS value was required; the written component spec already held the answer. See MTS-OBS-017."}
     - {id: MDS-GAP-006, area: references, statement: "Canonical visual references must be generated, reconciled, and approved.", status: resolved, resolution: "All nine required references were reconciled and approved; Mobile Experience v4 replaced the rejected v3 composition."}
   exceptions: []
   deviations: []
-  changes: []
+  changes:
+    - {id: MDS-CHG-001, at: "2026-09-06", by: Claude, approved_by: Josh Coley, area: [tokens, components], summary: "Closed MDS-GAP-S1-001 and MDS-GAP-S1-002 on owner approval. Added the color.border.control token and applied it to the secondary button; applied the COMPONENTS-PROPOSAL evidence-state shapes so vulnerable, warning, and unavailable each carry their own mark.", scope_note: "mds_version remains v1.0. No approved value was altered: border.default, every status colour, and every type, space, radius and motion token are unchanged. The palette gained one name whose value was already approved elsewhere in it. No component was added, removed, or restyled beyond the two accessibility corrections.", implementation: "mds/tokens/tokens.json, app/globals.css, components/ui/button.tsx, components/ui/state-glyph.tsx, components/ui/status-indicator.tsx, components/evidence/coverage-matrix.tsx"}
   versions:
     - {version: v0.1-draft, date: "2026-09-05", reason: "MDS initialized from approved MPS v1.0."}
     - {version: v1.0, date: "2026-09-05", reason: "Josh approved the complete initial design system at Gate 6."}

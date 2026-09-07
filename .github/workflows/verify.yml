@@ -1,0 +1,143 @@
+# Verification gate.
+#
+# Trace: MTS-CAP-011 (preview, production, CI, release and rollback controls);
+#        MTS-OBS-016 (the database-backed half of the evidence gate is a
+#        binding S6 requirement); MTS-EXC-002 (WebKit is CI-only);
+#        MTS-RISK-006 (a stale transcript must fail a gate, not a review);
+#        MTS-DEC-008 (recorded-and-disclosed evidence posture).
+#
+# Three jobs, deliberately separate so a failure names its own cause:
+#
+#   checks    the database-free chain, including the transcript freshness gate
+#   evidence  the database-backed proof that the committed transcript still
+#             reproduces byte for byte from a clean database
+#   browsers  the full Playwright matrix, including the WebKit project that
+#             cannot run on the owner's workstation
+#
+# Nothing here needs a secret. The lab holds no database connection, the
+# fixture is synthetic, and the evidence job builds its database from
+# supabase/migrations on the runner. No hosted Supabase project, Vercel
+# deployment, or third-party service is contacted.
+
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push supersedes an in-flight run on the same ref, except on main,
+# where every commit keeps its own recorded result.
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  # Matches delivery.runtime_versions in mts/MTS-PROJECT-STATE.yaml.
+  NODE_VERSION: "24"
+
+jobs:
+  checks:
+    name: checks (format, lint, types, freshness, unit, build)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # format:check, lint, typecheck, evidence:check, test:unit, build.
+      # evidence:check is the transcript freshness gate and needs no database,
+      # so staleness fails here on every push rather than only where a
+      # PostgreSQL service exists.
+      - run: pnpm check
+
+  evidence:
+    name: evidence (clean-database reproduction)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Pinned to the version recorded in delivery.runtime_versions. The
+      # transcript is compared byte for byte, so the engine that re-records it
+      # must be the same engine that recorded it: the CLI's own PostgreSQL
+      # 17.6 image, not an arbitrary postgres service container.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.111.0
+
+      # The recorder and verifier both drive psql directly.
+      - name: Install psql client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends postgresql-client
+
+      # Database container only, on the isolated ports in supabase/config.toml.
+      - name: Start the isolated fixture database
+        run: pnpm db:start
+
+      # 1. transcript freshness gate
+      # 2. fixture safety checks (synthetic isolation, no public bleed)
+      # 3. two clean-database re-recordings, byte-identical to the committed
+      #    transcript apart from the wall-clock recording timestamp
+      - name: Verify the committed evidence still reproduces
+        run: pnpm evidence:verify
+
+      - name: Stop the fixture database
+        if: always()
+        run: pnpm db:stop || true
+
+  browsers:
+    name: browsers (chromium, firefox, webkit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # --with-deps supplies the system packages WebKit needs and that the
+      # owner's workstation does not carry (MTS-EXC-002).
+      - name: Install browsers
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+      # CI is set by GitHub Actions, which makes playwright.config.ts build and
+      # start a production server rather than reuse a dev one - the build under
+      # test is therefore always the build being reported (MTS-OBS-014).
+      # PLAYWRIGHT_WEBKIT adds the webkit-desktop project.
+      - name: Run the browser matrix
+        env:
+          PLAYWRIGHT_WEBKIT: "1"
+        run: pnpm test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

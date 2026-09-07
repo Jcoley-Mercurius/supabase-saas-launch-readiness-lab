@@ -90,4 +90,4 @@ export const EVIDENCE_SCENARIOS: Record<EvidenceScenarioId, EvidenceScenario> =
 
 /** Shown beside every result so a claim never travels without its scope. */
 export const EVIDENCE_PROVENANCE_NOTE =
-  "The lab replays a transcript recorded from an isolated local PostgreSQL fixture. The published application holds no database connection and runs no new query against any system.";
+  "The lab replays a transcript recorded from an isolated local PostgreSQL fixture. The published application holds no database connection and runs no new query against any system. The transcript, the fixture migrations that produced it, and the documented tests are all committed to the repository, and a digest ties the transcript to that exact fixture, so the evidence shown here is reproducible rather than illustrative and cannot be edited by hand without failing its own check.";

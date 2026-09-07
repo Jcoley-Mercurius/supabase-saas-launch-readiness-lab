@@ -13,7 +13,11 @@ import { StateGlyph, type StateGlyphShape } from "@/components/ui/state-glyph";
  *
  * The glyph is the filled semantic badge the approved references render (see
  * state-glyph.tsx), except for `running`, which DESIGN-SYSTEM section 7 defines
- * as a loader plus text.
+ * as a loader plus text. The shape assignments are the ones in
+ * COMPONENTS-PROPOSAL: vulnerable alert-triangle, warning alert-circle,
+ * unavailable cloud-off. All seven states differ by silhouette or mark, so no
+ * pair depends on hue or on label text alone (MDS-GAP-S1-002, closed
+ * 2026-09-06; MTS-OBS-017).
  *
  * The labels below are canonical and must not be paraphrased. "Secure",
  * "certified", "compliant", "guaranteed", and an unqualified "passed" are
@@ -42,7 +46,7 @@ type StateSpec = {
 const STATES: Record<EvidenceState, StateSpec> = {
   vulnerable: {
     label: "Vulnerable — test succeeded unexpectedly",
-    glyph: "exclamation-circle",
+    glyph: "exclamation-triangle",
     fg: "text-vulnerable",
     surface: "bg-vulnerable/6 border-vulnerable/35",
   },
@@ -74,13 +78,13 @@ const STATES: Record<EvidenceState, StateSpec> = {
   },
   unavailable: {
     label: "Evidence unavailable",
-    glyph: "exclamation-triangle",
+    glyph: "cloud-off-circle",
     fg: "text-warning",
     surface: "bg-warning/8 border-warning/35",
   },
   warning: {
     label: "Review required",
-    glyph: "exclamation-triangle",
+    glyph: "exclamation-circle",
     fg: "text-warning",
     surface: "bg-warning/8 border-warning/35",
   },
@@ -89,6 +93,25 @@ const STATES: Record<EvidenceState, StateSpec> = {
 /** The canonical label for a state, for use in prose and announcements. */
 export function evidenceStateLabel(state: EvidenceState): string {
   return STATES[state].label;
+}
+
+/*
+ * The glyph and foreground colour for a state, so no surface maintains its own
+ * copy of this mapping. The coverage matrix previously kept a second table and
+ * it had already drifted from this one; a state's appearance must have exactly
+ * one definition for the same reason its label does.
+ *
+ * `running` returns a null glyph: DESIGN-SYSTEM section 7 renders it as a
+ * loader plus text, so a caller that needs a static mark supplies its own.
+ */
+export function evidenceStateGlyph(
+  state: EvidenceState,
+): StateGlyphShape | null {
+  return STATES[state].glyph;
+}
+
+export function evidenceStateForeground(state: EvidenceState): string {
+  return STATES[state].fg;
 }
 
 export function StatusIndicator({

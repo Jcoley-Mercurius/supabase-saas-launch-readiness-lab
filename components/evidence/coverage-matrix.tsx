@@ -1,5 +1,7 @@
 import { StateGlyph, type StateGlyphShape } from "@/components/ui/state-glyph";
 import {
+  evidenceStateForeground,
+  evidenceStateGlyph,
   evidenceStateLabel,
   type EvidenceState,
 } from "@/components/ui/status-indicator";
@@ -23,15 +25,23 @@ import type { MatrixRow } from "@/lib/evidence/types";
  * a missing check is shown as Untested, never left to look like a pass.
  */
 
-const CELL: Record<EvidenceState, { glyph: StateGlyphShape; fg: string }> = {
-  vulnerable: { glyph: "exclamation-circle", fg: "text-vulnerable" },
-  remediated: { glyph: "check-circle", fg: "text-remediated" },
-  untested: { glyph: "ring-circle", fg: "text-untested" },
-  "not-applicable": { glyph: "minus-circle", fg: "text-untested" },
-  warning: { glyph: "exclamation-triangle", fg: "text-warning" },
-  unavailable: { glyph: "exclamation-triangle", fg: "text-warning" },
-  running: { glyph: "ring-circle", fg: "text-info" },
-};
+/*
+ * Read from the evidence-state component rather than redeclared here, so a
+ * matrix cell can never show a different mark than the same state shows in a
+ * panel. `running` is the one state with no static glyph (it renders as a
+ * loader plus text), and a table cell cannot hold a spinner, so the matrix
+ * supplies the open ring - the same "no result yet" mark it uses for untested,
+ * which is what a cell mid-run truthfully is.
+ */
+function appearance(state: EvidenceState): {
+  glyph: StateGlyphShape;
+  fg: string;
+} {
+  return {
+    glyph: evidenceStateGlyph(state) ?? "ring-circle",
+    fg: evidenceStateForeground(state),
+  };
+}
 
 const LEGEND: EvidenceState[] = [
   "remediated",
@@ -105,7 +115,7 @@ export function CoverageMatrix({
                 </th>
                 {MATRIX_OPERATIONS.map((operation) => {
                   const cell = row.cells[operation];
-                  const spec = CELL[cell.state];
+                  const spec = appearance(cell.state);
                   return (
                     <td key={operation} className="px-4 py-3 text-center">
                       <span
@@ -130,8 +140,8 @@ export function CoverageMatrix({
       <ul className="flex flex-wrap gap-x-5 gap-y-2">
         {LEGEND.map((state) => (
           <li key={state} className="flex items-center gap-2">
-            <span className={CELL[state].fg}>
-              <StateGlyph shape={CELL[state].glyph} size={16} />
+            <span className={appearance(state).fg}>
+              <StateGlyph shape={appearance(state).glyph} size={16} />
             </span>
             <span className="text-body-sm text-subtle">
               {evidenceStateLabel(state)}

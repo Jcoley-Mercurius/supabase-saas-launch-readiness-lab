@@ -167,8 +167,17 @@ export function GuidedLab({
   const activeRun = after ?? before;
   const matrixRows = activeRun?.matrix ?? null;
 
+  /*
+   * Provenance travels with every excerpt (MTS-OBS-005, owner-confirmed
+   * 2026-09-06). The second sentence is the reproducibility claim: the
+   * transcript is committed, and re-recording from a clean fixture must
+   * reproduce it byte for byte. Saying so is what separates recorded evidence
+   * from a staged screenshot, and it is checkable by anyone who clones the
+   * repository — which is the point of disclosing it rather than only
+   * disclosing that the run is a replay.
+   */
   const provenance = activeRun
-    ? `Recorded ${new Date(activeRun.recordedAt).toISOString().replace("T", " ").slice(0, 19)} UTC against ${activeRun.engine.product} ${activeRun.engine.version} on an ${activeRun.engine.host}. Fixture digest ${activeRun.inputDigest.slice(0, 23)}…`
+    ? `Recorded ${new Date(activeRun.recordedAt).toISOString().replace("T", " ").slice(0, 19)} UTC against ${activeRun.engine.product} ${activeRun.engine.version} on an ${activeRun.engine.host}. Fixture digest ${activeRun.inputDigest.slice(0, 23)}…. The transcript is committed to the repository; re-recording it from a clean database must reproduce it byte for byte, and the digest is checked against the fixture that produced it.`
     : "";
 
   const contextRelation = activeRun?.relations.find(

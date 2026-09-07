@@ -31,8 +31,14 @@ const BASE =
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
     "bg-primary text-inverse border border-primary hover:bg-primary-hover hover:border-primary-hover active:bg-primary-hover",
+  /*
+   * `border-control`, not `border-line`: on a secondary button the border is
+   * the only thing that identifies the control, which WCAG 2.2 AA 1.4.11 holds
+   * to 3:1. border.default measures 1.36:1 (MDS-GAP-S1-001, closed by the
+   * approved color.border.control token).
+   */
   secondary:
-    "bg-base text-strong border border-line hover:bg-muted active:bg-muted",
+    "bg-base text-strong border border-control hover:bg-muted active:bg-muted",
   quiet:
     "bg-transparent text-strong border border-transparent hover:bg-muted active:bg-muted",
   destructive:

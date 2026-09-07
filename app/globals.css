@@ -38,8 +38,15 @@
   --color-subtle: #596579;
   --color-inverse: #ffffff;
 
-  /* --- Color: borders (color.border.*) -------------------------------- */
+  /* --- Color: borders (color.border.*) --------------------------------
+   * `line` is the decorative boundary: cards, tables, panels, dividers.
+   * `control` is for a control whose edge is the only thing identifying it as
+   * one, which WCAG 2.2 AA 1.4.11 holds to 3:1. `line` measures 1.36:1 on
+   * surface.base and cannot carry that job; `control` measures 4.97:1.
+   * Closes MDS-GAP-S1-001.
+   */
   --color-line: #d6dee7;
+  --color-control: #667085;
   --color-focus: #2563eb;
 
   /* --- Color: evidence state (color.status.*) -------------------------

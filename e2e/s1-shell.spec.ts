@@ -326,6 +326,17 @@ test.describe("responsive composition", () => {
   test("no route scrolls horizontally at any approved width", async ({
     page,
   }) => {
+    /*
+     * Seven widths across every public route is 40-plus navigations in one
+     * test, and each one waits on document.fonts.ready. Measured isolated it
+     * takes 29-44s against the default 60s budget, and in a five-project run
+     * at four workers it exceeded the budget and failed as a timeout - with no
+     * overflow assertion ever reached, so the failure said nothing about
+     * layout. test.slow() triples the budget rather than thinning the matrix,
+     * because the widths are the point of the test (MTS-OBS-018).
+     */
+    test.slow();
+
     for (const width of [320, 390, 640, 768, 960, 1280, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       for (const route of PUBLIC_ROUTES) {
