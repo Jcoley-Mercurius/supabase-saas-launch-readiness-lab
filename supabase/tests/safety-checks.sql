@@ -137,3 +137,177 @@ end $$;
 
 -- Leave the fixture in the remediated state.
 select synthetic.apply_mode('remediated');
+
+-- =====================================================================
+-- S3 replay fixture (MPS-REQ-006/007, MPS-RULE-001, MPS-ACC-015).
+-- =====================================================================
+
+\echo '— safety: the replay reset cannot reach the S2 fixture or the public schema'
+begin;
+
+create table public.unrelated_probe (id int primary key, note text);
+insert into public.unrelated_probe values (1, 'must survive a replay reset');
+
+-- Dirty both fixtures so the reset has real work to do, and so a reset that
+-- reached too far would be visible.
+update synthetic.profiles set job_title = 'dirty';
+insert into synthetic.payment_commitments
+  (id, tenant_id, invoice_number, event_id, delivery_id, attempt, amount_cents, committed_at)
+values ('probe#1', '11111111-1111-4111-8111-111111111111', 'NW-2041',
+        'evt_probe', 'del_probe', 1, 1, '2026-03-02T00:00:00Z');
+
+select synthetic.reset_replay_fixture();
+
+do $$
+declare probe_rows integer; dirty_rows integer; commitment_rows integer; delivery_rows integer;
+begin
+  select count(*) into probe_rows      from public.unrelated_probe;
+  select count(*) into dirty_rows      from synthetic.profiles where job_title = 'dirty';
+  select count(*) into commitment_rows from synthetic.payment_commitments;
+  select count(*) into delivery_rows   from synthetic.webhook_deliveries;
+
+  if probe_rows <> 1 then
+    raise exception 'FAIL: synthetic.reset_replay_fixture() deleted data outside the synthetic schema';
+  end if;
+  -- The replay reset owns the replay tables only. It must NOT reseed the S2
+  -- fixture, or the two slices would silently share a reset path.
+  if dirty_rows = 0 then
+    raise exception 'FAIL: the replay reset also reset the S2 fixture tables';
+  end if;
+  if commitment_rows <> 0 then
+    raise exception 'FAIL: the replay reset did not clear payment commitments (got %)', commitment_rows;
+  end if;
+  if delivery_rows = 0 then
+    raise exception 'FAIL: the replay reset did not reseed the delivery fixture';
+  end if;
+  raise notice 'PASS: the replay reset cleared only the replay tables and left everything else intact';
+end $$;
+
+drop table public.unrelated_probe;
+rollback;
+
+\echo '— safety: the replay reset is repeatable and byte-identical'
+do $$
+declare first_digest text; second_digest text;
+begin
+  perform synthetic.reset_replay_fixture();
+  select md5(string_agg(t::text, '|' order by t::text)) into first_digest
+    from (select * from synthetic.webhook_deliveries) t;
+
+  perform synthetic.reset_replay_fixture();
+  select md5(string_agg(t::text, '|' order by t::text)) into second_digest
+    from (select * from synthetic.webhook_deliveries) t;
+
+  if first_digest is distinct from second_digest then
+    raise exception 'FAIL: the replay reset is not deterministic (% vs %)', first_digest, second_digest;
+  end if;
+  raise notice 'PASS: two replay resets produced identical deliveries (md5 %)', first_digest;
+end $$;
+
+\echo '— safety: application roles cannot reach any replay function or table'
+do $$
+declare
+  fn   text;
+  rel  text;
+  role text;
+  fns  text[] := array[
+    'synthetic.apply_replay_mode(text)',
+    'synthetic.reset_replay_fixture()',
+    'synthetic.seed_replay_fixture()',
+    'synthetic.handle_delivery(text, integer)',
+    'synthetic.run_documented_sequence(text)',
+    'synthetic.replay_configuration_snapshot()',
+    'synthetic.expected_signature(text)',
+    'synthetic.canonical_payload(text)'
+  ];
+  rels text[] := array[
+    'synthetic.webhook_deliveries',
+    'synthetic.webhook_signing_material',
+    'synthetic.processed_events',
+    'synthetic.payment_commitments',
+    'synthetic.applied_sequence',
+    'synthetic.delivery_attempts',
+    'synthetic.replay_configuration',
+    'synthetic.documented_sequences',
+    'synthetic.documented_steps'
+  ];
+begin
+  foreach role in array array['anon', 'authenticated'] loop
+    foreach fn in array fns loop
+      if has_function_privilege(role, fn, 'execute') then
+        raise exception 'FAIL: role % can execute %', role, fn;
+      end if;
+    end loop;
+    foreach rel in array rels loop
+      -- Unlike the S2 fixture tables, which are granted on purpose so that row
+      -- level security means something, nothing in the replay fixture is
+      -- exposed to an application role at all.
+      if has_table_privilege(role, rel, 'select')
+         or has_table_privilege(role, rel, 'insert')
+         or has_table_privilege(role, rel, 'update')
+         or has_table_privilege(role, rel, 'delete') then
+        raise exception 'FAIL: role % holds a privilege on %', role, rel;
+      end if;
+    end loop;
+  end loop;
+  raise notice 'PASS: no application role can reach any replay function or table';
+end $$;
+
+\echo '— safety: only the two approved replay modes are accepted'
+do $$
+begin
+  begin
+    perform synthetic.apply_replay_mode('accept everything');
+    raise exception 'FAIL: apply_replay_mode accepted an unapproved mode name';
+  exception
+    when invalid_parameter_value then
+      raise notice 'PASS: apply_replay_mode rejected an unapproved mode name';
+  end;
+end $$;
+
+\echo '— safety: the signature check actually distinguishes a forged delivery'
+do $$
+declare valid_count integer; forged_count integer;
+begin
+  perform synthetic.reset_replay_fixture();
+
+  select count(*) into valid_count
+    from synthetic.webhook_deliveries d
+   where d.signature = synthetic.expected_signature(d.delivery_id);
+  select count(*) into forged_count
+    from synthetic.webhook_deliveries d
+   where d.signature is distinct from synthetic.expected_signature(d.delivery_id);
+
+  -- If every delivery verified, the forged case would be proving nothing.
+  if forged_count = 0 then
+    raise exception 'FAIL: no delivery in the fixture fails signature verification';
+  end if;
+  if valid_count = 0 then
+    raise exception 'FAIL: no delivery in the fixture passes signature verification';
+  end if;
+  raise notice 'PASS: % deliveries verify and % do not', valid_count, forged_count;
+end $$;
+
+\echo '— safety: the replay fixture holds no credential-shaped value'
+do $$
+declare hits integer;
+begin
+  select count(*) into hits from (
+    select delivery_id as v from synthetic.webhook_deliveries
+    union all select event_id       from synthetic.webhook_deliveries
+    union all select event_type     from synthetic.webhook_deliveries
+    union all select invoice_number from synthetic.webhook_deliveries
+  ) v
+  where v.v ~* '(password|secret|api[-_ ]?key|bearer|service[-_ ]?role)'
+     or v.v ~ 'eyJ[A-Za-z0-9_-]{10,}'
+     or v.v ~ 'sb[ps]_[A-Za-z0-9]{8,}';
+
+  if hits > 0 then
+    raise exception 'FAIL: % replay fixture value(s) look like a credential', hits;
+  end if;
+  raise notice 'PASS: no replay fixture value matches a credential pattern';
+end $$;
+
+-- Leave both fixtures in the remediated state.
+select synthetic.apply_replay_mode('remediated');
+

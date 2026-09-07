@@ -225,14 +225,23 @@ test.describe("the coverage matrix classifies every check", () => {
 });
 
 test.describe("no result is available without evidence, and no route lies", () => {
-  test("an unpublished scenario shows untested, not a pass", async ({
+  /*
+   * S2 asserted here that the webhook route showed the untested build-state
+   * notice, because its evidence did not exist yet. S3 records that evidence,
+   * so the assertion that still matters is the one that was always the point:
+   * the route starts with no result and never implies one. The S3 suite owns
+   * the rest of that lab's behaviour.
+   */
+  test("a scenario published by another slice still starts untested", async ({
     page,
   }) => {
     await page.goto("/scenarios/webhook-integrity");
     await expect(page.getByText("Untested").first()).toBeVisible();
-    await expect(page.getByText("Guided lab not published yet")).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Run the documented test" }),
+      page.getByText("An untested check is not a pass."),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Before — vulnerable handler" }),
     ).toHaveCount(0);
   });
 

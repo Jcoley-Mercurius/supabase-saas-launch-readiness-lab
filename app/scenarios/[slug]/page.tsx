@@ -4,15 +4,21 @@ import { notFound } from "next/navigation";
 import { AuthorizedReviewBand } from "@/components/layout/authorized-review-band";
 import { Container, Section } from "@/components/layout/container";
 import { GuidedLab } from "@/components/evidence/guided-lab";
+import { ReplayLab } from "@/components/evidence/replay-lab";
 import { ScenarioRail } from "@/components/evidence/scenario-navigation";
 import { Alert } from "@/components/ui/alert";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { StatusIndicator } from "@/components/ui/status-indicator";
-import { PROOF_STEPS, BOUNDARY_NOTES } from "@/lib/content/site";
+import { BOUNDARY_NOTES } from "@/lib/content/site";
 import { SCENARIOS, getScenario } from "@/lib/content/scenarios";
 import { EVIDENCE_SCENARIOS } from "@/lib/evidence/catalog";
+import { REPLAY_SCENARIOS } from "@/lib/evidence/replay-catalog";
+import {
+  REPLAY_SCENARIO_IDS,
+  type ReplayScenarioId,
+} from "@/lib/evidence/replay-types";
 import {
   EVIDENCE_SCENARIO_IDS,
   type EvidenceScenarioId,
@@ -26,10 +32,17 @@ import {
  *        MDS COMPOSITION-PROPOSAL "Guided lab shell" and "Scenario detail
  *        hierarchy"; MDS-REF-006, MDS-REF-009 panel 3.
  *
- * S2 publishes the two scenarios whose evidence exists: authorization/RLS and
- * storage/configuration. The webhook and reliability scenarios keep the honest
- * untested build-state notice until S3 records their evidence — a route that
- * cannot yet prove anything must not look like one that can.
+ * S2 published authorization/RLS and storage/configuration; S3 publishes
+ * webhook integrity and reliability/recovery. All four approved scenarios now
+ * have recorded evidence, and each route renders the lab that reads the
+ * transcript for its own slice.
+ *
+ * The final branch is not dead code kept for tidiness. A scenario that is
+ * published in lib/content/scenarios.ts but belongs to neither evidence
+ * allowlist would otherwise render a heading with nothing under it; instead it
+ * renders the canonical unavailable state, so a future scenario added without
+ * its evidence announces that fact rather than looking like a finished route
+ * with no findings (MPS-RULE-002, MPS-ACC-014).
  */
 
 /*
@@ -44,8 +57,12 @@ import {
  */
 export const dynamicParams = false;
 
-function hasPublishedEvidence(slug: string): slug is EvidenceScenarioId {
+function hasAuthorizationEvidence(slug: string): slug is EvidenceScenarioId {
   return (EVIDENCE_SCENARIO_IDS as readonly string[]).includes(slug);
+}
+
+function hasReplayEvidence(slug: string): slug is ReplayScenarioId {
+  return (REPLAY_SCENARIO_IDS as readonly string[]).includes(slug);
 }
 
 export function generateStaticParams() {
@@ -75,9 +92,8 @@ export default async function ScenarioPage({
     notFound();
   }
 
-  // Bound to a local so the type guard narrows for the JSX below.
+  // Bound to a local so the type guards narrow for the JSX below.
   const scenarioSlug = scenario.slug;
-  const published = hasPublishedEvidence(scenarioSlug);
 
   return (
     <>
@@ -148,10 +164,15 @@ export default async function ScenarioPage({
                 </li>
               </ul>
 
-              {published ? (
+              {hasAuthorizationEvidence(scenarioSlug) ? (
                 <GuidedLab
                   scenario={EVIDENCE_SCENARIOS[scenarioSlug]}
                   scenarioTitle={scenario.pillar}
+                  documentedTest={scenario.documentedTest}
+                />
+              ) : hasReplayEvidence(scenarioSlug) ? (
+                <ReplayLab
+                  scenario={REPLAY_SCENARIOS[scenarioSlug]}
                   documentedTest={scenario.documentedTest}
                 />
               ) : (
@@ -166,38 +187,18 @@ export default async function ScenarioPage({
                   </div>
 
                   <StatusIndicator
-                    state="untested"
+                    state="unavailable"
                     variant="block"
-                    explanation="No documented test has been run for this scenario in any build. An untested check is not a pass."
+                    explanation="No recorded evidence exists for this scenario in this build. Nothing here should be read as a result, and an absent check is not a pass."
                   />
 
-                  <Alert tone="info" title="Guided lab not published yet">
+                  <Alert tone="warning" title="This is not a result">
                     <p>
-                      This scenario&rsquo;s evidence is recorded in a later
-                      build stage. Its identity, documented test, and evidence
-                      state are shown here so nothing is implied about a result
-                      that does not exist. The authorization and storage
-                      scenarios are published and can be run now.
+                      This scenario&rsquo;s identity and documented test are
+                      shown so nothing is implied about a result that does not
+                      exist. The published scenarios can be run now.
                     </p>
                   </Alert>
-
-                  <ol className="border-line flex flex-col gap-4 border-t pt-5">
-                    {PROOF_STEPS.map((step, index) => (
-                      <li key={step.title} className="flex items-start gap-3">
-                        <span className="border-line text-label text-subtle bg-base rounded-pill flex size-7 shrink-0 items-center justify-center border">
-                          {index + 1}
-                        </span>
-                        <span className="flex flex-col">
-                          <span className="text-body-sm text-strong font-semibold">
-                            {step.title}
-                          </span>
-                          <span className="text-body-sm text-subtle">
-                            {step.body}
-                          </span>
-                        </span>
-                      </li>
-                    ))}
-                  </ol>
 
                   <div className="flex flex-wrap gap-3">
                     <ButtonLink

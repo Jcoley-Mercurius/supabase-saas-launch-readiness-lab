@@ -34,6 +34,18 @@ test.describe("public input is allowlisted", () => {
       scenarioId: "authorization-and-rls'; drop schema synthetic cascade;--",
       mode: "vulnerable",
     },
+    // An ordinary zod object would ignore these extra keys and serve the
+    // evidence anyway. The request surface is exactly two enumerated fields.
+    {
+      scenarioId: "authorization-and-rls",
+      mode: "vulnerable",
+      table: "synthetic.profiles",
+    },
+    {
+      scenarioId: "authorization-and-rls",
+      mode: "vulnerable",
+      connectionString: "postgres://example",
+    },
     "authorization-and-rls",
     null,
     undefined,

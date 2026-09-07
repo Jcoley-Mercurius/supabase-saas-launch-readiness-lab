@@ -9,8 +9,9 @@
  * The boundary, stated exactly:
  *
  *  - The only inputs are a scenario identifier and a mode, each checked
- *    against a closed allowlist by an explicit schema. Anything else is
- *    rejected before a single byte of evidence is read.
+ *    against a closed allowlist by an explicit strict schema. Anything else —
+ *    including an unexpected extra key, which an ordinary zod object would
+ *    silently ignore — is rejected before a single byte of evidence is read.
  *  - There is no parameter for a URL, project, database, credential, table,
  *    tenant, role, or query. None can be smuggled in, because none exists.
  *  - Nothing here opens a connection. The evidence was recorded offline
@@ -44,7 +45,7 @@ const transcript = transcriptJson as unknown as EvidenceTranscript;
  * Server Action, which the Next.js documentation warns is always reachable
  * independently of the UI.
  */
-export const RunRequestSchema = z.object({
+export const RunRequestSchema = z.strictObject({
   scenarioId: z.enum(EVIDENCE_SCENARIO_IDS),
   mode: z.enum(EVIDENCE_MODES),
 });

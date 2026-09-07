@@ -1,5 +1,4 @@
 import { StateGlyph } from "@/components/ui/state-glyph";
-import type { EvidenceScenario } from "@/lib/evidence/catalog";
 import type { EvidenceState } from "@/components/ui/status-indicator";
 
 /*
@@ -10,12 +9,31 @@ import type { EvidenceState } from "@/components/ui/status-indicator";
  * than a label. The band is tinted by the current documented state, but the
  * state is never carried by tint alone: the glyph, the severity word, and the
  * explanatory text all say it too.
+ *
+ * It takes the fields it renders rather than a scenario object, so the S2
+ * authorization findings and the S3 replay findings share one band. The
+ * boundary row is labelled by the caller because the boundary a finding turns
+ * on differs by scenario — a tenant column for authorization, a logical event
+ * identifier for webhook replay — and mislabelling it would misdescribe the
+ * finding.
  */
 export function FindingSummary({
-  scenario,
+  finding,
+  severity,
+  severityBasis,
+  impact,
+  affectedArea,
+  boundaryLabel,
+  boundary,
   state,
 }: {
-  scenario: EvidenceScenario;
+  finding: string;
+  severity: string;
+  severityBasis: string;
+  impact: string;
+  affectedArea: string;
+  boundaryLabel: string;
+  boundary: string;
   state: EvidenceState;
 }) {
   const resolved =
@@ -48,19 +66,19 @@ export function FindingSummary({
         </span>
         <div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <h3 className="text-h3 text-strong">{scenario.finding}</h3>
+            <h3 className="text-h3 text-strong">{finding}</h3>
             <span
               className={`text-label rounded-pill border px-2.5 py-1 ${resolved.fg} border-current`}
             >
-              {scenario.severity} severity
+              {severity} severity
             </span>
           </div>
-          <p className="text-body text-subtle mt-2">{scenario.impact}</p>
+          <p className="text-body text-subtle mt-2">{impact}</p>
           <p className="text-body-sm text-subtle mt-2">
             <span className="text-strong font-semibold">
               Why this severity.{" "}
             </span>
-            {scenario.severityBasis}
+            {severityBasis}
           </p>
         </div>
       </div>
@@ -68,13 +86,11 @@ export function FindingSummary({
       <dl className="text-body-sm flex flex-col gap-3">
         <div>
           <dt className="text-subtle font-semibold">Affected area</dt>
-          <dd className="text-strong mt-0.5">{scenario.affectedArea}</dd>
+          <dd className="text-strong mt-0.5">{affectedArea}</dd>
         </div>
         <div>
-          <dt className="text-subtle font-semibold">Tenant boundary</dt>
-          <dd className="text-strong mt-0.5 font-mono">
-            {scenario.tenantBoundary}
-          </dd>
+          <dt className="text-subtle font-semibold">{boundaryLabel}</dt>
+          <dd className="text-strong mt-0.5 font-mono">{boundary}</dd>
         </div>
       </dl>
     </section>

@@ -1,13 +1,13 @@
 {
   "$schema": "mercurius/evidence-transcript/1",
-  "recorded_at": "2026-09-06T19:49:59.432Z",
+  "recorded_at": "2026-09-07T15:26:44.546Z",
   "engine": {
     "product": "PostgreSQL",
     "version": "17.6",
     "host": "isolated local Supabase container",
     "note": "No hosted Supabase project, production system, or third-party system was contacted."
   },
-  "input_digest": "sha256:faf0308f7d4d8a73e858179a5e7bb9c0ec94ccd9e6df77f2dfd1f50ce4f9b016",
+  "input_digest": "sha256:4abdfea414d58c9abf42dd26eeca3dcd1fe0e349e5b867b685ba0f435b4f2e4a",
   "modes": [
     "vulnerable",
     "remediated"

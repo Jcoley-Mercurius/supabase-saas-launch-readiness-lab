@@ -12,7 +12,7 @@ import { expect, test } from "@playwright/test";
  * the ordinary test run, not just the database-backed verification that needs
  * PostgreSQL to be up.
  */
-test("the committed transcript is fresh against the fixture on disk", () => {
+test("both committed transcripts are fresh against the fixture on disk", () => {
   const output = execFileSync(
     "node",
     ["scripts/check-evidence-freshness.mjs"],
@@ -21,13 +21,18 @@ test("the committed transcript is fresh against the fixture on disk", () => {
     },
   );
 
-  expect(output).toContain("PASS  committed transcript parses");
-  expect(output).toContain("PASS  transcript digest matches");
+  for (const name of ["authorization", "replay"]) {
+    expect(output).toContain(`PASS  committed ${name} transcript parses`);
+    expect(output).toContain(`PASS  ${name} transcript digest matches`);
+    expect(output).toContain(
+      `PASS  ${name} transcript records both documented modes`,
+    );
+    expect(output).toContain(
+      `PASS  ${name} transcript is free of credential-shaped strings`,
+    );
+  }
   expect(output).toContain(
-    "PASS  transcript records both documented policy modes",
-  );
-  expect(output).toContain(
-    "PASS  transcript is free of credential-shaped strings",
+    "PASS  both transcripts were recorded from the same fixture",
   );
   expect(output).not.toContain("FAIL");
 });

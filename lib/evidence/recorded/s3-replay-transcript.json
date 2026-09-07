@@ -1,0 +1,1546 @@
+{
+  "$schema": "mercurius/replay-transcript/1",
+  "recorded_at": "2026-09-07T15:26:44.546Z",
+  "engine": {
+    "product": "PostgreSQL",
+    "version": "17.6",
+    "host": "isolated local Supabase container",
+    "note": "No hosted Supabase project, production system, or third-party system was contacted."
+  },
+  "input_digest": "sha256:4abdfea414d58c9abf42dd26eeca3dcd1fe0e349e5b867b685ba0f435b4f2e4a",
+  "modes": [
+    "vulnerable",
+    "remediated"
+  ],
+  "runs": {
+    "vulnerable": [
+      {
+        "steps": [
+          {
+            "note": "The handler cannot complete its work. What it leaves behind is the whole question.",
+            "label": "Attempt 1 — the downstream dependency is unavailable",
+            "detail": "The commitment failed (downstream payment ledger unavailable) but the error was swallowed and logical event evt_hl0817_settled remains marked processed, so no retry will ever be accepted.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "failed_after_marking_processed",
+            "event_id": "evt_hl0817_settled",
+            "error_code": null,
+            "delivery_id": "del_hl0817_flaky",
+            "amount_cents": 91200,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "HL-0817",
+            "sequence_number": 2,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "The same delivery id, retried. A receiver that recorded attempt 1 as processed will discard this.",
+            "label": "Attempt 2 — the provider retries the same delivery",
+            "detail": "The ledger already held delivery id del_hl0817_flaky, so this attempt was discarded — including when it was the provider retrying work that never completed.",
+            "attempt": 2,
+            "ordinal": 2,
+            "decision": "skipped_duplicate",
+            "event_id": "evt_hl0817_settled",
+            "error_code": null,
+            "delivery_id": "del_hl0817_flaky",
+            "amount_cents": 91200,
+            "error_message": null,
+            "checkpoint_met": false,
+            "invoice_number": "HL-0817",
+            "sequence_number": 2,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "Processing fails downstream, and the provider retries the same delivery",
+        "intent": "The dependency the handler writes to is unavailable on the first attempt. The provider retries the same delivery id, as an at-least-once provider does, and the dependency is available by then.",
+        "ledger": [
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_hl0817_settled",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_hl0817_flaky",
+            "first_delivery_id": "del_hl0817_flaky"
+          }
+        ],
+        "ordinal": 1,
+        "commitments": [],
+        "consequence": "If the event was marked processed before the work was done, the retry is discarded as a duplicate and the payment is lost silently — no error, no queue, no alert, and a customer who paid.",
+        "expectation": "deny",
+        "scenario_id": "reliability-and-recovery",
+        "sequence_id": "REL-001",
+        "configuration": {
+          "mode": "vulnerable",
+          "ledger_key": "delivery_id",
+          "atomic_commit": false,
+          "enforce_order": false,
+          "verify_signature": false
+        },
+        "target_invoice": "HL-0817",
+        "expectation_met": false,
+        "checkpoints_held": false,
+        "expectation_text": "The failed attempt leaves nothing behind, and the retry produces exactly one commitment of 91200 cents.",
+        "expected_commitments": 1,
+        "observed_commitments": 0,
+        "expected_applied_cents": 91200,
+        "observed_applied_cents": 0,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "steps": [
+          {
+            "note": "The outage begins.",
+            "label": "Attempt 1 — dependency unavailable",
+            "detail": "The commitment failed (downstream payment ledger unavailable) but the error was swallowed and logical event evt_nw2042_settled remains marked processed, so no retry will ever be accepted.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "failed_after_marking_processed",
+            "event_id": "evt_nw2042_settled",
+            "error_code": null,
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "The provider backs off and retries.",
+            "label": "Attempt 2 — dependency still unavailable",
+            "detail": "The ledger already held delivery id del_nw2042_outage, so this attempt was discarded — including when it was the provider retrying work that never completed.",
+            "attempt": 2,
+            "ordinal": 2,
+            "decision": "skipped_duplicate",
+            "event_id": "evt_nw2042_settled",
+            "error_code": null,
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "The outage continues past the point where a fragile receiver has already given up.",
+            "label": "Attempt 3 — dependency still unavailable",
+            "detail": "The ledger already held delivery id del_nw2042_outage, so this attempt was discarded — including when it was the provider retrying work that never completed.",
+            "attempt": 3,
+            "ordinal": 3,
+            "decision": "skipped_duplicate",
+            "event_id": "evt_nw2042_settled",
+            "error_code": null,
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "Recovery. Whether this attempt can still commit is what separates a recoverable receiver from a lossy one.",
+            "label": "Attempt 4 — the dependency is restored",
+            "detail": "The ledger already held delivery id del_nw2042_outage, so this attempt was discarded — including when it was the provider retrying work that never completed.",
+            "attempt": 4,
+            "ordinal": 4,
+            "decision": "skipped_duplicate",
+            "event_id": "evt_nw2042_settled",
+            "error_code": null,
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": null,
+            "checkpoint_met": false,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "A sustained outage across three attempts, then recovery",
+        "intent": "The dependency stays unavailable for three consecutive delivery attempts and is restored before the fourth. This is the shape of a real incident rather than a single blip.",
+        "ledger": [
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_nw2042_settled",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_nw2042_outage",
+            "first_delivery_id": "del_nw2042_outage"
+          }
+        ],
+        "ordinal": 2,
+        "commitments": [],
+        "consequence": "A receiver that cannot survive a multi-attempt outage loses every event that arrived during it, and the loss is only discovered by reconciliation, if at all.",
+        "expectation": "deny",
+        "scenario_id": "reliability-and-recovery",
+        "sequence_id": "REL-002",
+        "configuration": {
+          "mode": "vulnerable",
+          "ledger_key": "delivery_id",
+          "atomic_commit": false,
+          "enforce_order": false,
+          "verify_signature": false
+        },
+        "target_invoice": "NW-2042",
+        "expectation_met": false,
+        "checkpoints_held": false,
+        "expectation_text": "Three failed attempts change nothing, and the attempt after recovery produces exactly one commitment of 32500 cents.",
+        "expected_commitments": 1,
+        "observed_commitments": 0,
+        "expected_applied_cents": 32500,
+        "observed_applied_cents": 0,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "steps": [
+          {
+            "note": "The failure that prompts the incident.",
+            "label": "Attempt 1 — dependency unavailable",
+            "detail": "The commitment failed (downstream payment ledger unavailable) but the error was swallowed and logical event evt_hl0818_settled remains marked processed, so no retry will ever be accepted.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "failed_after_marking_processed",
+            "event_id": "evt_hl0818_settled",
+            "error_code": null,
+            "delivery_id": "del_hl0818_flaky",
+            "amount_cents": 15000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "HL-0818",
+            "sequence_number": 3,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "Automatic recovery completes.",
+            "label": "Attempt 2 — the provider retries and succeeds",
+            "detail": "The ledger already held delivery id del_hl0818_flaky, so this attempt was discarded — including when it was the provider retrying work that never completed.",
+            "attempt": 2,
+            "ordinal": 2,
+            "decision": "skipped_duplicate",
+            "event_id": "evt_hl0818_settled",
+            "error_code": null,
+            "delivery_id": "del_hl0818_flaky",
+            "amount_cents": 15000,
+            "error_message": null,
+            "checkpoint_met": false,
+            "invoice_number": "HL-0818",
+            "sequence_number": 3,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 1
+          },
+          {
+            "note": "The same logical event under a new delivery id, sent by hand after the incident.",
+            "label": "An operator also replays the event from the dashboard",
+            "detail": "Delivery del_hl0818_replay was recorded in the ledger and one commitment of 15000 cents was made for HL-0818.",
+            "attempt": 1,
+            "ordinal": 3,
+            "decision": "committed",
+            "event_id": "evt_hl0818_settled",
+            "error_code": null,
+            "delivery_id": "del_hl0818_replay",
+            "amount_cents": 15000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "HL-0818",
+            "sequence_number": 3,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 2,
+            "applied_cents_after": 15000,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "Recovery followed by a manual replay must not double-apply",
+        "intent": "After a failure and a successful retry, an operator also replays the same logical event from the provider dashboard — the ordinary human response to an incident, and the point at which a fragile receiver turns one incident into two.",
+        "ledger": [
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_hl0818_settled",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_hl0818_flaky",
+            "first_delivery_id": "del_hl0818_flaky"
+          },
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_hl0818_settled",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_hl0818_replay",
+            "first_delivery_id": "del_hl0818_replay"
+          }
+        ],
+        "ordinal": 3,
+        "commitments": [
+          {
+            "id": "del_hl0818_replay#1",
+            "attempt": 1,
+            "event_id": "evt_hl0818_settled",
+            "delivery_id": "del_hl0818_replay",
+            "amount_cents": 15000,
+            "invoice_number": "HL-0818"
+          }
+        ],
+        "consequence": "Recovery work itself becomes the cause of the duplicate commitment, which is the failure mode operators are least likely to anticipate.",
+        "expectation": "deny",
+        "scenario_id": "reliability-and-recovery",
+        "sequence_id": "REL-003",
+        "configuration": {
+          "mode": "vulnerable",
+          "ledger_key": "delivery_id",
+          "atomic_commit": false,
+          "enforce_order": false,
+          "verify_signature": false
+        },
+        "target_invoice": "HL-0818",
+        "expectation_met": false,
+        "checkpoints_held": false,
+        "expectation_text": "Recovery and the manual replay together still leave exactly one commitment of 15000 cents.",
+        "expected_commitments": 1,
+        "observed_commitments": 1,
+        "expected_applied_cents": 15000,
+        "observed_applied_cents": 15000,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "steps": [
+          {
+            "note": "The outage affects this delivery only.",
+            "label": "An unrelated delivery fails",
+            "detail": "The commitment failed (downstream payment ledger unavailable) but the error was swallowed and logical event evt_nw2042_settled remains marked processed, so no retry will ever be accepted.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "failed_after_marking_processed",
+            "event_id": "evt_nw2042_settled",
+            "error_code": null,
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "It must be processed normally.",
+            "label": "The unrelated event for NW-2041 is delivered",
+            "detail": "Delivery del_nw2041_c was recorded in the ledger and one commitment of 148000 cents was made for NW-2041.",
+            "attempt": 1,
+            "ordinal": 2,
+            "decision": "committed",
+            "event_id": "evt_nw2041_settled",
+            "error_code": null,
+            "delivery_id": "del_nw2041_c",
+            "amount_cents": 148000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2041",
+            "sequence_number": 2,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 2,
+            "applied_cents_after": 148000,
+            "expected_commitments_after": 1
+          },
+          {
+            "note": "The failure continues around the healthy event.",
+            "label": "The failing delivery is retried and fails again",
+            "detail": "The ledger already held delivery id del_nw2042_outage, so this attempt was discarded — including when it was the provider retrying work that never completed.",
+            "attempt": 2,
+            "ordinal": 3,
+            "decision": "skipped_duplicate",
+            "event_id": "evt_nw2042_settled",
+            "error_code": null,
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 2,
+            "applied_cents_after": 148000,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "An unrelated event delivered during the outage window",
+        "intent": "While one delivery is failing repeatedly, an unrelated invoice.paid event for a different invoice arrives and must be processed normally.",
+        "ledger": [
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_nw2041_settled",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_nw2041_c",
+            "first_delivery_id": "del_nw2041_c"
+          },
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_nw2042_settled",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_nw2042_outage",
+            "first_delivery_id": "del_nw2042_outage"
+          }
+        ],
+        "ordinal": 4,
+        "commitments": [
+          {
+            "id": "del_nw2041_c#1",
+            "attempt": 1,
+            "event_id": "evt_nw2041_settled",
+            "delivery_id": "del_nw2041_c",
+            "amount_cents": 148000,
+            "invoice_number": "NW-2041"
+          }
+        ],
+        "consequence": "If a single failing dependency stalls unrelated events, an isolated outage becomes a total processing outage.",
+        "expectation": "allow",
+        "scenario_id": "reliability-and-recovery",
+        "sequence_id": "REL-004",
+        "configuration": {
+          "mode": "vulnerable",
+          "ledger_key": "delivery_id",
+          "atomic_commit": false,
+          "enforce_order": false,
+          "verify_signature": false
+        },
+        "target_invoice": "NW-2041",
+        "expectation_met": true,
+        "checkpoints_held": true,
+        "expectation_text": "The unrelated event commits exactly once, in both documented configurations, regardless of the failure around it.",
+        "expected_commitments": 1,
+        "observed_commitments": 1,
+        "expected_applied_cents": 148000,
+        "observed_applied_cents": 148000,
+        "evidence_state": "remediated"
+      },
+      {
+        "steps": [
+          {
+            "note": "The provider's first delivery of the logical event. Nothing has been processed yet.",
+            "label": "First delivery of evt_nw2041_paid",
+            "detail": "Delivery del_nw2041_a was recorded in the ledger and one commitment of 148000 cents was made for NW-2041.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "committed",
+            "event_id": "evt_nw2041_paid",
+            "error_code": null,
+            "delivery_id": "del_nw2041_a",
+            "amount_cents": 148000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2041",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 148000,
+            "expected_commitments_after": 1
+          },
+          {
+            "note": "A second delivery carrying the SAME event_id under a different delivery_id. A receiver keyed on the delivery id sees something it has never seen before.",
+            "label": "Replay: same logical event, new delivery id",
+            "detail": "Delivery del_nw2041_b was recorded in the ledger and one commitment of 148000 cents was made for NW-2041.",
+            "attempt": 1,
+            "ordinal": 2,
+            "decision": "committed",
+            "event_id": "evt_nw2041_paid",
+            "error_code": null,
+            "delivery_id": "del_nw2041_b",
+            "amount_cents": 148000,
+            "error_message": null,
+            "checkpoint_met": false,
+            "invoice_number": "NW-2041",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 2,
+            "ledger_rows_after": 2,
+            "applied_cents_after": 296000,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "The same logical event is delivered twice",
+        "intent": "The provider delivers invoice.paid for NW-2041, then delivers the same logical event again under a new delivery id — an at-least-once redelivery, a dashboard replay, or a backfill all look like this.",
+        "ledger": [
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_nw2041_paid",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_nw2041_a",
+            "first_delivery_id": "del_nw2041_a"
+          },
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_nw2041_paid",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_nw2041_b",
+            "first_delivery_id": "del_nw2041_b"
+          }
+        ],
+        "ordinal": 1,
+        "commitments": [
+          {
+            "id": "del_nw2041_a#1",
+            "attempt": 1,
+            "event_id": "evt_nw2041_paid",
+            "delivery_id": "del_nw2041_a",
+            "amount_cents": 148000,
+            "invoice_number": "NW-2041"
+          },
+          {
+            "id": "del_nw2041_b#1",
+            "attempt": 1,
+            "event_id": "evt_nw2041_paid",
+            "delivery_id": "del_nw2041_b",
+            "amount_cents": 148000,
+            "invoice_number": "NW-2041"
+          }
+        ],
+        "consequence": "The customer is committed twice for one payment. Duplicate charges, duplicated fulfilment, and a revenue figure that no longer matches the provider's are the ordinary results.",
+        "expectation": "deny",
+        "scenario_id": "webhook-integrity",
+        "sequence_id": "WHK-001",
+        "configuration": {
+          "mode": "vulnerable",
+          "ledger_key": "delivery_id",
+          "atomic_commit": false,
+          "enforce_order": false,
+          "verify_signature": false
+        },
+        "target_invoice": "NW-2041",
+        "expectation_met": false,
+        "checkpoints_held": false,
+        "expectation_text": "One commitment of 148000 cents for NW-2041, no matter how many times the event arrives.",
+        "expected_commitments": 1,
+        "observed_commitments": 2,
+        "expected_applied_cents": 148000,
+        "observed_applied_cents": 296000,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "steps": [
+          {
+            "note": "The payload is well formed and the endpoint is correct; only the signature fails to recompute.",
+            "label": "Forged delivery with an unverifiable signature",
+            "detail": "Delivery del_nw2042_forged was recorded in the ledger and one commitment of 32500 cents was made for NW-2042.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "committed",
+            "event_id": "evt_nw2042_paid",
+            "error_code": null,
+            "delivery_id": "del_nw2042_forged",
+            "amount_cents": 32500,
+            "error_message": null,
+            "checkpoint_met": false,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": false,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 32500,
+            "expected_commitments_after": 0
+          }
+        ],
+        "title": "A forged event with a signature that does not verify",
+        "intent": "A caller posts a well-formed invoice.paid body to the endpoint carrying a signature that does not recompute from the payload.",
+        "ledger": [
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_nw2042_paid",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_nw2042_forged",
+            "first_delivery_id": "del_nw2042_forged"
+          }
+        ],
+        "ordinal": 2,
+        "commitments": [
+          {
+            "id": "del_nw2042_forged#1",
+            "attempt": 1,
+            "event_id": "evt_nw2042_paid",
+            "delivery_id": "del_nw2042_forged",
+            "amount_cents": 32500,
+            "invoice_number": "NW-2042"
+          }
+        ],
+        "consequence": "Anyone who learns the endpoint URL can mark invoices paid, extend subscriptions, or release fulfilment without paying.",
+        "expectation": "deny",
+        "scenario_id": "webhook-integrity",
+        "sequence_id": "WHK-002",
+        "configuration": {
+          "mode": "vulnerable",
+          "ledger_key": "delivery_id",
+          "atomic_commit": false,
+          "enforce_order": false,
+          "verify_signature": false
+        },
+        "target_invoice": "NW-2042",
+        "expectation_met": false,
+        "checkpoints_held": false,
+        "expectation_text": "No commitment at all, because the body was not proven to come from the provider.",
+        "expected_commitments": 0,
+        "observed_commitments": 1,
+        "expected_applied_cents": 0,
+        "observed_applied_cents": 32500,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "steps": [
+          {
+            "note": "The newer version of the invoice arrives and is applied.",
+            "label": "Current event: sequence 2, 15000 cents",
+            "detail": "Delivery del_hl0818_v2 was recorded in the ledger and one commitment of 15000 cents was made for HL-0818.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "committed",
+            "event_id": "evt_hl0818_paid_v2",
+            "error_code": null,
+            "delivery_id": "del_hl0818_v2",
+            "amount_cents": 15000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "HL-0818",
+            "sequence_number": 2,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 15000,
+            "expected_commitments_after": 1
+          },
+          {
+            "note": "The older version of the same invoice arrives after the newer one. It is correctly signed and is not a duplicate — only its order is wrong.",
+            "label": "Superseded event: sequence 1, 9000 cents, arriving late",
+            "detail": "Delivery del_hl0818_v1 was recorded in the ledger and one commitment of 9000 cents was made for HL-0818.",
+            "attempt": 1,
+            "ordinal": 2,
+            "decision": "committed",
+            "event_id": "evt_hl0818_paid_v1",
+            "error_code": null,
+            "delivery_id": "del_hl0818_v1",
+            "amount_cents": 9000,
+            "error_message": null,
+            "checkpoint_met": false,
+            "invoice_number": "HL-0818",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 2,
+            "ledger_rows_after": 2,
+            "applied_cents_after": 24000,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "A superseded event arrives after the newer one",
+        "intent": "Sequence 2 of HL-0818 is delivered first and applied. Sequence 1, the older version of the same invoice, then arrives late — the ordinary result of a provider retry racing a fresh delivery.",
+        "ledger": [
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_hl0818_paid_v1",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_hl0818_v1",
+            "first_delivery_id": "del_hl0818_v1"
+          },
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_hl0818_paid_v2",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_hl0818_v2",
+            "first_delivery_id": "del_hl0818_v2"
+          }
+        ],
+        "ordinal": 3,
+        "commitments": [
+          {
+            "id": "del_hl0818_v1#1",
+            "attempt": 1,
+            "event_id": "evt_hl0818_paid_v1",
+            "delivery_id": "del_hl0818_v1",
+            "amount_cents": 9000,
+            "invoice_number": "HL-0818"
+          },
+          {
+            "id": "del_hl0818_v2#1",
+            "attempt": 1,
+            "event_id": "evt_hl0818_paid_v2",
+            "delivery_id": "del_hl0818_v2",
+            "amount_cents": 15000,
+            "invoice_number": "HL-0818"
+          }
+        ],
+        "consequence": "A stale amount overwrites the current one, so the recorded balance silently disagrees with the provider's.",
+        "expectation": "deny",
+        "scenario_id": "webhook-integrity",
+        "sequence_id": "WHK-003",
+        "configuration": {
+          "mode": "vulnerable",
+          "ledger_key": "delivery_id",
+          "atomic_commit": false,
+          "enforce_order": false,
+          "verify_signature": false
+        },
+        "target_invoice": "HL-0818",
+        "expectation_met": false,
+        "checkpoints_held": false,
+        "expectation_text": "Only the newer sequence 2 event is applied; the superseded sequence 1 event changes nothing.",
+        "expected_commitments": 1,
+        "observed_commitments": 2,
+        "expected_applied_cents": 15000,
+        "observed_applied_cents": 24000,
+        "evidence_state": "vulnerable"
+      },
+      {
+        "steps": [
+          {
+            "note": "The ordinary, legitimate case.",
+            "label": "Single correctly signed first delivery",
+            "detail": "Delivery del_hl0817_clean was recorded in the ledger and one commitment of 91200 cents was made for HL-0817.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "committed",
+            "event_id": "evt_hl0817_paid",
+            "error_code": null,
+            "delivery_id": "del_hl0817_clean",
+            "amount_cents": 91200,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "HL-0817",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 91200,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "A legitimate, correctly signed, first-time event",
+        "intent": "A single properly signed invoice.paid event for HL-0817 that has never been seen before. This is the path that must keep working after the fix.",
+        "ledger": [
+          {
+            "outcome": "marked_processed",
+            "event_id": "evt_hl0817_paid",
+            "key_kind": "delivery_id",
+            "ledger_key": "del_hl0817_clean",
+            "first_delivery_id": "del_hl0817_clean"
+          }
+        ],
+        "ordinal": 4,
+        "commitments": [
+          {
+            "id": "del_hl0817_clean#1",
+            "attempt": 1,
+            "event_id": "evt_hl0817_paid",
+            "delivery_id": "del_hl0817_clean",
+            "amount_cents": 91200,
+            "invoice_number": "HL-0817"
+          }
+        ],
+        "consequence": "If this path stops committing, the remediation has broken payment processing rather than secured it.",
+        "expectation": "allow",
+        "scenario_id": "webhook-integrity",
+        "sequence_id": "WHK-004",
+        "configuration": {
+          "mode": "vulnerable",
+          "ledger_key": "delivery_id",
+          "atomic_commit": false,
+          "enforce_order": false,
+          "verify_signature": false
+        },
+        "target_invoice": "HL-0817",
+        "expectation_met": true,
+        "checkpoints_held": true,
+        "expectation_text": "Exactly one commitment of 91200 cents, in both documented configurations.",
+        "expected_commitments": 1,
+        "observed_commitments": 1,
+        "expected_applied_cents": 91200,
+        "observed_applied_cents": 91200,
+        "evidence_state": "remediated"
+      }
+    ],
+    "remediated": [
+      {
+        "steps": [
+          {
+            "note": "The handler cannot complete its work. What it leaves behind is the whole question.",
+            "label": "Attempt 1 — the downstream dependency is unavailable",
+            "detail": "The handler could not complete (downstream payment ledger unavailable), so the ledger claim and the commitment were both rolled back and logical event evt_hl0817_settled remains eligible for the provider's retry.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "failed_and_rolled_back",
+            "event_id": "evt_hl0817_settled",
+            "error_code": "08006",
+            "delivery_id": "del_hl0817_flaky",
+            "amount_cents": 91200,
+            "error_message": "downstream payment ledger unavailable",
+            "checkpoint_met": true,
+            "invoice_number": "HL-0817",
+            "sequence_number": 2,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 0,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "The same delivery id, retried. A receiver that recorded attempt 1 as processed will discard this.",
+            "label": "Attempt 2 — the provider retries the same delivery",
+            "detail": "Logical event evt_hl0817_settled was claimed in the idempotency ledger and one commitment of 91200 cents was recorded for HL-0817.",
+            "attempt": 2,
+            "ordinal": 2,
+            "decision": "committed",
+            "event_id": "evt_hl0817_settled",
+            "error_code": null,
+            "delivery_id": "del_hl0817_flaky",
+            "amount_cents": 91200,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "HL-0817",
+            "sequence_number": 2,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 91200,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "Processing fails downstream, and the provider retries the same delivery",
+        "intent": "The dependency the handler writes to is unavailable on the first attempt. The provider retries the same delivery id, as an at-least-once provider does, and the dependency is available by then.",
+        "ledger": [
+          {
+            "outcome": "committed",
+            "event_id": "evt_hl0817_settled",
+            "key_kind": "event_id",
+            "ledger_key": "evt_hl0817_settled",
+            "first_delivery_id": "del_hl0817_flaky"
+          }
+        ],
+        "ordinal": 1,
+        "commitments": [
+          {
+            "id": "del_hl0817_flaky#2",
+            "attempt": 2,
+            "event_id": "evt_hl0817_settled",
+            "delivery_id": "del_hl0817_flaky",
+            "amount_cents": 91200,
+            "invoice_number": "HL-0817"
+          }
+        ],
+        "consequence": "If the event was marked processed before the work was done, the retry is discarded as a duplicate and the payment is lost silently — no error, no queue, no alert, and a customer who paid.",
+        "expectation": "deny",
+        "scenario_id": "reliability-and-recovery",
+        "sequence_id": "REL-001",
+        "configuration": {
+          "mode": "remediated",
+          "ledger_key": "event_id",
+          "atomic_commit": true,
+          "enforce_order": true,
+          "verify_signature": true
+        },
+        "target_invoice": "HL-0817",
+        "expectation_met": true,
+        "checkpoints_held": true,
+        "expectation_text": "The failed attempt leaves nothing behind, and the retry produces exactly one commitment of 91200 cents.",
+        "expected_commitments": 1,
+        "observed_commitments": 1,
+        "expected_applied_cents": 91200,
+        "observed_applied_cents": 91200,
+        "evidence_state": "remediated"
+      },
+      {
+        "steps": [
+          {
+            "note": "The outage begins.",
+            "label": "Attempt 1 — dependency unavailable",
+            "detail": "The handler could not complete (downstream payment ledger unavailable), so the ledger claim and the commitment were both rolled back and logical event evt_nw2042_settled remains eligible for the provider's retry.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "failed_and_rolled_back",
+            "event_id": "evt_nw2042_settled",
+            "error_code": "08006",
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": "downstream payment ledger unavailable",
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 0,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "The provider backs off and retries.",
+            "label": "Attempt 2 — dependency still unavailable",
+            "detail": "The handler could not complete (downstream payment ledger unavailable), so the ledger claim and the commitment were both rolled back and logical event evt_nw2042_settled remains eligible for the provider's retry.",
+            "attempt": 2,
+            "ordinal": 2,
+            "decision": "failed_and_rolled_back",
+            "event_id": "evt_nw2042_settled",
+            "error_code": "08006",
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": "downstream payment ledger unavailable",
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 0,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "The outage continues past the point where a fragile receiver has already given up.",
+            "label": "Attempt 3 — dependency still unavailable",
+            "detail": "The handler could not complete (downstream payment ledger unavailable), so the ledger claim and the commitment were both rolled back and logical event evt_nw2042_settled remains eligible for the provider's retry.",
+            "attempt": 3,
+            "ordinal": 3,
+            "decision": "failed_and_rolled_back",
+            "event_id": "evt_nw2042_settled",
+            "error_code": "08006",
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": "downstream payment ledger unavailable",
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 0,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "Recovery. Whether this attempt can still commit is what separates a recoverable receiver from a lossy one.",
+            "label": "Attempt 4 — the dependency is restored",
+            "detail": "Logical event evt_nw2042_settled was claimed in the idempotency ledger and one commitment of 32500 cents was recorded for NW-2042.",
+            "attempt": 4,
+            "ordinal": 4,
+            "decision": "committed",
+            "event_id": "evt_nw2042_settled",
+            "error_code": null,
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 32500,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "A sustained outage across three attempts, then recovery",
+        "intent": "The dependency stays unavailable for three consecutive delivery attempts and is restored before the fourth. This is the shape of a real incident rather than a single blip.",
+        "ledger": [
+          {
+            "outcome": "committed",
+            "event_id": "evt_nw2042_settled",
+            "key_kind": "event_id",
+            "ledger_key": "evt_nw2042_settled",
+            "first_delivery_id": "del_nw2042_outage"
+          }
+        ],
+        "ordinal": 2,
+        "commitments": [
+          {
+            "id": "del_nw2042_outage#4",
+            "attempt": 4,
+            "event_id": "evt_nw2042_settled",
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "invoice_number": "NW-2042"
+          }
+        ],
+        "consequence": "A receiver that cannot survive a multi-attempt outage loses every event that arrived during it, and the loss is only discovered by reconciliation, if at all.",
+        "expectation": "deny",
+        "scenario_id": "reliability-and-recovery",
+        "sequence_id": "REL-002",
+        "configuration": {
+          "mode": "remediated",
+          "ledger_key": "event_id",
+          "atomic_commit": true,
+          "enforce_order": true,
+          "verify_signature": true
+        },
+        "target_invoice": "NW-2042",
+        "expectation_met": true,
+        "checkpoints_held": true,
+        "expectation_text": "Three failed attempts change nothing, and the attempt after recovery produces exactly one commitment of 32500 cents.",
+        "expected_commitments": 1,
+        "observed_commitments": 1,
+        "expected_applied_cents": 32500,
+        "observed_applied_cents": 32500,
+        "evidence_state": "remediated"
+      },
+      {
+        "steps": [
+          {
+            "note": "The failure that prompts the incident.",
+            "label": "Attempt 1 — dependency unavailable",
+            "detail": "The handler could not complete (downstream payment ledger unavailable), so the ledger claim and the commitment were both rolled back and logical event evt_hl0818_settled remains eligible for the provider's retry.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "failed_and_rolled_back",
+            "event_id": "evt_hl0818_settled",
+            "error_code": "08006",
+            "delivery_id": "del_hl0818_flaky",
+            "amount_cents": 15000,
+            "error_message": "downstream payment ledger unavailable",
+            "checkpoint_met": true,
+            "invoice_number": "HL-0818",
+            "sequence_number": 3,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 0,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "Automatic recovery completes.",
+            "label": "Attempt 2 — the provider retries and succeeds",
+            "detail": "Logical event evt_hl0818_settled was claimed in the idempotency ledger and one commitment of 15000 cents was recorded for HL-0818.",
+            "attempt": 2,
+            "ordinal": 2,
+            "decision": "committed",
+            "event_id": "evt_hl0818_settled",
+            "error_code": null,
+            "delivery_id": "del_hl0818_flaky",
+            "amount_cents": 15000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "HL-0818",
+            "sequence_number": 3,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 15000,
+            "expected_commitments_after": 1
+          },
+          {
+            "note": "The same logical event under a new delivery id, sent by hand after the incident.",
+            "label": "An operator also replays the event from the dashboard",
+            "detail": "The idempotency ledger already held logical event evt_hl0818_settled, so this delivery was acknowledged without committing anything a second time.",
+            "attempt": 1,
+            "ordinal": 3,
+            "decision": "skipped_duplicate",
+            "event_id": "evt_hl0818_settled",
+            "error_code": null,
+            "delivery_id": "del_hl0818_replay",
+            "amount_cents": 15000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "HL-0818",
+            "sequence_number": 3,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 15000,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "Recovery followed by a manual replay must not double-apply",
+        "intent": "After a failure and a successful retry, an operator also replays the same logical event from the provider dashboard — the ordinary human response to an incident, and the point at which a fragile receiver turns one incident into two.",
+        "ledger": [
+          {
+            "outcome": "committed",
+            "event_id": "evt_hl0818_settled",
+            "key_kind": "event_id",
+            "ledger_key": "evt_hl0818_settled",
+            "first_delivery_id": "del_hl0818_flaky"
+          }
+        ],
+        "ordinal": 3,
+        "commitments": [
+          {
+            "id": "del_hl0818_flaky#2",
+            "attempt": 2,
+            "event_id": "evt_hl0818_settled",
+            "delivery_id": "del_hl0818_flaky",
+            "amount_cents": 15000,
+            "invoice_number": "HL-0818"
+          }
+        ],
+        "consequence": "Recovery work itself becomes the cause of the duplicate commitment, which is the failure mode operators are least likely to anticipate.",
+        "expectation": "deny",
+        "scenario_id": "reliability-and-recovery",
+        "sequence_id": "REL-003",
+        "configuration": {
+          "mode": "remediated",
+          "ledger_key": "event_id",
+          "atomic_commit": true,
+          "enforce_order": true,
+          "verify_signature": true
+        },
+        "target_invoice": "HL-0818",
+        "expectation_met": true,
+        "checkpoints_held": true,
+        "expectation_text": "Recovery and the manual replay together still leave exactly one commitment of 15000 cents.",
+        "expected_commitments": 1,
+        "observed_commitments": 1,
+        "expected_applied_cents": 15000,
+        "observed_applied_cents": 15000,
+        "evidence_state": "remediated"
+      },
+      {
+        "steps": [
+          {
+            "note": "The outage affects this delivery only.",
+            "label": "An unrelated delivery fails",
+            "detail": "The handler could not complete (downstream payment ledger unavailable), so the ledger claim and the commitment were both rolled back and logical event evt_nw2042_settled remains eligible for the provider's retry.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "failed_and_rolled_back",
+            "event_id": "evt_nw2042_settled",
+            "error_code": "08006",
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": "downstream payment ledger unavailable",
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 0,
+            "ledger_rows_after": 0,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          },
+          {
+            "note": "It must be processed normally.",
+            "label": "The unrelated event for NW-2041 is delivered",
+            "detail": "Logical event evt_nw2041_settled was claimed in the idempotency ledger and one commitment of 148000 cents was recorded for NW-2041.",
+            "attempt": 1,
+            "ordinal": 2,
+            "decision": "committed",
+            "event_id": "evt_nw2041_settled",
+            "error_code": null,
+            "delivery_id": "del_nw2041_c",
+            "amount_cents": 148000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2041",
+            "sequence_number": 2,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 148000,
+            "expected_commitments_after": 1
+          },
+          {
+            "note": "The failure continues around the healthy event.",
+            "label": "The failing delivery is retried and fails again",
+            "detail": "The handler could not complete (downstream payment ledger unavailable), so the ledger claim and the commitment were both rolled back and logical event evt_nw2042_settled remains eligible for the provider's retry.",
+            "attempt": 2,
+            "ordinal": 3,
+            "decision": "failed_and_rolled_back",
+            "event_id": "evt_nw2042_settled",
+            "error_code": "08006",
+            "delivery_id": "del_nw2042_outage",
+            "amount_cents": 32500,
+            "error_message": "downstream payment ledger unavailable",
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 148000,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "An unrelated event delivered during the outage window",
+        "intent": "While one delivery is failing repeatedly, an unrelated invoice.paid event for a different invoice arrives and must be processed normally.",
+        "ledger": [
+          {
+            "outcome": "committed",
+            "event_id": "evt_nw2041_settled",
+            "key_kind": "event_id",
+            "ledger_key": "evt_nw2041_settled",
+            "first_delivery_id": "del_nw2041_c"
+          }
+        ],
+        "ordinal": 4,
+        "commitments": [
+          {
+            "id": "del_nw2041_c#1",
+            "attempt": 1,
+            "event_id": "evt_nw2041_settled",
+            "delivery_id": "del_nw2041_c",
+            "amount_cents": 148000,
+            "invoice_number": "NW-2041"
+          }
+        ],
+        "consequence": "If a single failing dependency stalls unrelated events, an isolated outage becomes a total processing outage.",
+        "expectation": "allow",
+        "scenario_id": "reliability-and-recovery",
+        "sequence_id": "REL-004",
+        "configuration": {
+          "mode": "remediated",
+          "ledger_key": "event_id",
+          "atomic_commit": true,
+          "enforce_order": true,
+          "verify_signature": true
+        },
+        "target_invoice": "NW-2041",
+        "expectation_met": true,
+        "checkpoints_held": true,
+        "expectation_text": "The unrelated event commits exactly once, in both documented configurations, regardless of the failure around it.",
+        "expected_commitments": 1,
+        "observed_commitments": 1,
+        "expected_applied_cents": 148000,
+        "observed_applied_cents": 148000,
+        "evidence_state": "remediated"
+      },
+      {
+        "steps": [
+          {
+            "note": "The provider's first delivery of the logical event. Nothing has been processed yet.",
+            "label": "First delivery of evt_nw2041_paid",
+            "detail": "Logical event evt_nw2041_paid was claimed in the idempotency ledger and one commitment of 148000 cents was recorded for NW-2041.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "committed",
+            "event_id": "evt_nw2041_paid",
+            "error_code": null,
+            "delivery_id": "del_nw2041_a",
+            "amount_cents": 148000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2041",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 148000,
+            "expected_commitments_after": 1
+          },
+          {
+            "note": "A second delivery carrying the SAME event_id under a different delivery_id. A receiver keyed on the delivery id sees something it has never seen before.",
+            "label": "Replay: same logical event, new delivery id",
+            "detail": "The idempotency ledger already held logical event evt_nw2041_paid, so this delivery was acknowledged without committing anything a second time.",
+            "attempt": 1,
+            "ordinal": 2,
+            "decision": "skipped_duplicate",
+            "event_id": "evt_nw2041_paid",
+            "error_code": null,
+            "delivery_id": "del_nw2041_b",
+            "amount_cents": 148000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2041",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 148000,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "The same logical event is delivered twice",
+        "intent": "The provider delivers invoice.paid for NW-2041, then delivers the same logical event again under a new delivery id — an at-least-once redelivery, a dashboard replay, or a backfill all look like this.",
+        "ledger": [
+          {
+            "outcome": "committed",
+            "event_id": "evt_nw2041_paid",
+            "key_kind": "event_id",
+            "ledger_key": "evt_nw2041_paid",
+            "first_delivery_id": "del_nw2041_a"
+          }
+        ],
+        "ordinal": 1,
+        "commitments": [
+          {
+            "id": "del_nw2041_a#1",
+            "attempt": 1,
+            "event_id": "evt_nw2041_paid",
+            "delivery_id": "del_nw2041_a",
+            "amount_cents": 148000,
+            "invoice_number": "NW-2041"
+          }
+        ],
+        "consequence": "The customer is committed twice for one payment. Duplicate charges, duplicated fulfilment, and a revenue figure that no longer matches the provider's are the ordinary results.",
+        "expectation": "deny",
+        "scenario_id": "webhook-integrity",
+        "sequence_id": "WHK-001",
+        "configuration": {
+          "mode": "remediated",
+          "ledger_key": "event_id",
+          "atomic_commit": true,
+          "enforce_order": true,
+          "verify_signature": true
+        },
+        "target_invoice": "NW-2041",
+        "expectation_met": true,
+        "checkpoints_held": true,
+        "expectation_text": "One commitment of 148000 cents for NW-2041, no matter how many times the event arrives.",
+        "expected_commitments": 1,
+        "observed_commitments": 1,
+        "expected_applied_cents": 148000,
+        "observed_applied_cents": 148000,
+        "evidence_state": "remediated"
+      },
+      {
+        "steps": [
+          {
+            "note": "The payload is well formed and the endpoint is correct; only the signature fails to recompute.",
+            "label": "Forged delivery with an unverifiable signature",
+            "detail": "The recomputed signature did not match the one the caller sent, so the body was not accepted and no state changed.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "rejected_invalid_signature",
+            "event_id": "evt_nw2042_paid",
+            "error_code": null,
+            "delivery_id": "del_nw2042_forged",
+            "amount_cents": 32500,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "NW-2042",
+            "sequence_number": 1,
+            "signature_valid": false,
+            "commitments_after": 0,
+            "ledger_rows_after": 0,
+            "applied_cents_after": 0,
+            "expected_commitments_after": 0
+          }
+        ],
+        "title": "A forged event with a signature that does not verify",
+        "intent": "A caller posts a well-formed invoice.paid body to the endpoint carrying a signature that does not recompute from the payload.",
+        "ledger": [],
+        "ordinal": 2,
+        "commitments": [],
+        "consequence": "Anyone who learns the endpoint URL can mark invoices paid, extend subscriptions, or release fulfilment without paying.",
+        "expectation": "deny",
+        "scenario_id": "webhook-integrity",
+        "sequence_id": "WHK-002",
+        "configuration": {
+          "mode": "remediated",
+          "ledger_key": "event_id",
+          "atomic_commit": true,
+          "enforce_order": true,
+          "verify_signature": true
+        },
+        "target_invoice": "NW-2042",
+        "expectation_met": true,
+        "checkpoints_held": true,
+        "expectation_text": "No commitment at all, because the body was not proven to come from the provider.",
+        "expected_commitments": 0,
+        "observed_commitments": 0,
+        "expected_applied_cents": 0,
+        "observed_applied_cents": 0,
+        "evidence_state": "remediated"
+      },
+      {
+        "steps": [
+          {
+            "note": "The newer version of the invoice arrives and is applied.",
+            "label": "Current event: sequence 2, 15000 cents",
+            "detail": "Logical event evt_hl0818_paid_v2 was claimed in the idempotency ledger and one commitment of 15000 cents was recorded for HL-0818.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "committed",
+            "event_id": "evt_hl0818_paid_v2",
+            "error_code": null,
+            "delivery_id": "del_hl0818_v2",
+            "amount_cents": 15000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "HL-0818",
+            "sequence_number": 2,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 15000,
+            "expected_commitments_after": 1
+          },
+          {
+            "note": "The older version of the same invoice arrives after the newer one. It is correctly signed and is not a duplicate — only its order is wrong.",
+            "label": "Superseded event: sequence 1, 9000 cents, arriving late",
+            "detail": "Sequence 2 for HL-0818 has already been applied, so this superseded sequence 1 event was refused and the newer state was left in place.",
+            "attempt": 1,
+            "ordinal": 2,
+            "decision": "rejected_out_of_order",
+            "event_id": "evt_hl0818_paid_v1",
+            "error_code": null,
+            "delivery_id": "del_hl0818_v1",
+            "amount_cents": 9000,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "HL-0818",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 15000,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "A superseded event arrives after the newer one",
+        "intent": "Sequence 2 of HL-0818 is delivered first and applied. Sequence 1, the older version of the same invoice, then arrives late — the ordinary result of a provider retry racing a fresh delivery.",
+        "ledger": [
+          {
+            "outcome": "committed",
+            "event_id": "evt_hl0818_paid_v2",
+            "key_kind": "event_id",
+            "ledger_key": "evt_hl0818_paid_v2",
+            "first_delivery_id": "del_hl0818_v2"
+          }
+        ],
+        "ordinal": 3,
+        "commitments": [
+          {
+            "id": "del_hl0818_v2#1",
+            "attempt": 1,
+            "event_id": "evt_hl0818_paid_v2",
+            "delivery_id": "del_hl0818_v2",
+            "amount_cents": 15000,
+            "invoice_number": "HL-0818"
+          }
+        ],
+        "consequence": "A stale amount overwrites the current one, so the recorded balance silently disagrees with the provider's.",
+        "expectation": "deny",
+        "scenario_id": "webhook-integrity",
+        "sequence_id": "WHK-003",
+        "configuration": {
+          "mode": "remediated",
+          "ledger_key": "event_id",
+          "atomic_commit": true,
+          "enforce_order": true,
+          "verify_signature": true
+        },
+        "target_invoice": "HL-0818",
+        "expectation_met": true,
+        "checkpoints_held": true,
+        "expectation_text": "Only the newer sequence 2 event is applied; the superseded sequence 1 event changes nothing.",
+        "expected_commitments": 1,
+        "observed_commitments": 1,
+        "expected_applied_cents": 15000,
+        "observed_applied_cents": 15000,
+        "evidence_state": "remediated"
+      },
+      {
+        "steps": [
+          {
+            "note": "The ordinary, legitimate case.",
+            "label": "Single correctly signed first delivery",
+            "detail": "Logical event evt_hl0817_paid was claimed in the idempotency ledger and one commitment of 91200 cents was recorded for HL-0817.",
+            "attempt": 1,
+            "ordinal": 1,
+            "decision": "committed",
+            "event_id": "evt_hl0817_paid",
+            "error_code": null,
+            "delivery_id": "del_hl0817_clean",
+            "amount_cents": 91200,
+            "error_message": null,
+            "checkpoint_met": true,
+            "invoice_number": "HL-0817",
+            "sequence_number": 1,
+            "signature_valid": true,
+            "commitments_after": 1,
+            "ledger_rows_after": 1,
+            "applied_cents_after": 91200,
+            "expected_commitments_after": 1
+          }
+        ],
+        "title": "A legitimate, correctly signed, first-time event",
+        "intent": "A single properly signed invoice.paid event for HL-0817 that has never been seen before. This is the path that must keep working after the fix.",
+        "ledger": [
+          {
+            "outcome": "committed",
+            "event_id": "evt_hl0817_paid",
+            "key_kind": "event_id",
+            "ledger_key": "evt_hl0817_paid",
+            "first_delivery_id": "del_hl0817_clean"
+          }
+        ],
+        "ordinal": 4,
+        "commitments": [
+          {
+            "id": "del_hl0817_clean#1",
+            "attempt": 1,
+            "event_id": "evt_hl0817_paid",
+            "delivery_id": "del_hl0817_clean",
+            "amount_cents": 91200,
+            "invoice_number": "HL-0817"
+          }
+        ],
+        "consequence": "If this path stops committing, the remediation has broken payment processing rather than secured it.",
+        "expectation": "allow",
+        "scenario_id": "webhook-integrity",
+        "sequence_id": "WHK-004",
+        "configuration": {
+          "mode": "remediated",
+          "ledger_key": "event_id",
+          "atomic_commit": true,
+          "enforce_order": true,
+          "verify_signature": true
+        },
+        "target_invoice": "HL-0817",
+        "expectation_met": true,
+        "checkpoints_held": true,
+        "expectation_text": "Exactly one commitment of 91200 cents, in both documented configurations.",
+        "expected_commitments": 1,
+        "observed_commitments": 1,
+        "expected_applied_cents": 91200,
+        "observed_applied_cents": 91200,
+        "evidence_state": "remediated"
+      }
+    ]
+  },
+  "handler": {
+    "vulnerable": {
+      "configuration": {
+        "mode": "vulnerable",
+        "ledger_key": "delivery_id",
+        "atomic_commit": false,
+        "enforce_order": false,
+        "verify_signature": false
+      },
+      "ledger_constraint": "PRIMARY KEY (ledger_key)",
+      "signature_algorithm": "md5 over a canonical payload string, standing in for the provider HMAC a real integration must verify"
+    },
+    "remediated": {
+      "configuration": {
+        "mode": "remediated",
+        "ledger_key": "event_id",
+        "atomic_commit": true,
+        "enforce_order": true,
+        "verify_signature": true
+      },
+      "ledger_constraint": "PRIMARY KEY (ledger_key)",
+      "signature_algorithm": "md5 over a canonical payload string, standing in for the provider HMAC a real integration must verify"
+    }
+  }
+}

@@ -3,9 +3,9 @@
 Status: Gate 7 implementation-readiness draft
 Consumed: MPS v1.1 → MDS v1.0 → MTS v0.6-draft
 Classification: greenfield
-Current phase: S2 evidence and RLS proof
-Current slice: S2 — implemented, awaiting owner approval
-Readiness: P0 and S1 verified and approved; S2 implemented on branch `slice/s2-evidence-rls` and awaiting the S2 approval checkpoint before S3 begins
+Current phase: S3 replay and recovery
+Current slice: S3 — implemented, awaiting owner approval
+Readiness: P0, S1 and S2 verified and approved; S3 implemented on branch `slice/s3-replay-recovery` and awaiting the S3 approval checkpoint before S4 begins
 
 ## Approved route
 
@@ -37,8 +37,9 @@ The current manifest is mts/AGENT-SKILL-MANIFEST.yaml. Required skills are MTS m
 |---|---|---|
 | P0 | verified | Clean baseline, canonical package, environment contract, skill fallbacks recorded |
 | S1 | approved | Merged to `main` as `f3d18d3` |
-| S2 | implemented, CI-verified, awaiting owner approval | `pnpm check` green from a deleted `.next`; `pnpm evidence:verify` green against a live database (4/4 steps); 6 SQL fixture-safety checks; 33 unit tests; 305 Playwright checks (244 chromium desktop/wide/tablet/mobile, 61 firefox-desktop) against a build confirmed to contain the change under test; WebKit remains CI-only under MTS-EXC-002 and has not yet run |
-| S3–S6 | not started | — |
+| S2 | approved | Owner approved S2 on 2026-09-07; merged to `main` as `6774608` |
+| S3 | implemented, awaiting owner approval | `pnpm check` green from a deleted `.next`; `pnpm evidence:verify` green against a live database (8/8 steps — both transcripts reproduced byte for byte from a clean database, twice); 12 SQL fixture-safety checks; 79 unit tests; 405 Playwright checks against a build confirmed to contain the change under test (324 chromium desktop/wide/tablet/mobile at 8 workers, 0 failed and 0 flaky; 81 firefox-desktop at 1 worker); WebKit remains CI-only under MTS-EXC-002 |
+| S4–S6 | not started | — |
 
 Open S1 items carried into the S2 checkpoint are MTS-DEV-001, MTS-DEV-002 (now partially resolved), and MTS-OBS-001 through MTS-OBS-004. **Both MDS gaps are closed**: `MDS-GAP-S1-001` by the approved `color.border.control` token and `MDS-GAP-S1-002` by applying the COMPONENTS-PROPOSAL evidence-state shapes, together recorded as `MDS-CHG-001`.
 
@@ -51,17 +52,25 @@ Two items stay live by design rather than closing with their observation:
 
 **MTS-OBS-005 is decided.** On 2026-09-06 the owner confirmed recorded-and-disclosed as the R1 evidence posture: the lab presents recorded evidence from an isolated local fixture rather than a live query, discloses that in every panel caption and limitation, and adds no live scanning. A buyer wanting a live audit is handled through the inquiry path as a paid engagement outside the public product. Live capability is deferred to R2/R3, where it would be an MPS scope change and an MTS re-gate. Recorded as `MTS-DEC-008`; the two approved additions are implemented under `MTS-CHG-005` (transcript freshness gate, buyer-visible reproducibility statement) and the new risk `MTS-RISK-006` is controlled.
 
-S2 opened no MDS gap.
+S2 opened no MDS gap. **S3 opens no MDS gap**: the delivery ledger is the approved matrix/table component applied to a delivery sequence, and every state it shows is the canonical evidence vocabulary.
 
 ## Local database
 
-S2 introduces `supabase/`. `pnpm db:start` runs the database container only, on ports moved out of the CLI default range so the lab cannot collide with another local Supabase project. `pnpm evidence:record` re-records the transcript; `pnpm evidence:verify` proves the committed transcript still reproduces. None of this is needed to run or build the application — the deployed lab holds no database connection.
+S2 introduced `supabase/`; S3 adds two migrations and a second documented set (`supabase/tests/documented-sequences.sql`). `pnpm db:start` runs the database container only, on ports moved out of the CLI default range so the lab cannot collide with another local Supabase project. `pnpm evidence:record` re-records the transcript; `pnpm evidence:verify` proves the committed transcript still reproduces. None of this is needed to run or build the application — the deployed lab holds no database connection.
 
-`pnpm evidence:check` is the half of that verification which needs no database: it recomputes the fixture digest from `supabase/migrations` and `supabase/tests/documented-tests.sql` and fails if the committed transcript no longer matches, so an edited fixture cannot leave a stale transcript being replayed to buyers. It runs inside `pnpm check` and `pnpm test:unit`, and is the first step of `pnpm evidence:verify`. `pnpm check` is the ordinary check chain: `format:check`, `lint`, `typecheck`, `evidence:check`, `test:unit`, `build`.
+`pnpm evidence:check` is the half of that verification which needs no database: it recomputes the fixture digest from `supabase/migrations`, `supabase/tests/documented-tests.sql` and `supabase/tests/documented-sequences.sql` and fails if the committed transcript no longer matches, so an edited fixture cannot leave a stale transcript being replayed to buyers. One digest covers both transcripts, because both come out of the same recorder run against the same fixture. It runs inside `pnpm check` and `pnpm test:unit`, and is the first step of `pnpm evidence:verify`. `pnpm check` is the ordinary check chain: `format:check`, `lint`, `typecheck`, `evidence:check`, `test:unit`, `build`.
+
+## S3 evidence model
+
+S3 follows the S2 recorded-and-disclosed posture (`MTS-DEC-008`) rather than introducing a live endpoint. **The lab publishes no webhook endpoint and accepts no event body from anyone.** The fixture gains a synthetic delivery set, an idempotency ledger, a payment-commitment table, and one handler whose behaviour is driven by a four-field configuration row, so the "before/after" a buyer sees is the row the handler actually branched on.
+
+A replay claim cannot be made by one statement, so the unit of S3 evidence is a **documented sequence**: an ordered set of deliveries with a numeric end state — how many commitments exist and how much was applied — checked at the end and at named per-step checkpoints. The checkpoints exist because an end-state count alone can be met by accident: in `REL-003` the vulnerable handler loses the retry AND double-counts the later replay, and the two errors cancel. Without a checkpoint on the recovery step, a broken handler would have been published as remediated.
+
+Eight sequences run under both configurations. Under the remediated handler all eight reach their required end state; under the vulnerable handler six do not, and the two that do are the legitimate allow paths — which is what shows the vulnerable configuration is a specific defect rather than a blanket failure.
 
 ## Next action
 
-Review the S2 checkpoint report and decide on the remaining open items, MTS-OBS-006 through MTS-OBS-015. MTS-OBS-005 is decided (`MTS-DEC-008`). S3 does not begin until S2 is approved.
+Review the S3 checkpoint report and decide on the open items. S4 does not begin until S3 is approved.
 
 **CI is wired** (`MTS-OBS-016`, resolved ahead of S6 on owner instruction). `.github/workflows/verify.yml` runs on every push to `main`, every pull request, and on demand:
 
