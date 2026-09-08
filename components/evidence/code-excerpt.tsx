@@ -119,6 +119,7 @@ export function CodeExcerpt({
                   aria-selected={selected}
                   aria-controls={`${baseId}-panel-${tab.id}`}
                   tabIndex={selected ? 0 : -1}
+                  data-print-hide={selected ? undefined : "true"}
                   onClick={() => setActiveId(tab.id)}
                   onKeyDown={(event) => onKeyDown(event, index)}
                   className={`text-body-sm min-h-11 shrink-0 border-b-2 px-4 font-semibold whitespace-nowrap transition-colors duration-(--motion-default) ${
@@ -137,6 +138,7 @@ export function CodeExcerpt({
         <button
           type="button"
           onClick={copy}
+          data-print-hide="true"
           className="on-ink text-inverse/75 hover:text-inverse inline-flex min-h-11 min-w-11 items-center justify-center gap-2 px-2"
         >
           <Icon

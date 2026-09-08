@@ -18,7 +18,7 @@ import { BOUNDARY_NOTES, PRIMARY_CTA } from "@/lib/content/site";
  */
 export function AuthorizedReviewBand() {
   return (
-    <section className="bg-primary text-inverse on-ink py-10">
+    <section className="bg-primary text-inverse on-ink print:bg-base print:border-line py-10 print:border-t">
       <Container>
         <div className="desktop:flex-row desktop:items-center desktop:justify-between flex flex-col gap-6">
           <div className="max-w-[52ch]">

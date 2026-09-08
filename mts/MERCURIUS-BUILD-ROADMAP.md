@@ -3,9 +3,9 @@
 Status: Gate 7 implementation-readiness draft
 Consumed: MPS v1.1 → MDS v1.0 → MTS v0.6-draft
 Classification: greenfield
-Current phase: S3 replay and recovery
-Current slice: S3 — implemented, awaiting owner approval
-Readiness: P0, S1 and S2 verified and approved; S3 implemented on branch `slice/s3-replay-recovery` and awaiting the S3 approval checkpoint before S4 begins
+Current phase: S4 report and case study
+Current slice: S4 — implemented, awaiting owner approval
+Readiness: P0, S1, S2 and S3 verified and approved; S4 implemented on branch `slice/s4-report-case-study` and awaiting the S4 approval checkpoint before S5 begins
 
 ## Approved route
 
@@ -38,8 +38,9 @@ The current manifest is mts/AGENT-SKILL-MANIFEST.yaml. Required skills are MTS m
 | P0 | verified | Clean baseline, canonical package, environment contract, skill fallbacks recorded |
 | S1 | approved | Merged to `main` as `f3d18d3` |
 | S2 | approved | Owner approved S2 on 2026-09-07; merged to `main` as `6774608` |
-| S3 | implemented, awaiting owner approval | `pnpm check` green from a deleted `.next`; `pnpm evidence:verify` green against a live database (8/8 steps — both transcripts reproduced byte for byte from a clean database, twice); 12 SQL fixture-safety checks; 79 unit tests; 405 Playwright checks against a build confirmed to contain the change under test (324 chromium desktop/wide/tablet/mobile at 8 workers, 0 failed and 0 flaky; 81 firefox-desktop at 1 worker); WebKit remains CI-only under MTS-EXC-002 |
-| S4–S6 | not started | — |
+| S3 | approved | `pnpm check` green from a deleted `.next`; `pnpm evidence:verify` green against a live database (8/8 steps — both transcripts reproduced byte for byte from a clean database, twice); 12 SQL fixture-safety checks; 79 unit tests; 405 Playwright checks against a build confirmed to contain the change under test (324 chromium desktop/wide/tablet/mobile at 8 workers, 0 failed and 0 flaky; 81 firefox-desktop at 1 worker); WebKit remains CI-only under MTS-EXC-002 |
+| S4 | implemented, awaiting owner approval | `pnpm check` green from a deleted `.next` (91 unit tests, including 12 that recompute every published report count straight from the transcript JSON); 500 Playwright checks across five projects at 1 worker — 500 passed, 0 failed, 0 flaky, in 8.1 minutes against a production build the suite built and served itself; three of those checks run in the print medium itself; WebKit remains CI-only under MTS-EXC-002 |
+| S5–S6 | not started | — |
 
 Open S1 items carried into the S2 checkpoint are MTS-DEV-001, MTS-DEV-002 (now partially resolved), and MTS-OBS-001 through MTS-OBS-004. **Both MDS gaps are closed**: `MDS-GAP-S1-001` by the approved `color.border.control` token and `MDS-GAP-S1-002` by applying the COMPONENTS-PROPOSAL evidence-state shapes, together recorded as `MDS-CHG-001`.
 
@@ -68,9 +69,38 @@ A replay claim cannot be made by one statement, so the unit of S3 evidence is a 
 
 Eight sequences run under both configurations. Under the remediated handler all eight reach their required end state; under the vulnerable handler six do not, and the two that do are the legitimate allow paths — which is what shows the vulnerable configuration is a specific defect rather than a blanket failure.
 
+## S4 report model
+
+The report is **derived, not authored**, and the split is enforced by module rather than by convention. `lib/evidence/report.ts` reads every count, state, before/after status, matrix cell, date, and reproduction excerpt from the two committed transcripts. `lib/content/report.ts` holds framing only and contains no result, count, severity, state, or date. If a fact is not in a catalog or a transcript, it cannot appear in the report.
+
+The published numbers, all derived: **4 findings**, every one High severity; **24 documented checks** per configuration, of which **18 did not meet their expectation as found** and **24 met it after the documented fixes**; a **16-cell RLS coverage matrix** holding 8 vulnerable / 4 untested / 4 not applicable as found, and 8 remediated / 4 untested / 4 not applicable after — the untested and not-applicable counts are identical in both, because applying a fix does not create a check that was never written.
+
+Ordering is computed and the rule is published on the page: severity, then unmet checks as found, then the approved scenario order, which is also the dependency order. All four findings being High is why the second and third criteria carry the ranking.
+
+Three owner decisions were taken before implementation, all at the S4 pre-implementation checkpoint on 2026-09-07:
+
+| Decision | Chosen | Recorded as |
+|---|---|---|
+| Report composition | Two columns per written MDS, not the three-column MDS-REF-007 arrangement | `MTS-OBS-028` |
+| Findings list | Static and fully expanded; no severity filter, no collapse | `MTS-OBS-029` |
+| The S1 deferral | Populate both landing regions now from real derived data | `MTS-DEV-001`, resolved |
+
+**S4 opened one MDS gap, now closed.** `MDS-GAP-S4-001`: the MDS required the report to be printable without dark-page backgrounds but defined no print appearance. It was implemented without inventing a value — the print block redefines the approved tokens for the print medium, so no print-only colour exists — and three browser checks verify it in the print medium itself. The owner confirmed that treatment on 2026-09-07, so it is now an approved MDS decision, recorded as `MDS-CHG-003` and resolved in both state files. The rule it establishes: any future printable surface flips the approved tokens for print, never authors a print-only colour, and drops only controls that cannot function on paper — never evidence, state, limitation, recovery, or the CTA.
+
 ## Next action
 
-Review the S3 checkpoint report and decide on the open items. S4 does not begin until S3 is approved.
+**S4 is approved and S5 may begin.** Merge PR #6, then start S5, the inquiry path.
+
+The owner approved `MTS-OBS-028` through `MTS-OBS-033` on 2026-09-07 (`MTS-CHG-010`) and confirmed
+`MDS-GAP-S4-001` the same day (`MDS-CHG-003`, `MTS-CHG-011`), closing the last open S4 item. None of
+the six observations required further work: four restate decisions already taken at the S4
+pre-implementation checkpoint, and the other two record the derived/authored module split and two
+responsive defects found and fixed during implementation.
+
+**No gap, exception, or deviation is open anywhere in the MDS or MTS state.** PR #6 is green on all
+three CI jobs including WebKit and awaits merge; update the `S4` row in `completed_slices` with the
+merge commit when it lands. `/inquiry` still renders the S1 build-state notice — that is the
+remaining half of `MTS-DEV-002` and is S5's work.
 
 **CI is wired** (`MTS-OBS-016`, resolved ahead of S6 on owner instruction). `.github/workflows/verify.yml` runs on every push to `main`, every pull request, and on demand:
 

@@ -198,3 +198,80 @@
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Print (MDS DESIGN-SYSTEM.md §13 "Sample report": "Must remain
+ * readable/printable without interaction"; COMPOSITION-PROPOSAL "Audit report
+ * shell": "The report must remain printable/readable without interactive
+ * controls or dark-page backgrounds"; MDS-QA gate 2, REF-007 "print").
+ *
+ * The approved requirement is that the report prints completely. The exact
+ * printed appearance of the dark evidence surface is not specified by the MDS,
+ * so nothing here invents a value: the ink and evidence surfaces are flipped
+ * by REDEFINING THE APPROVED TOKENS for the print medium rather than by
+ * introducing print-only colours. Every utility built on those tokens —
+ * including the opacity variants — follows automatically, and the type scale,
+ * spacing, radii, and borders are untouched. Recorded as MDS-GAP-S4-001.
+ *
+ * The rules below fall into four groups:
+ *   1. surfaces      — no dark page background survives to paper;
+ *   2. completeness  — nothing that clips, scrolls, or collapses on screen may
+ *                      withhold evidence on paper;
+ *   3. pagination    — headings stay with their content, table headers repeat;
+ *   4. chrome        — controls that cannot work on paper are removed, and
+ *                      nothing carrying evidence, limitation, or state is.
+ */
+@media print {
+  /* 1. Surfaces. */
+  :root {
+    --color-ink: #ffffff;
+    --color-evidence: #ffffff;
+    --color-inverse: #111827;
+  }
+
+  html,
+  body {
+    background: #ffffff;
+  }
+
+  /* 2. Completeness. Nothing may be clipped, scrolled away, or collapsed. */
+  * {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  .sticky {
+    position: static !important;
+  }
+
+  details > *:not(summary) {
+    display: revert !important;
+  }
+
+  details::details-content {
+    content-visibility: visible !important;
+    block-size: auto !important;
+  }
+
+  /* 3. Pagination. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    break-after: avoid-page;
+  }
+
+  tr,
+  figcaption {
+    break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  /* 4. Chrome that cannot function on paper. */
+  [data-print-hide="true"] {
+    display: none !important;
+  }
+}
