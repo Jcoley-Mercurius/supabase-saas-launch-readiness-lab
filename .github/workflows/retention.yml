@@ -1,0 +1,96 @@
+# Inquiry retention.
+#
+# Trace: MPS-REQ-015 and MPS-RULE-008 (inquiry content is retained no more than
+#        12 months after latest activity), MPS-ACC-016 (after retention
+#        processing, content is removed and only minimal operational
+#        deduplication metadata remains); MTS-CAP-012; MTS-DEC-013 (retention
+#        runs as a SQL function invoked by an operator command); MTS-DEC-015
+#        (this workflow is what invokes it).
+#
+# THIS IS THE ONLY WORKFLOW IN THIS REPOSITORY THAT TOUCHES REAL DATA.
+#
+# verify.yml needs no secret and contacts no hosted service: the fixture is
+# synthetic and its database is built on the runner. This one connects to the
+# live inquiry database and permanently removes buyer contact data. Three
+# guards follow from that:
+#
+#   1. It runs on a schedule and on demand only. Never on a push, never on a
+#      pull request, so a branch cannot trigger a redaction.
+#   2. It no-ops without INQUIRY_DATABASE_URL. An unconfigured repository or a
+#      fork gets a clear skip, not a failure and not a partial run.
+#   3. It prints counts and nothing else. The retention command reports how
+#      many records it redacted; it never prints inquiry content, an address,
+#      or the connection string.
+#
+# Monthly is the right cadence for a 12-month rule: the redaction is idempotent
+# and measured against each record's own last activity, so the schedule decides
+# how promptly a due record is cleared, not whether it is.
+#
+# `--dry-run` first, then the real pass, so the log records what was due before
+# it records what was done.
+
+name: retention
+
+on:
+  schedule:
+    # 04:00 UTC on the first of each month. GitHub may delay a scheduled run
+    # under load; nothing here depends on the exact minute.
+    - cron: "0 4 1 * *"
+  workflow_dispatch:
+
+concurrency:
+  group: retention
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  retain:
+    name: redact inquiry content past 12 months
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the inquiry database is configured
+        id: configured
+        env:
+          INQUIRY_DATABASE_URL: ${{ secrets.INQUIRY_DATABASE_URL }}
+        run: |
+          if [ -z "$INQUIRY_DATABASE_URL" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::INQUIRY_DATABASE_URL is not set. Skipping retention."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: pnpm/action-setup@v4
+        if: steps.configured.outputs.configured == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.configured.outputs.configured == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+        if: steps.configured.outputs.configured == 'true'
+
+      # psql ships on the GitHub-hosted Ubuntu image. Failing loudly here is
+      # better than a retention pass that silently did nothing.
+      - name: Confirm psql is available
+        if: steps.configured.outputs.configured == 'true'
+        run: psql --version
+
+      - name: Report what is due
+        if: steps.configured.outputs.configured == 'true'
+        env:
+          INQUIRY_DATABASE_URL: ${{ secrets.INQUIRY_DATABASE_URL }}
+        run: pnpm inquiries:retain --dry-run
+
+      - name: Redact
+        if: steps.configured.outputs.configured == 'true'
+        env:
+          INQUIRY_DATABASE_URL: ${{ secrets.INQUIRY_DATABASE_URL }}
+        run: pnpm inquiries:retain

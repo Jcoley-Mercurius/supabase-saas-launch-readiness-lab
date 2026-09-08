@@ -4,8 +4,8 @@ Status: Gate 7 implementation-readiness draft
 Consumed: MPS v1.1 → MDS v1.0 → MTS v0.6-draft
 Classification: greenfield
 Current phase: S5 inquiry path
-Current slice: S5 — not started
-Readiness: P0, S1, S2, S3 and S4 verified and approved; S4 merged to `main` as `ff89b28` on 2026-09-08 with no gap, exception, or deviation left open. S5 may begin.
+Current slice: S5 — complete and checkpointed; awaiting merge
+Readiness: P0, S1, S2, S3 and S4 verified and approved. S5 is implemented on `slice/s5-inquiry` (PR #8), all ten checkpoint observations are ruled on, and the whole path — store, deduplication, credential guard, authorization boundary, and notification — has been proved against the real isolated project with a real submission and a real email. One hosted-only privilege defect was found and fixed in the process (`MTS-OBS-044`). All thirteen checkpoint observations are ruled on and none remains open. The retention secret is configured; the workflow becomes dispatchable when PR #8 merges.
 
 ## Approved route
 
@@ -40,7 +40,7 @@ The current manifest is mts/AGENT-SKILL-MANIFEST.yaml. Required skills are MTS m
 | S2 | approved | Owner approved S2 on 2026-09-07; merged to `main` as `6774608` |
 | S3 | approved | `pnpm check` green from a deleted `.next`; `pnpm evidence:verify` green against a live database (8/8 steps — both transcripts reproduced byte for byte from a clean database, twice); 12 SQL fixture-safety checks; 79 unit tests; 405 Playwright checks against a build confirmed to contain the change under test (324 chromium desktop/wide/tablet/mobile at 8 workers, 0 failed and 0 flaky; 81 firefox-desktop at 1 worker); WebKit remains CI-only under MTS-EXC-002 |
 | S4 | approved | Merged to `main` as `ff89b28`. Owner approved `MTS-OBS-028`–`033` (`MTS-CHG-010`) and confirmed `MDS-GAP-S4-001` (`MDS-CHG-003`) on 2026-09-07.  `pnpm check` green from a deleted `.next` (91 unit tests, including 12 that recompute every published report count straight from the transcript JSON); 500 Playwright checks across five projects at 1 worker — 500 passed, 0 failed, 0 flaky, in 8.1 minutes against a production build the suite built and served itself; three of those checks run in the print medium itself; WebKit remains CI-only under MTS-EXC-002 |
-| S5 | not started | Next. Needs the owner-gated notification destination before the delivery half can be verified — see below |
+| S5 | implemented and checkpointed; awaiting merge | 12 SQL inquiry checks green against a real database (authorization deny paths, RLS, isolation, accept, duplicate, abuse control, delivery metadata, retention, manual deletion, credential patterns); 124 unit tests green, 33 of them new, including 8 that walk the static import graph to enforce the `MTS-RISK-001` residual; 23 new browser checks per project covering all eight approved inquiry states, the responsive transformation, keyboard order, focus, contrast, and the route boundary; `pnpm check` green from a deleted `.next`. **The Resend delivery half has never sent a real message** (`MTS-OBS-042`) |
 | S6 | not started | — |
 
 Open S1 items carried into the S2 checkpoint are MTS-DEV-001, MTS-DEV-002 (now partially resolved), and MTS-OBS-001 through MTS-OBS-004. **Both MDS gaps are closed**: `MDS-GAP-S1-001` by the approved `color.border.control` token and `MDS-GAP-S1-002` by applying the COMPONENTS-PROPOSAL evidence-state shapes, together recorded as `MDS-CHG-001`.
@@ -50,7 +50,7 @@ Open S1 items carried into the S2 checkpoint are MTS-DEV-001, MTS-DEV-002 (now p
 Two items stay live by design rather than closing with their observation:
 
 - **`MTS-OBS-011`** — the fixture simplifies identity, not authorization, so it must never be exposed to a public network or reused as an application backend. This is the technical floor under the recorded-evidence posture and the first thing to revisit if R2/R3 reconsiders live capability.
-- **`MTS-RISK-001` residual** — S5 adds a Supabase client for inquiries and must keep it on a path separate from the evidence engine.
+- **`MTS-RISK-001` residual — now addressed, with a new residual.** S5 added the runtime database client the residual predicted and confined it: `lib/inquiry/store.ts` is the only module that constructs one, it carries the `server-only` guard, it reads the publishable key and never a service-role key, and it reaches no table at all — every privilege on both inquiry tables is revoked and RLS is on with no policy, so its whole reach is two `SECURITY DEFINER` functions that take scalars and return no inquiry content. The separation is enforced rather than asserted: `tests/unit/inquiry-boundary.spec.ts` walks the static import graph of `lib/evidence` and `lib/inquiry` and fails if either reaches the other, if the evidence engine acquires a client or a connection string, if a credential is read outside the two approved modules, or if a second module constructs a client. The new residual is that the control now depends on that test staying in the check chain.
 
 **MTS-OBS-005 is decided.** On 2026-09-06 the owner confirmed recorded-and-disclosed as the R1 evidence posture: the lab presents recorded evidence from an isolated local fixture rather than a live query, discloses that in every panel caption and limitation, and adds no live scanning. A buyer wanting a live audit is handled through the inquiry path as a paid engagement outside the public product. Live capability is deferred to R2/R3, where it would be an MPS scope change and an MTS re-gate. Recorded as `MTS-DEC-008`; the two approved additions are implemented under `MTS-CHG-005` (transcript freshness gate, buyer-visible reproducibility statement) and the new risk `MTS-RISK-006` is controlled.
 
@@ -88,31 +88,41 @@ Three owner decisions were taken before implementation, all at the S4 pre-implem
 
 **S4 opened one MDS gap, now closed.** `MDS-GAP-S4-001`: the MDS required the report to be printable without dark-page backgrounds but defined no print appearance. It was implemented without inventing a value — the print block redefines the approved tokens for the print medium, so no print-only colour exists — and three browser checks verify it in the print medium itself. The owner confirmed that treatment on 2026-09-07, so it is now an approved MDS decision, recorded as `MDS-CHG-003` and resolved in both state files. The rule it establishes: any future printable surface flips the approved tokens for print, never authors a print-only colour, and drops only controls that cannot function on paper — never evidence, state, limitation, recovery, or the CTA.
 
+## S5 inquiry model
+
+The inquiry store is **not reachable as a table**. Both `public.inquiries` and `public.inquiry_delivery_events` have RLS enabled with no policy AND every privilege revoked from `anon` and `authenticated` — two independent denials — and the entire reachable surface is two `SECURITY DEFINER` functions with a fixed empty `search_path`. `submit_inquiry` rate-limits, then deduplicates, then persists, in that order, and returns an outcome and a reference and nothing else; it never returns inquiry content, not even the content just submitted. `record_inquiry_delivery` is a one-shot bounded transition. Because nothing reads a table, **no service-role key is needed or read anywhere in the repository**.
+
+Three rules are enforced in the data rather than only in the wording:
+
+- **A duplicate creates no second row.** It advances the original's retention clock, increments a submission count, and hands back the *original* acknowledgement — which is what `MPS-RULE-006` means by not implying a second engagement. It also sends no second operator notification (`MTS-OBS-038`).
+- **A redacted row cannot hold content.** Retention nulls every content column and a table `CHECK` constraint keeps them null for the row's lifetime, so `MPS-ACC-016` cannot be defeated by a later code path that forgets a column. What remains is the bounded opaque digest the rule permits.
+- **An acknowledgement follows persistence.** `MPS-REQ-011` allows one only after a successful submission, so `acknowledged` is returned from exactly one branch. An unreachable or unconfigured store ends as *unconfirmed*, never as *received*.
+
+A failed notification does **not** revoke the acknowledgement. Once the row exists the inquiry has been received; the buyer is told the record is safe and the alert did not go out, rather than being told to resubmit something already on record.
+
+The schema lives in `supabase/inquiry/migrations`, a separate set applied to a separate database, and is deliberately outside the evidence recorder's input digest — so an inquiry migration cannot invalidate published evidence, and a fixture reset cannot see an inquiry. Both operator commands refuse to run against the fixture database by name.
+
+## Hosted provisioning, and the defect it exposed
+
+The isolated inquiry project was provisioned on 2026-09-08 and both migrations applied. Doing so found a **high-severity privilege defect that existed only in the hosted environment** (`MTS-OBS-044`): `anon` could execute the retention and manual-deletion functions, so any visitor holding the publishable key could have wiped inquiry content.
+
+The cause is worth remembering. A hosted Supabase project ships `alter default privileges in schema public grant all on functions to anon, authenticated, service_role`, so every function the migration created was born with a **direct** grant to the application roles. `revoke ... from public` removes only the privilege held through PUBLIC; it does not touch a direct grant. The local container carries no such default, so one migration produced a correct privilege set locally and an unsafe one hosted.
+
+The deny assertions were already right, and had passed 12/12 locally on every run since implementation. They had simply never run where the defaults differ. So the fix came with a control: `supabase/inquiry/tests/authorization-checks.sql` is now free of psql meta-commands and runs in both places — `pnpm inquiries:check` locally, and `pnpm inquiries:check:hosted` against the real project through the Management API, needing no database password. That runner was negative-tested: the bad grant was deliberately restored, the checker named the exact privilege and failed, and it passed again once revoked.
+
+**A privilege assertion proves nothing about an environment it has not run in.** Any future schema applied to a hosted project must have its deny paths re-run there.
+
 ## Next action
 
-**Start S5, the inquiry path.** S4 merged to `main` as `ff89b28` (PR #6, all three CI jobs green including WebKit).
+**S5 is complete and checkpointed. No observation, gap, exception, or deviation is open anywhere in the MDS or MTS state.** The owner ruled on all thirteen S5 observations on 2026-09-08: ten confirmed, `MTS-OBS-038` decided and implemented, `MTS-OBS-039` resolved by the retention workflow, and `MTS-OBS-042` resolved by a real notification sent and accepted.
 
-**S5 has one owner-gated dependency.** The route, form, validation, store, duplicate handling, retention, and MDS composition can all be built and verified without credentials. The notification half cannot: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `INQUIRY_NOTIFICATION_TO` are unset, no `.env.local` exists, and preview must use a preview-safe destination separate from production (`.env.example`, INTEGRATION-MANIFEST.md). Configuring that destination and approving the preview test is the owner action this slice's row calls for.
+Three rules are now binding on everything that follows:
 
-The owner approved `MTS-OBS-028` through `MTS-OBS-033` on 2026-09-07 (`MTS-CHG-010`) and confirmed
-`MDS-GAP-S4-001` the same day (`MDS-CHG-003`, `MTS-CHG-011`), closing the last open S4 item. None of
-the six observations required further work: four restate decisions already taken at the S4
-pre-implementation checkpoint, and the other two record the derived/authored module split and two
-responsive defects found and fixed during implementation.
+1. **A deny assertion proves nothing about an environment it has not run in.** Any schema applied to a hosted project has its deny paths re-run there (`MTS-OBS-044`).
+2. **An operator guard distinguishes environments by host, never by database name** (`MTS-OBS-045`).
+3. **No credential-shaped literal enters this repository, not even a published example.** Assemble it at runtime, and never resolve a push-protection block by allowlisting (`MTS-OBS-046`).
 
-**No gap, exception, or deviation is open anywhere in the MDS or MTS state.** PR #6 is green on all
-three CI jobs including WebKit and awaits merge; update the `S4` row in `completed_slices` with the
-merge commit when it lands. `/inquiry` still renders the S1 build-state notice — that is the
-remaining half of `MTS-DEV-002` and is S5's work.
+**Merge [PR #8](https://github.com/Jcoley-Mercurius/supabase-saas-launch-readiness-lab/pull/8).** Two things depend on it and nothing else does: S5 reaching `main`, and `.github/workflows/retention.yml` becoming dispatchable — GitHub restricts `workflow_dispatch` to workflows present on the default branch, so the first retention run cannot be observed until then. `INQUIRY_DATABASE_URL` is already configured, so that run should report `0 records past 12 months` twice.
 
-**CI is wired** (`MTS-OBS-016`, resolved ahead of S6 on owner instruction). `.github/workflows/verify.yml` runs on every push to `main`, every pull request, and on demand:
+**Then S6**: the measurement boundary, combined QA, the preview release, and the rollback record. Three S5 items are carried into it — edge rate limiting (`MTS-OBS-037`), a verified from-domain for production plus preview-environment delivery (`MTS-OBS-042`), and `pnpm inquiries:check:hosted` as a release gate against the preview and production projects (`MTS-OBS-044`).
 
-| Job | What it proves |
-|---|---|
-| `checks` | `pnpm check` — format, lint, types, transcript freshness, 33 unit tests, production build |
-| `evidence` | Supabase CLI 2.111.0 builds the fixture from `supabase/migrations`, then `pnpm evidence:verify` re-records twice from a clean database and compares byte for byte |
-| `browsers` | The full Playwright matrix with `PLAYWRIGHT_WEBKIT=1` and `--with-deps`, which is the only place WebKit evidence can be produced (`MTS-EXC-002`) |
-
-It needs no secret: the lab holds no database connection, the fixture is synthetic, and the evidence job builds its database on the runner. Selecting the provider filled `MTS-CAP-011`, whose `approved_selection` was null — recorded as `MTS-DEC-009` and **approved by the owner on 2026-09-07**.
-
-**First run: green.** Run `34129317849` on PR #3 passed all three jobs on the first attempt — 366 browser checks at one worker (364 passed, 2 flaky on retry, 0 failed), including **61 WebKit checks, the first WebKit evidence this project has had** (`MTS-EXC-002`). The evidence job reproduced the committed transcript from a clean database on a fresh runner, which proves determinism on hardware that had never seen the fixture.

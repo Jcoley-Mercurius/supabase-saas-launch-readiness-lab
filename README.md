@@ -18,13 +18,15 @@ severity-ranked, buyer-readable evidence with an authorized-review inquiry path.
 | MDS — Design     | v1.0       | approved  | Gate 7 handoff complete                                              |
 | MTS — Technology | v0.6-draft | draft     | Gates 1–6 complete; Gate 7 implementation-readiness in progress      |
 
-**Application:** a baseline Next.js App Router scaffold is in place at the repository root with the
-approved dependency set installed. No product feature, evidence engine, or design token has been
-implemented yet — `app/` is still the unmodified starter page.
+**Application:** P0 through S4 are approved and merged to `main`. S5, the authorized-review inquiry
+path, is implemented on `slice/s5-inquiry-path` and awaiting the owner checkpoint. Every approved
+route now renders its approved content — the S1 build-state notice is gone from the last route that
+carried it.
 
-**Next action:** run the **P0 handoff-verification prompt** in
-[mts/MERCURIUS-IMPLEMENTATION-PLAYBOOK.md](mts/MERCURIUS-IMPLEMENTATION-PLAYBOOK.md), then S1.
-Open MTS Gate 7 blocking items: `p0_agent_verification`, `owner_external_account_setup`.
+**Next action:** rule on the S5 checkpoint (`MTS-OBS-034`–`043` in
+[mts/MTS-PROJECT-STATE.yaml](mts/MTS-PROJECT-STATE.yaml)), then S6. Two S5 items need an owner
+action rather than a ruling: **nothing schedules the retention command**, and **no real inquiry
+notification has ever been sent**. See [mts/MERCURIUS-BUILD-ROADMAP.md](mts/MERCURIUS-BUILD-ROADMAP.md).
 
 ## Governance model
 
@@ -74,13 +76,20 @@ pnpm dev          # http://localhost:3000
 
 ### Checks
 
-| Command                             | Covers                              |
-| ----------------------------------- | ----------------------------------- |
-| `pnpm lint`                         | ESLint via `eslint-config-next`     |
-| `pnpm typecheck`                    | `next typegen` then `tsc --noEmit`  |
-| `pnpm build`                        | Production build                    |
-| `pnpm format` / `pnpm format:check` | Prettier over application code only |
-| `pnpm test:e2e`                     | Playwright browser verification     |
+| Command                             | Covers                                                                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`                         | ESLint via `eslint-config-next`                                                                                                       |
+| `pnpm typecheck`                    | `next typegen` then `tsc --noEmit`                                                                                                    |
+| `pnpm build`                        | Production build                                                                                                                      |
+| `pnpm format` / `pnpm format:check` | Prettier over application code only                                                                                                   |
+| `pnpm test:e2e`                     | Playwright browser verification                                                                                                       |
+| `pnpm test:unit`                    | Node-level unit and contract tests                                                                                                    |
+| `pnpm check`                        | The whole chain: format, lint, types, transcript freshness, unit tests, build                                                         |
+| `pnpm evidence:check`               | Recomputes the fixture digest and refuses a stale transcript (no database)                                                            |
+| `pnpm evidence:verify`              | Re-records the transcripts from a clean database and compares byte for byte                                                           |
+| `pnpm inquiries:check`              | Builds the inquiry schema in its own database and runs the inquiry authorization, duplicate, abuse-control, and retention checks      |
+| `pnpm inquiries:check:hosted`       | Runs the same authorization deny/allow assertions against the real Supabase project through the Management API (no database password) |
+| `pnpm inquiries:retain`             | Operator retention: redacts inquiry content 12 months after latest activity (`--dry-run`, `--delete <uuid>`)                          |
 
 ### Browser verification
 
