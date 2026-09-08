@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import {
   Checkbox,
   CheckboxGroup,
+  FIELD_ROW,
   SelectField,
   TextAreaField,
   TextField,
@@ -185,9 +186,10 @@ export function InquiryForm() {
             noValidate
             className="flex flex-col gap-5"
           >
-            <div className="desktop:grid-cols-2 grid grid-cols-1 gap-5">
+            <div className={FIELD_ROW}>
               <TextField
                 id={field("contactName")}
+                rowAligned
                 label="Name"
                 required
                 autoComplete="name"
@@ -197,6 +199,7 @@ export function InquiryForm() {
               />
               <TextField
                 id={field("contactEmail")}
+                rowAligned
                 label="Work email"
                 type="email"
                 required
@@ -216,9 +219,10 @@ export function InquiryForm() {
               onChange={(event) => set("organization")(event.target.value)}
             />
 
-            <div className="desktop:grid-cols-2 grid grid-cols-1 gap-5">
+            <div className={FIELD_ROW}>
               <TextField
                 id={field("buyerRole")}
+                rowAligned
                 label="Your role"
                 required
                 hint="For example: founder, engineering lead, contract developer."
@@ -228,6 +232,7 @@ export function InquiryForm() {
               />
               <SelectField
                 id={field("launchTrigger")}
+                rowAligned
                 label="What's prompting this review"
                 required
                 options={LAUNCH_TRIGGERS}

@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { Container, Section } from "@/components/layout/container";
 import { InquiryExpectations } from "@/components/inquiry/inquiry-expectations";
 import { InquiryForm } from "@/components/inquiry/inquiry-form";
+import { RiskPillarCards } from "@/components/scenarios/risk-pillars";
+import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { BOUNDARY_NOTES } from "@/lib/content/site";
 import { INQUIRY_PAGE } from "@/lib/content/inquiry";
@@ -37,7 +40,11 @@ export default function InquiryPage() {
   return (
     <Section tone="canvas">
       <Container>
-        <div className="max-w-[62ch]">
+        <Breadcrumb
+          trail={[{ label: "Home", href: "/" }, { label: INQUIRY_PAGE.title }]}
+        />
+
+        <div className="mt-6 max-w-[62ch]">
           <p className="text-label text-subtle uppercase">
             {INQUIRY_PAGE.eyebrow}
           </p>
@@ -65,8 +72,40 @@ export default function InquiryPage() {
         </div>
 
         <div className="desktop:grid-cols-2 desktop:gap-10 mt-10 grid grid-cols-1 items-start gap-8">
-          <InquiryExpectations />
+          {/*
+           * Expectations, boundary, and the four review pillars occupy the
+           * left column of MDS-REF-008; the concise form occupies the right.
+           * Below desktop this collapses to one column with the expectations
+           * still ahead of the fields, which is the approved order.
+           */}
+          <div className="flex flex-col gap-8">
+            <InquiryExpectations />
+            <div>
+              <h2 className="text-h3 text-strong">
+                {INQUIRY_PAGE.pillars.title}
+              </h2>
+              <p className="text-body text-subtle mt-2">
+                {INQUIRY_PAGE.pillars.description}
+              </p>
+              <RiskPillarCards columns="pair" className="mt-6" />
+            </div>
+          </div>
+
           <InquiryForm />
+        </div>
+
+        {/*
+         * The back path MDS-REF-008 carries at the foot of the page. The
+         * report route stays reachable from here without completing the form
+         * (MPS-ACC-010).
+         */}
+        <div className="tablet:flex-row mt-12 flex flex-col gap-4">
+          <ButtonLink href="/" variant="secondary">
+            Back to the Launch-Readiness Lab
+          </ButtonLink>
+          <ButtonLink href="/report" variant="quiet">
+            View sample report
+          </ButtonLink>
         </div>
       </Container>
     </Section>

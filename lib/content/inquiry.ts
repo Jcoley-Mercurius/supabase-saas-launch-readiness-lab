@@ -20,6 +20,16 @@ export const INQUIRY_PAGE = {
   title: "Discuss an authorized review",
   description:
     "Share your project context and goals. We'll review the details and get back to you with next steps for a scoped, evidence-led analysis.",
+  /*
+   * MDS-REF-008 "Four review pillars". The heading names what a review covers
+   * without promising an outcome, a timeline, or a scope beyond the four
+   * documented pillars (MPS-RULE-005).
+   */
+  pillars: {
+    title: "Four review pillars",
+    description:
+      "A review covers the areas that most often block a Supabase SaaS launch. Each one has a documented scenario you can explore first.",
+  },
 } as const;
 
 /** MDS-REF-008 "What happens next". No step states or implies a timeline. */

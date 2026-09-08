@@ -9,14 +9,13 @@ import { BoundaryNotes } from "@/components/layout/boundary-notes";
 import { EvidenceSnapshot } from "@/components/report/evidence-snapshot";
 import { ReportPreview } from "@/components/report/report-preview";
 import { ProofSteps } from "@/components/scenarios/proof-steps";
+import { RiskPillarCards } from "@/components/scenarios/risk-pillars";
 import { ScenarioCard } from "@/components/scenarios/scenario-card";
 import { ButtonLink } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Icon } from "@/components/ui/icon";
 import { LimitationCallout } from "@/components/ui/limitation-callout";
 import { SCENARIOS } from "@/lib/content/scenarios";
+import { PRODUCT } from "@/lib/content/site";
 import { buildReportModel } from "@/lib/evidence/report";
-import { PRODUCT, RISK_PILLARS } from "@/lib/content/site";
 
 /*
  * Landing page — MDS COMPOSITION-PROPOSAL "Landing page shell", MDS-REF-002,
@@ -93,17 +92,7 @@ export default function LandingPage() {
             evidence.
           </p>
 
-          <ul className="tablet:grid-cols-2 wide:grid-cols-4 mt-10 grid grid-cols-1 gap-6">
-            {RISK_PILLARS.map((pillar) => (
-              <Card as="li" key={pillar.title} className="flex flex-col p-6">
-                <span className="text-primary">
-                  <Icon name={pillar.icon} size={24} />
-                </span>
-                <h3 className="text-h4 text-strong mt-4">{pillar.title}</h3>
-                <p className="text-body-sm text-subtle mt-2">{pillar.body}</p>
-              </Card>
-            ))}
-          </ul>
+          <RiskPillarCards className="mt-10" />
         </Container>
       </Section>
 

@@ -22,19 +22,27 @@ Date: 2026-09-05
 
 ## Repository status
 
-No application repository is present in this workspace. Runtime paths must not be invented. MTS must inspect or initialize the implementation repository and resolve the following before build work:
+The application repository exists in this workspace and every mapping below is observed, not planned. Slices P0 through S5 are merged to `main`; S6 (measurement boundary, combined QA, release) is in progress.
 
-- framework/version and language
-- package/workspace structure
-- styling and component systems
-- runtime token and global-style locations
-- font and icon loading
-- shared component and layout paths
-- data, authentication/authorization, tenancy, secrets, inquiry, observability, analytics, recovery, and deployment architecture
-- testing/accessibility/browser/screenshot tools
-- `mts/AGENT-SKILL-MANIFEST.yaml`
+| Concern | Observed path |
+|---|---|
+| Framework and language | Next.js App Router, TypeScript (`package.json`, `next.config.ts`) |
+| Package/workspace structure | pnpm workspace (`pnpm-workspace.yaml`, `pnpm-lock.yaml`) |
+| Styling system | Tailwind CSS v4 `@theme` layer |
+| Runtime tokens and global styles | `app/globals.css` |
+| Font loading | Geist Sans and Geist Mono via `next/font` in `app/layout.tsx` |
+| Icons | `components/ui/icon.tsx` (Lucide-style outline set, inline SVG) |
+| Shared layout | `components/layout/` — container, breadcrumb, header, footer, review band |
+| Shared controls and states | `components/ui/` — button, field, card, alert, badge, status indicator, state glyph, states, limitation callout |
+| Evidence primitives | `components/evidence/` — panel, code excerpt, matrix, comparison, finding, stepper, guided and replay labs |
+| Report composition | `components/report/` |
+| Approved content | `lib/content/` |
+| Routes | `app/` — landing, scenarios index, scenario lab, report, method, about, inquiry |
+| Data, security, inquiry, deployment architecture | MTS artifacts; see `mts/TECHNOLOGY-BLUEPRINT.md` and `mts/SECURITY-ARCHITECTURE.md` |
+| Testing and browser verification | `playwright.config.ts` (browser matrix at the approved breakpoints), `playwright.unit.config.ts`, `pnpm check` |
+| Agent skills | `mts/AGENT-SKILL-MANIFEST.yaml` |
 
-After repository selection, update this manifest with observed paths and mark each mapping current.
+Runtime paths are still never invented: a path enters this table only after it exists in the repository.
 
 ## Canonical references
 
@@ -110,8 +118,8 @@ MTS must choose, approve, install, and verify the specific skills/tools/provider
 
 - Approved MDS exceptions: none
 - Open MDS gaps: none
-- Implementation deviations: not assessable until implementation exists
-- High-level status: design-approved; implementation not started; repository/MTS mapping pending
+- Implementation deviations: none open
+- High-level status: design-approved; P0-S5 implemented and merged; S6 combined QA and release in progress; repository mapping current
 
 ## Maintenance
 
