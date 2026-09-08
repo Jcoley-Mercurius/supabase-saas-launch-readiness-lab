@@ -6,14 +6,16 @@ import {
 } from "@/components/layout/container";
 import { AuthorizedReviewBand } from "@/components/layout/authorized-review-band";
 import { BoundaryNotes } from "@/components/layout/boundary-notes";
+import { EvidenceSnapshot } from "@/components/report/evidence-snapshot";
+import { ReportPreview } from "@/components/report/report-preview";
 import { ProofSteps } from "@/components/scenarios/proof-steps";
 import { ScenarioCard } from "@/components/scenarios/scenario-card";
-import { SyntheticContextPanel } from "@/components/scenarios/synthetic-context-panel";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { LimitationCallout } from "@/components/ui/limitation-callout";
 import { SCENARIOS } from "@/lib/content/scenarios";
+import { buildReportModel } from "@/lib/evidence/report";
 import { PRODUCT, RISK_PILLARS } from "@/lib/content/site";
 
 /*
@@ -24,11 +26,15 @@ import { PRODUCT, RISK_PILLARS } from "@/lib/content/site";
  * MPS-REQ-002 (synthetic context), MPS-REQ-009 (route to report and CTA),
  * MPS-REQ-014 (authorization boundary); MPS-ACC-001 and MPS-ACC-010.
  *
- * Deferred by slice: the approved hero evidence snapshot and the report
- * preview's severity table and RLS matrix excerpt read from real findings. No
- * finding model exists before S2-S4, and fabricating one would breach
- * MPS-RULE-007. Those regions are reported as an explicit S4 deferral rather
- * than filled with invented content.
+ * The hero evidence snapshot and the report preview's severity table and RLS
+ * matrix excerpt were deferred in S1 (MTS-DEV-001) because no finding model
+ * existed and fabricating one would have breached MPS-RULE-007. S4 populates
+ * both from the derived report model, so every count, severity, state, and
+ * policy excerpt on this page is read from the committed transcripts and
+ * matches the report exactly.
+ *
+ * The synthetic SaaS context panel that stood in for the hero snapshot keeps
+ * its canonical home on the scenario index (MDS-REF-005, MPS-ACC-002).
  */
 
 export const metadata: Metadata = {
@@ -37,6 +43,8 @@ export const metadata: Metadata = {
 };
 
 export default function LandingPage() {
+  const model = buildReportModel();
+
   return (
     <>
       <Section tone="ink" className="desktop:py-20 py-14">
@@ -68,7 +76,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <SyntheticContextPanel />
+            <EvidenceSnapshot model={model} />
           </div>
         </Container>
       </Section>
@@ -151,28 +159,30 @@ export default function LandingPage() {
         </Container>
       </Section>
 
-      <Section tone="base" spacing="compact" aria-labelledby="sample-report">
+      <Section tone="base" aria-labelledby="sample-report">
         <Container>
-          <Card className="desktop:flex-row desktop:items-center desktop:justify-between flex flex-col gap-6 p-6">
-            <div className="flex items-start gap-4">
-              <span className="text-primary mt-1 shrink-0">
-                <Icon name="file-text" size={24} />
-              </span>
-              <div>
-                <h2 id="sample-report" className="text-h4 text-strong">
-                  See what a full report looks like
-                </h2>
-                <p className="text-body-sm text-subtle mt-1 max-w-[64ch]">
-                  The sample report ranks findings by severity and carries
-                  evidence, remediation direction, and the limitation for each
-                  one. It is reachable without running a single scenario.
-                </p>
-              </div>
+          <div className="desktop:grid-cols-[minmax(0,290px)_minmax(0,1fr)] desktop:gap-12 grid grid-cols-1 gap-10">
+            <div>
+              <SectionEyebrow>Sample report preview</SectionEyebrow>
+              <h2 id="sample-report" className="text-h2 text-strong mt-3">
+                Clear findings, easy to act on
+              </h2>
+              <p className="text-body-lg text-subtle mt-3">
+                Ranked by severity, with reproduction evidence, remediation
+                direction, and the limitation on what each result proves. The
+                report is reachable without running a single scenario.
+              </p>
+              <ButtonLink
+                href="/report"
+                variant="secondary"
+                className="mt-6"
+                trailingArrow
+              >
+                View sample report
+              </ButtonLink>
             </div>
-            <ButtonLink href="/report" variant="secondary" trailingArrow>
-              View sample report
-            </ButtonLink>
-          </Card>
+            <ReportPreview model={model} />
+          </div>
         </Container>
       </Section>
 

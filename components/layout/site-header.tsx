@@ -65,6 +65,7 @@ export function SiteHeader() {
         <ProductLockup />
 
         <nav
+          data-print-hide="true"
           aria-label="Primary"
           className="desktop:flex hidden items-center gap-1"
         >
@@ -90,7 +91,7 @@ export function SiteHeader() {
            * own `inline-flex` would otherwise win over a `hidden` utility in
            * the same cascade layer and leave the CTA visible below desktop.
            */}
-          <div className="desktop:flex hidden">
+          <div className="desktop:flex hidden" data-print-hide="true">
             <ButtonLink href={PRIMARY_CTA.href} trailingArrow>
               {PRIMARY_CTA.label}
             </ButtonLink>
@@ -102,6 +103,7 @@ export function SiteHeader() {
             aria-expanded={open}
             aria-controls={menuId}
             onClick={() => setOpen((value) => !value)}
+            data-print-hide="true"
             className="border-line text-strong hover:bg-muted rounded-control desktop:hidden inline-flex min-h-11 min-w-11 items-center justify-center border"
           >
             <Icon name={open ? "close" : "menu"} size={20} />

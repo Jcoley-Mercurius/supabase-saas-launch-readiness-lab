@@ -151,3 +151,20 @@ export function replayTranscriptProvenance() {
     inputDigest: transcript.input_digest,
   };
 }
+
+/**
+ * Read helpers for surfaces that summarise the whole transcript rather than
+ * replay one scenario — the S4 report in particular. They mirror
+ * `allRecordedCases` and `recordedRelations` in the S2 executor.
+ *
+ * They are reads, not runs: no counter advances and no run identity is
+ * created, because a report is not a replay. The bounded allowlist above is
+ * unchanged and remains the only path a request can take.
+ */
+export function allRecordedSequences(mode: EvidenceMode): RecordedSequence[] {
+  return transcript.runs?.[mode] ?? [];
+}
+
+export function recordedHandler(mode: EvidenceMode): HandlerSnapshot | null {
+  return transcript.handler?.[mode] ?? null;
+}
