@@ -85,11 +85,19 @@ Three owner decisions were taken before implementation, all at the S4 pre-implem
 | Findings list | Static and fully expanded; no severity filter, no collapse | `MTS-OBS-029` |
 | The S1 deferral | Populate both landing regions now from real derived data | `MTS-DEV-001`, resolved |
 
-**S4 opens one MDS gap.** `MDS-GAP-S4-001`: the MDS requires the report to be printable without dark-page backgrounds but defines no print appearance. It is implemented without inventing a value — the print block redefines the approved tokens for the print medium, so no print-only colour exists — and three browser checks verify it in the print medium itself. It needs an MDS decision to confirm or replace.
+**S4 opens one MDS gap.** `MDS-GAP-S4-001`: the MDS requires the report to be printable without dark-page backgrounds but defines no print appearance. It is implemented without inventing a value — the print block redefines the approved tokens for the print medium, so no print-only colour exists — and three browser checks verify it in the print medium itself. It needs an MDS decision to confirm or replace, and is mirrored into the MDS state as its own open gap (`MDS-CHG-002`).
 
 ## Next action
 
-Review the S4 checkpoint report and decide on the open items — `MDS-GAP-S4-001` above, and `MTS-OBS-028` through `MTS-OBS-033`. S5 does not begin until S4 is approved.
+Decide `MDS-GAP-S4-001` above. It is the last open S4 item and S5 does not begin until it is
+settled.
+
+The owner approved `MTS-OBS-028` through `MTS-OBS-033` on 2026-09-07, recorded as `MTS-CHG-010`.
+None required further work: four restate decisions already taken at the S4 pre-implementation
+checkpoint, and the other two record the derived/authored module split and two responsive defects
+found and fixed during implementation. The gap was mirrored into `mds/MDS-PROJECT-STATE.yaml` on
+the same day as `MDS-CHG-002`, so the design system carries its own open record of it; both
+entries state the same gap and both remain open.
 
 **CI is wired** (`MTS-OBS-016`, resolved ahead of S6 on owner instruction). `.github/workflows/verify.yml` runs on every push to `main`, every pull request, and on demand:
 
