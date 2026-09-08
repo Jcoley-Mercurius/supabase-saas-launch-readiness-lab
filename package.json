@@ -16,8 +16,11 @@
     "evidence:record": "node scripts/record-evidence.mjs",
     "evidence:check": "node scripts/check-evidence-freshness.mjs",
     "evidence:verify": "node scripts/verify-evidence.mjs",
+    "inquiries:check": "node scripts/verify-inquiry.mjs",
+    "inquiries:check:hosted": "node scripts/verify-inquiry-hosted.mjs",
+    "inquiries:retain": "node scripts/retain-inquiries.mjs",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm evidence:check && pnpm test:unit && pnpm build",
-    "test:unit": "playwright test --config playwright.unit.config.ts",
+    "test:unit": "NODE_OPTIONS=--conditions=react-server playwright test --config playwright.unit.config.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -27,6 +30,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "resend": "^6.26.0",
+    "server-only": "^0.0.1",
     "zod": "^4.5.4"
   },
   "devDependencies": {
