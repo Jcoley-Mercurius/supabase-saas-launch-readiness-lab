@@ -4,8 +4,8 @@ Status: Gate 7 implementation-readiness draft
 Consumed: MPS v1.1 → MDS v1.0 → MTS v0.6-draft
 Classification: greenfield
 Current phase: S5 inquiry path
-Current slice: S5 — implemented, checkpointed, and proved end to end against the isolated hosted project
-Readiness: P0, S1, S2, S3 and S4 verified and approved. S5 is implemented on `slice/s5-inquiry` (PR #8), all ten checkpoint observations are ruled on, and the whole path — store, deduplication, credential guard, authorization boundary, and notification — has been proved against the real isolated project with a real submission and a real email. One hosted-only privilege defect was found and fixed in the process (`MTS-OBS-044`). One owner action remains: the retention secret.
+Current slice: S5 — complete and checkpointed; awaiting merge
+Readiness: P0, S1, S2, S3 and S4 verified and approved. S5 is implemented on `slice/s5-inquiry` (PR #8), all ten checkpoint observations are ruled on, and the whole path — store, deduplication, credential guard, authorization boundary, and notification — has been proved against the real isolated project with a real submission and a real email. One hosted-only privilege defect was found and fixed in the process (`MTS-OBS-044`). All thirteen checkpoint observations are ruled on and none remains open. The retention secret is configured; the workflow becomes dispatchable when PR #8 merges.
 
 ## Approved route
 
@@ -40,7 +40,7 @@ The current manifest is mts/AGENT-SKILL-MANIFEST.yaml. Required skills are MTS m
 | S2 | approved | Owner approved S2 on 2026-09-07; merged to `main` as `6774608` |
 | S3 | approved | `pnpm check` green from a deleted `.next`; `pnpm evidence:verify` green against a live database (8/8 steps — both transcripts reproduced byte for byte from a clean database, twice); 12 SQL fixture-safety checks; 79 unit tests; 405 Playwright checks against a build confirmed to contain the change under test (324 chromium desktop/wide/tablet/mobile at 8 workers, 0 failed and 0 flaky; 81 firefox-desktop at 1 worker); WebKit remains CI-only under MTS-EXC-002 |
 | S4 | approved | Merged to `main` as `ff89b28`. Owner approved `MTS-OBS-028`–`033` (`MTS-CHG-010`) and confirmed `MDS-GAP-S4-001` (`MDS-CHG-003`) on 2026-09-07.  `pnpm check` green from a deleted `.next` (91 unit tests, including 12 that recompute every published report count straight from the transcript JSON); 500 Playwright checks across five projects at 1 worker — 500 passed, 0 failed, 0 flaky, in 8.1 minutes against a production build the suite built and served itself; three of those checks run in the print medium itself; WebKit remains CI-only under MTS-EXC-002 |
-| S5 | implemented, awaiting checkpoint | 12 SQL inquiry checks green against a real database (authorization deny paths, RLS, isolation, accept, duplicate, abuse control, delivery metadata, retention, manual deletion, credential patterns); 124 unit tests green, 33 of them new, including 8 that walk the static import graph to enforce the `MTS-RISK-001` residual; 23 new browser checks per project covering all eight approved inquiry states, the responsive transformation, keyboard order, focus, contrast, and the route boundary; `pnpm check` green from a deleted `.next`. **The Resend delivery half has never sent a real message** (`MTS-OBS-042`) |
+| S5 | implemented and checkpointed; awaiting merge | 12 SQL inquiry checks green against a real database (authorization deny paths, RLS, isolation, accept, duplicate, abuse control, delivery metadata, retention, manual deletion, credential patterns); 124 unit tests green, 33 of them new, including 8 that walk the static import graph to enforce the `MTS-RISK-001` residual; 23 new browser checks per project covering all eight approved inquiry states, the responsive transformation, keyboard order, focus, contrast, and the route boundary; `pnpm check` green from a deleted `.next`. **The Resend delivery half has never sent a real message** (`MTS-OBS-042`) |
 | S6 | not started | — |
 
 Open S1 items carried into the S2 checkpoint are MTS-DEV-001, MTS-DEV-002 (now partially resolved), and MTS-OBS-001 through MTS-OBS-004. **Both MDS gaps are closed**: `MDS-GAP-S1-001` by the approved `color.border.control` token and `MDS-GAP-S1-002` by applying the COMPONENTS-PROPOSAL evidence-state shapes, together recorded as `MDS-CHG-001`.
@@ -114,19 +114,15 @@ The deny assertions were already right, and had passed 12/12 locally on every ru
 
 ## Next action
 
-**S5 is complete and proved end to end.** The inquiry path now runs against the real isolated project:
+**S5 is complete and checkpointed. No observation, gap, exception, or deviation is open anywhere in the MDS or MTS state.** The owner ruled on all thirteen S5 observations on 2026-09-08: ten confirmed, `MTS-OBS-038` decided and implemented, `MTS-OBS-039` resolved by the retention workflow, and `MTS-OBS-042` resolved by a real notification sent and accepted.
 
-| Proof | Result |
-|---|---|
-| Publishable key probed directly over PostgREST | Denied on a table read and on the retention function (`42501` both) |
-| First submission through the running application | `acknowledged`, `delivered: true` — one row, one delivery event, one real email |
-| The same submission again | `duplicate`, original timestamp, count 2, **no second row** |
-| A submission carrying an `sk_live` key | Refused `422` before persistence |
-| An unsettled authorization | Accepted and flagged at the boundary |
+Three rules are now binding on everything that follows:
 
-All harness rows were deleted; the store holds zero inquiries.
+1. **A deny assertion proves nothing about an environment it has not run in.** Any schema applied to a hosted project has its deny paths re-run there (`MTS-OBS-044`).
+2. **An operator guard distinguishes environments by host, never by database name** (`MTS-OBS-045`).
+3. **No credential-shaped literal enters this repository, not even a published example.** Assemble it at runtime, and never resolve a push-protection block by allowlisting (`MTS-OBS-046`).
 
-**One owner action remains**: add `INQUIRY_DATABASE_URL` as a GitHub repository secret so `.github/workflows/retention.yml` stops skipping. Until then `MPS-REQ-015` is satisfied by an available command rather than an unattended process. The value is the session-pooler connection string from Project Settings → Database.
+**Merge [PR #8](https://github.com/Jcoley-Mercurius/supabase-saas-launch-readiness-lab/pull/8).** Two things depend on it and nothing else does: S5 reaching `main`, and `.github/workflows/retention.yml` becoming dispatchable — GitHub restricts `workflow_dispatch` to workflows present on the default branch, so the first retention run cannot be observed until then. `INQUIRY_DATABASE_URL` is already configured, so that run should report `0 records past 12 months` twice.
 
-**Then S6**: the measurement boundary, combined QA, the preview release, and the rollback record. Three S5 items are carried into it — edge rate limiting (`MTS-OBS-037`), a verified from-domain for production plus preview-environment delivery (`MTS-OBS-042`), and running `inquiries:check:hosted` against the preview and production projects as a release gate (`MTS-OBS-044`).
+**Then S6**: the measurement boundary, combined QA, the preview release, and the rollback record. Three S5 items are carried into it — edge rate limiting (`MTS-OBS-037`), a verified from-domain for production plus preview-environment delivery (`MTS-OBS-042`), and `pnpm inquiries:check:hosted` as a release gate against the preview and production projects (`MTS-OBS-044`).
 
