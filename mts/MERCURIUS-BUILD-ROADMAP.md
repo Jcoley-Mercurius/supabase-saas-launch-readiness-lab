@@ -3,9 +3,9 @@
 Status: Gate 7 implementation-readiness draft
 Consumed: MPS v1.1 → MDS v1.0 → MTS v0.6-draft
 Classification: greenfield
-Current phase: S4 report and case study
-Current slice: S4 — implemented, awaiting owner approval
-Readiness: P0, S1, S2 and S3 verified and approved; S4 implemented on branch `slice/s4-report-case-study` and awaiting the S4 approval checkpoint before S5 begins
+Current phase: S5 inquiry path
+Current slice: S5 — not started
+Readiness: P0, S1, S2, S3 and S4 verified and approved; S4 merged to `main` as `ff89b28` on 2026-09-08 with no gap, exception, or deviation left open. S5 may begin.
 
 ## Approved route
 
@@ -39,8 +39,9 @@ The current manifest is mts/AGENT-SKILL-MANIFEST.yaml. Required skills are MTS m
 | S1 | approved | Merged to `main` as `f3d18d3` |
 | S2 | approved | Owner approved S2 on 2026-09-07; merged to `main` as `6774608` |
 | S3 | approved | `pnpm check` green from a deleted `.next`; `pnpm evidence:verify` green against a live database (8/8 steps — both transcripts reproduced byte for byte from a clean database, twice); 12 SQL fixture-safety checks; 79 unit tests; 405 Playwright checks against a build confirmed to contain the change under test (324 chromium desktop/wide/tablet/mobile at 8 workers, 0 failed and 0 flaky; 81 firefox-desktop at 1 worker); WebKit remains CI-only under MTS-EXC-002 |
-| S4 | implemented, awaiting owner approval | `pnpm check` green from a deleted `.next` (91 unit tests, including 12 that recompute every published report count straight from the transcript JSON); 500 Playwright checks across five projects at 1 worker — 500 passed, 0 failed, 0 flaky, in 8.1 minutes against a production build the suite built and served itself; three of those checks run in the print medium itself; WebKit remains CI-only under MTS-EXC-002 |
-| S5–S6 | not started | — |
+| S4 | approved | Merged to `main` as `ff89b28`. Owner approved `MTS-OBS-028`–`033` (`MTS-CHG-010`) and confirmed `MDS-GAP-S4-001` (`MDS-CHG-003`) on 2026-09-07.  `pnpm check` green from a deleted `.next` (91 unit tests, including 12 that recompute every published report count straight from the transcript JSON); 500 Playwright checks across five projects at 1 worker — 500 passed, 0 failed, 0 flaky, in 8.1 minutes against a production build the suite built and served itself; three of those checks run in the print medium itself; WebKit remains CI-only under MTS-EXC-002 |
+| S5 | not started | Next. Needs the owner-gated notification destination before the delivery half can be verified — see below |
+| S6 | not started | — |
 
 Open S1 items carried into the S2 checkpoint are MTS-DEV-001, MTS-DEV-002 (now partially resolved), and MTS-OBS-001 through MTS-OBS-004. **Both MDS gaps are closed**: `MDS-GAP-S1-001` by the approved `color.border.control` token and `MDS-GAP-S1-002` by applying the COMPONENTS-PROPOSAL evidence-state shapes, together recorded as `MDS-CHG-001`.
 
@@ -89,7 +90,9 @@ Three owner decisions were taken before implementation, all at the S4 pre-implem
 
 ## Next action
 
-**S4 is approved and S5 may begin.** Merge PR #6, then start S5, the inquiry path.
+**Start S5, the inquiry path.** S4 merged to `main` as `ff89b28` (PR #6, all three CI jobs green including WebKit).
+
+**S5 has one owner-gated dependency.** The route, form, validation, store, duplicate handling, retention, and MDS composition can all be built and verified without credentials. The notification half cannot: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `INQUIRY_NOTIFICATION_TO` are unset, no `.env.local` exists, and preview must use a preview-safe destination separate from production (`.env.example`, INTEGRATION-MANIFEST.md). Configuring that destination and approving the preview test is the owner action this slice's row calls for.
 
 The owner approved `MTS-OBS-028` through `MTS-OBS-033` on 2026-09-07 (`MTS-CHG-010`) and confirmed
 `MDS-GAP-S4-001` the same day (`MDS-CHG-003`, `MTS-CHG-011`), closing the last open S4 item. None of
