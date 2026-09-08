@@ -9,9 +9,11 @@
  *   1. the transcript freshness gate in scripts/check-evidence-freshness.mjs
  *      passes, so a transcript can never silently go stale against the fixture
  *      that produced it;
- *   2. the fixture safety checks in supabase/tests/safety-checks.sql pass;
- *   3. re-recording from a clean database twice reproduces the committed
- *      transcript exactly, apart from the wall-clock recording timestamp.
+ *   2. re-recording from a clean database twice reproduces both committed
+ *      transcripts exactly, apart from the wall-clock recording timestamp;
+ *   3. the fixture safety checks in supabase/tests/safety-checks.sql pass —
+ *      run last, against the database the reruns just rebuilt, so they can
+ *      never be answered by a schema left over from an earlier session.
  *
  * This is the full gate and it needs PostgreSQL. Step 1 alone needs nothing
  * but the repository and is also wired into `pnpm check` as `evidence:check`,
@@ -23,13 +25,11 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { COMMITTED_TRANSCRIPT } from "./evidence-inputs.mjs";
+import { RECORDED_DIR, TRANSCRIPTS } from "./evidence-inputs.mjs";
 
 const DB_URL =
   process.env.EVIDENCE_DATABASE_URL ??
   "postgresql://postgres:postgres@127.0.0.1:56322/postgres";
-const COMMITTED = COMMITTED_TRANSCRIPT;
-
 const scratch = mkdtempSync(join(tmpdir(), "evidence-verify-"));
 let failed = false;
 
@@ -56,6 +56,53 @@ step("transcript freshness gate", () => {
   });
 });
 
+const committed = Object.fromEntries(
+  Object.entries(TRANSCRIPTS).map(([name, spec]) => [
+    name,
+    JSON.parse(readFileSync(join(RECORDED_DIR, spec.file), "utf8")),
+  ]),
+);
+
+for (const attempt of [1, 2]) {
+  const out = join(scratch, `run-${attempt}`);
+  let recorded = false;
+
+  step(`rerun ${attempt} of 2 records from a clean database`, () => {
+    execFileSync("node", ["scripts/record-evidence.mjs", "--out-dir", out], {
+      stdio: "pipe",
+    });
+    recorded = true;
+  });
+
+  // Both transcripts are compared, because both are replayed to buyers and
+  // both come out of this one run.
+  for (const [name, spec] of Object.entries(TRANSCRIPTS)) {
+    step(
+      `rerun ${attempt} of 2 reproduces the committed ${name} transcript`,
+      () => {
+        if (!recorded) throw new Error("the rerun did not produce a recording");
+        const fresh = JSON.parse(readFileSync(join(out, spec.file), "utf8"));
+        if (fresh.input_digest !== committed[name].input_digest) {
+          throw new Error(
+            `input digest drifted: committed ${committed[name].input_digest}, rerun ${fresh.input_digest}. Re-record with pnpm evidence:record.`,
+          );
+        }
+        if (comparable(fresh) !== comparable(committed[name])) {
+          throw new Error(
+            `rerun produced different ${name} evidence than the committed transcript`,
+          );
+        }
+      },
+    );
+  }
+}
+
+// Deliberately last. These checks assert against whatever schema the database
+// currently holds, and they do not migrate it themselves — so running them
+// before a recording would test whatever a previous session happened to leave
+// behind. The reruns above each perform a full `supabase db reset`, so by this
+// point the database is guaranteed to be the migrations under test. See
+// MTS-OBS-026.
 step("fixture safety checks", () => {
   execFileSync(
     "psql",
@@ -72,31 +119,6 @@ step("fixture safety checks", () => {
     { stdio: "pipe" },
   );
 });
-
-const committed = JSON.parse(readFileSync(COMMITTED, "utf8"));
-
-for (const attempt of [1, 2]) {
-  step(
-    `deterministic rerun ${attempt} of 2 matches the committed transcript`,
-    () => {
-      const out = join(scratch, `run-${attempt}.json`);
-      execFileSync("node", ["scripts/record-evidence.mjs", "--out", out], {
-        stdio: "pipe",
-      });
-      const fresh = JSON.parse(readFileSync(out, "utf8"));
-      if (fresh.input_digest !== committed.input_digest) {
-        throw new Error(
-          `input digest drifted: committed ${committed.input_digest}, rerun ${fresh.input_digest}. Re-record with pnpm evidence:record.`,
-        );
-      }
-      if (comparable(fresh) !== comparable(committed)) {
-        throw new Error(
-          "rerun produced different evidence than the committed transcript",
-        );
-      }
-    },
-  );
-}
 
 rmSync(scratch, { recursive: true, force: true });
 process.exit(failed ? 1 : 0);

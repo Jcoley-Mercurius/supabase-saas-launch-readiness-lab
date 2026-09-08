@@ -12,24 +12,29 @@
  * nothing but the checked-out repository, so it can run on every ordinary
  * check run rather than only where a database exists:
  *
- *   1. the committed transcript parses and carries the expected schema;
- *   2. its input digest still matches the migrations and documented test set
+ *   1. both committed transcripts parse and carry their expected schema;
+ *   2. their input digests still match the migrations and both documented sets
  *      on disk, so an edited fixture cannot leave a stale transcript being
  *      replayed to buyers as current;
- *   3. the transcript records both documented policy modes and is non-empty;
- *   4. no forbidden credential-shaped string is present.
+ *   3. each transcript records both documented modes and is non-empty;
+ *   4. no forbidden credential-shaped string is present, including the
+ *      fixture's own invented webhook signing string.
  *
- * A failure here means the fixture changed and the transcript was not
+ * A failure here means the fixture changed and the transcripts were not
  * re-recorded. Fix it with `pnpm db:start && pnpm evidence:record`, not by
- * editing the transcript: a hand-edited transcript is exactly the thing the
+ * editing a transcript: a hand-edited transcript is exactly the thing the
  * recorded-evidence posture promises buyers does not happen.
  */
 
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
-  COMMITTED_TRANSCRIPT,
   MIGRATIONS,
+  RECORDED_DIR,
+  SEQUENCES,
   TESTS,
+  TRANSCRIPTS,
+  forbiddenMatches,
   inputDigest,
 } from "./evidence-inputs.mjs";
 
@@ -45,58 +50,74 @@ function step(name, run) {
   }
 }
 
-let transcript = null;
+const onDisk = inputDigest();
 
-step("committed transcript parses", () => {
-  transcript = JSON.parse(readFileSync(COMMITTED_TRANSCRIPT, "utf8"));
-  if (transcript.$schema !== "mercurius/evidence-transcript/1") {
-    throw new Error(
-      `unexpected transcript schema: ${String(transcript.$schema)}`,
+for (const [name, spec] of Object.entries(TRANSCRIPTS)) {
+  let transcript = null;
+
+  step(`committed ${name} transcript parses`, () => {
+    transcript = JSON.parse(
+      readFileSync(join(RECORDED_DIR, spec.file), "utf8"),
     );
-  }
-});
-
-step(`transcript digest matches ${MIGRATIONS} and ${TESTS}`, () => {
-  if (!transcript) throw new Error("transcript did not parse");
-  const onDisk = inputDigest();
-  if (transcript.input_digest !== onDisk) {
-    throw new Error(
-      `stale transcript: recorded against ${transcript.input_digest}, fixture on disk is ${onDisk}. Re-record with pnpm evidence:record.`,
-    );
-  }
-});
-
-step("transcript records both documented policy modes", () => {
-  if (!transcript) throw new Error("transcript did not parse");
-  for (const mode of ["vulnerable", "remediated"]) {
-    if (!transcript.modes?.includes(mode)) {
-      throw new Error(`transcript does not declare the ${mode} mode`);
+    if (transcript.$schema !== spec.schema) {
+      throw new Error(
+        `unexpected transcript schema: ${String(transcript.$schema)}`,
+      );
     }
-    if (
-      !Array.isArray(transcript.runs?.[mode]) ||
-      !transcript.runs[mode].length
-    ) {
-      throw new Error(`transcript records no documented test in ${mode} mode`);
-    }
-  }
-});
+  });
 
-step("transcript is free of credential-shaped strings", () => {
-  if (!transcript) throw new Error("transcript did not parse");
-  const forbidden = [
-    /\bpassword\b/i,
-    /\bsecret\b/i,
-    /\bapi[-_ ]?key\b/i,
-    /\bservice[-_ ]?role\b/i,
-    /\bbearer\b/i,
-    /eyJ[A-Za-z0-9_-]{10,}/,
-    /\bsb[ps]_[A-Za-z0-9]{8,}/,
-  ];
-  const text = JSON.stringify(transcript);
-  const hits = forbidden.filter((pattern) => pattern.test(text));
-  if (hits.length > 0) {
+  step(
+    `${name} transcript digest matches ${MIGRATIONS}, ${TESTS} and ${SEQUENCES}`,
+    () => {
+      if (!transcript) throw new Error("transcript did not parse");
+      if (transcript.input_digest !== onDisk) {
+        throw new Error(
+          `stale transcript: recorded against ${transcript.input_digest}, fixture on disk is ${onDisk}. Re-record with pnpm evidence:record.`,
+        );
+      }
+    },
+  );
+
+  step(`${name} transcript records both documented modes`, () => {
+    if (!transcript) throw new Error("transcript did not parse");
+    for (const mode of ["vulnerable", "remediated"]) {
+      if (!transcript.modes?.includes(mode)) {
+        throw new Error(`transcript does not declare the ${mode} mode`);
+      }
+      if (
+        !Array.isArray(transcript.runs?.[mode]) ||
+        !transcript.runs[mode].length
+      ) {
+        throw new Error(`transcript records no documented run in ${mode} mode`);
+      }
+    }
+  });
+
+  step(`${name} transcript is free of credential-shaped strings`, () => {
+    if (!transcript) throw new Error("transcript did not parse");
+    const hits = forbiddenMatches(transcript);
+    if (hits.length > 0) {
+      throw new Error(
+        `matched a forbidden pattern: ${hits.map(String).join(", ")}`,
+      );
+    }
+  });
+}
+
+/*
+ * Both transcripts come out of one recorder run against one fixture, so a
+ * digest that matches the disk but not its sibling would mean the two halves
+ * of the evidence were recorded against different fixtures.
+ */
+step("both transcripts were recorded from the same fixture", () => {
+  const digests = Object.values(TRANSCRIPTS).map(
+    (spec) =>
+      JSON.parse(readFileSync(join(RECORDED_DIR, spec.file), "utf8"))
+        .input_digest,
+  );
+  if (new Set(digests).size !== 1) {
     throw new Error(
-      `matched a forbidden pattern: ${hits.map(String).join(", ")}`,
+      `transcripts carry different digests: ${digests.join(", ")}`,
     );
   }
 });

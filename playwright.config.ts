@@ -88,10 +88,24 @@ export default defineConfig({
       : []),
   ],
 
+  /*
+   * The suite always builds and serves production, everywhere.
+   *
+   * It previously served `pnpm dev` locally, which meant every workstation run
+   * exercised a development build: different bundling, no production
+   * optimisation, and a dev-tools overlay that injected a control the approved
+   * 44px touch-target assertion then measured. See MTS-OBS-027 and MTS-DEC-011.
+   *
+   * `reuseExistingServer` is false for the same reason it is false in CI. A
+   * server already on the port is of unknown provenance, and attaching to one
+   * is how a suite reports results for a build that is not the build under
+   * test — the trap recorded in MTS-OBS-014. The cost is a rebuild per run;
+   * the alternative is evidence that cannot be trusted.
+   */
   webServer: {
-    command: process.env.CI ? "pnpm build && pnpm start" : "pnpm dev",
+    command: "pnpm build && pnpm start",
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    reuseExistingServer: false,
+    timeout: 240_000,
   },
 });

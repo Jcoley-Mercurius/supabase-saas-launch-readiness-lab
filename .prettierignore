@@ -19,3 +19,8 @@ CLAUDE.md
 # compared byte-for-byte against a fresh recording. The recorder is its only
 # author; reformatting it here would make the verifier's diff meaningless.
 lib/evidence/recorded/
+
+# Scratch state written by the Supabase CLI. It is git-ignored via
+# supabase/.gitignore, but Prettier does not read nested .gitignore files, so
+# `pnpm format:check` would otherwise fail on any machine that has run the CLI.
+supabase/.temp/
