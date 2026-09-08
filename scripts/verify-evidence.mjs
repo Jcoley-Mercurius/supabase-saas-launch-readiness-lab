@@ -9,9 +9,11 @@
  *   1. the transcript freshness gate in scripts/check-evidence-freshness.mjs
  *      passes, so a transcript can never silently go stale against the fixture
  *      that produced it;
- *   2. the fixture safety checks in supabase/tests/safety-checks.sql pass;
- *   3. re-recording from a clean database twice reproduces both committed
- *      transcripts exactly, apart from the wall-clock recording timestamp.
+ *   2. re-recording from a clean database twice reproduces both committed
+ *      transcripts exactly, apart from the wall-clock recording timestamp;
+ *   3. the fixture safety checks in supabase/tests/safety-checks.sql pass —
+ *      run last, against the database the reruns just rebuilt, so they can
+ *      never be answered by a schema left over from an earlier session.
  *
  * This is the full gate and it needs PostgreSQL. Step 1 alone needs nothing
  * but the repository and is also wired into `pnpm check` as `evidence:check`,
@@ -54,23 +56,6 @@ step("transcript freshness gate", () => {
   });
 });
 
-step("fixture safety checks", () => {
-  execFileSync(
-    "psql",
-    [
-      "-v",
-      "ON_ERROR_STOP=1",
-      "-X",
-      "-q",
-      "--no-psqlrc",
-      DB_URL,
-      "-f",
-      "supabase/tests/safety-checks.sql",
-    ],
-    { stdio: "pipe" },
-  );
-});
-
 const committed = Object.fromEntries(
   Object.entries(TRANSCRIPTS).map(([name, spec]) => [
     name,
@@ -111,6 +96,29 @@ for (const attempt of [1, 2]) {
     );
   }
 }
+
+// Deliberately last. These checks assert against whatever schema the database
+// currently holds, and they do not migrate it themselves — so running them
+// before a recording would test whatever a previous session happened to leave
+// behind. The reruns above each perform a full `supabase db reset`, so by this
+// point the database is guaranteed to be the migrations under test. See
+// MTS-OBS-026.
+step("fixture safety checks", () => {
+  execFileSync(
+    "psql",
+    [
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-X",
+      "-q",
+      "--no-psqlrc",
+      DB_URL,
+      "-f",
+      "supabase/tests/safety-checks.sql",
+    ],
+    { stdio: "pipe" },
+  );
+});
 
 rmSync(scratch, { recursive: true, force: true });
 process.exit(failed ? 1 : 0);

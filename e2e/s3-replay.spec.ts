@@ -88,7 +88,8 @@ test.describe("the lab starts untested and never implies a pass", () => {
     await expect(
       page.getByText("What this proves, and what it does not"),
     ).toBeVisible();
-    // The md5 stand-in is disclosed before any result is shown, not after.
+    // The synthetic signing material is disclosed before any result is shown,
+    // not after.
     await expect(
       page.getByText("deterministic injected faults").first(),
     ).toBeVisible();
@@ -496,10 +497,11 @@ test.describe("secret safety and prohibited claims", () => {
       /-----BEGIN [A-Z ]*PRIVATE KEY-----/,
       /\b(password|secret|api[-_ ]?key|token)\b\s*[:=]\s*\S+/i,
       /\bBearer\s+[A-Za-z0-9._-]{8,}/,
-      // The fixture's own invented signing string, and any md5-shaped digest:
-      // the page states whether a signature verified, never the value.
+      // The fixture's own invented signing string, and any digest-shaped run
+      // of hex (md5- or sha256-length): the page states whether a signature
+      // verified, never the value.
       /synthetic-signing-material/,
-      /\b[0-9a-f]{32}\b/,
+      /\b[0-9a-f]{32,}\b/,
     ]) {
       expect(text, `secret pattern ${pattern}`).not.toMatch(pattern);
     }

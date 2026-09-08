@@ -1,13 +1,13 @@
 {
   "$schema": "mercurius/replay-transcript/1",
-  "recorded_at": "2026-09-07T15:26:44.546Z",
+  "recorded_at": "2026-09-07T17:37:44.639Z",
   "engine": {
     "product": "PostgreSQL",
     "version": "17.6",
     "host": "isolated local Supabase container",
     "note": "No hosted Supabase project, production system, or third-party system was contacted."
   },
-  "input_digest": "sha256:4abdfea414d58c9abf42dd26eeca3dcd1fe0e349e5b867b685ba0f435b4f2e4a",
+  "input_digest": "sha256:996856a7ff5352d78e16259d6e9dd154783ec3d68cfe10d89c3b5c498bdf32cf",
   "modes": [
     "vulnerable",
     "remediated"
@@ -1529,7 +1529,7 @@
         "verify_signature": false
       },
       "ledger_constraint": "PRIMARY KEY (ledger_key)",
-      "signature_algorithm": "md5 over a canonical payload string, standing in for the provider HMAC a real integration must verify"
+      "signature_algorithm": "HMAC-SHA256 over a canonical payload string built from the delivery fields; a real integration signs the provider's documented string, normally the raw request body and a timestamp header"
     },
     "remediated": {
       "configuration": {
@@ -1540,7 +1540,7 @@
         "verify_signature": true
       },
       "ledger_constraint": "PRIMARY KEY (ledger_key)",
-      "signature_algorithm": "md5 over a canonical payload string, standing in for the provider HMAC a real integration must verify"
+      "signature_algorithm": "HMAC-SHA256 over a canonical payload string built from the delivery fields; a real integration signs the provider's documented string, normally the raw request body and a timestamp header"
     }
   }
 }

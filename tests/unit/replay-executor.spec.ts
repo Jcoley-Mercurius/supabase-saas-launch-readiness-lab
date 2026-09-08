@@ -323,6 +323,13 @@ test.describe("no secret or prohibited claim reaches the evidence", () => {
         expect(step).not.toHaveProperty("signature");
       }
     }
-    expect(text).not.toMatch(/\b[0-9a-f]{32}\b/);
+    // The fixture input digest is deliberate provenance and is the one
+    // digest-shaped value the transcript is allowed to carry. Remove it, then
+    // require that nothing digest-shaped remains at either md5 or sha256
+    // length — a signature value reaching the evidence would land here.
+    const withoutProvenance = text
+      .split(transcript.input_digest)
+      .join("<input-digest>");
+    expect(withoutProvenance).not.toMatch(/\b[0-9a-f]{32,}\b/);
   });
 });

@@ -58,7 +58,7 @@ export const REPLAY_SCENARIOS: Record<ReplayScenarioId, ReplayScenario> = {
       "Keep the legitimate first-delivery path under test as well, so a fix that stops duplicates cannot quietly stop payments.",
     ],
     limitation:
-      "This scenario proves handler behaviour for the documented delivery sequences against a synthetic event fixture. The signature check stands in for a provider HMAC using md5 over a canonical payload string: it demonstrates that the receiver verifies, not that md5 is a sound MAC, and a real integration must use the provider's own signature scheme and library. It does not cover a real payment provider, network transport, TLS, endpoint authentication, provider-side retry policy, queue durability, rate limiting, or any system other than this fixture.",
+      "This scenario proves handler behaviour for the documented delivery sequences against a synthetic event fixture. The signature check is HMAC-SHA256 over a canonical payload string built from the delivery fields, with invented signing material: it demonstrates that the receiver recomputes and refuses a mismatch, and a real integration must build the signing string its provider documents — normally the raw request body and a timestamp header — and verify it with the provider's own library. It does not cover a real payment provider, network transport, TLS, endpoint authentication, provider-side retry policy, queue durability, rate limiting, or any system other than this fixture.",
   },
   "reliability-and-recovery": {
     id: "reliability-and-recovery",

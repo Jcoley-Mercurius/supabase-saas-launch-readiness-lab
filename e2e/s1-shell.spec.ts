@@ -364,9 +364,18 @@ test.describe("responsive composition", () => {
     await page.setViewportSize({ width: 390, height: 900 });
     await page.goto("/scenarios");
 
-    const targets = page.locator(
-      "a[href='/inquiry'], a[href^='/scenarios/'], button[aria-controls]",
-    );
+    // Scoped to the application's own landmarks. The approved 44px minimum
+    // governs product controls, so the selector must not be able to reach
+    // outside them — an injected overlay control failed this assertion once
+    // already, for a reason that had nothing to do with the approved layout.
+    // MTS-DEC-011 removed that particular overlay by serving production
+    // everywhere; the scoping stays because the assertion should not depend on
+    // nothing ever being injected again. See MTS-OBS-027.
+    const targets = page
+      .locator("header, main, footer")
+      .locator(
+        "a[href='/inquiry'], a[href^='/scenarios/'], button[aria-controls]",
+      );
     const count = await targets.count();
     expect(count).toBeGreaterThan(0);
 

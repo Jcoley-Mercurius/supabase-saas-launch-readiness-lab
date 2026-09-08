@@ -28,17 +28,28 @@
 -- a clean database reproduces the transcript byte for byte.
 -- =====================================================================
 
+-- pgcrypto supplies hmac(). It ships with the Supabase image and is installed
+-- in the `extensions` schema; declared here so a clean database provisions it
+-- rather than depending on what happens to be present. Every call below is
+-- schema-qualified because these functions run with an empty search_path.
+create extension if not exists pgcrypto with schema extensions;
+
 -- ---------------------------------------------------------------------
 -- Signing material
 --
 -- A provider signs each delivery and the receiver recomputes the signature to
 -- prove the body was not forged or altered. This fixture reproduces that
--- shape with md5 over a canonical payload string, because the fixture runs
--- without pgcrypto and needs no cryptographic strength to demonstrate the
--- control: what is being proven is that the receiver CHECKS, not that md5 is
--- a good MAC. It is not one. A real integration must verify the provider's
--- HMAC-SHA256 signature with the provider's own library, and that limitation
--- is stated to the buyer wherever this evidence appears.
+-- shape with HMAC-SHA256, via pgcrypto, over a canonical payload string built
+-- from the delivery's own fields.
+--
+-- What remains synthetic, and is stated to the buyer wherever this evidence
+-- appears: the signing material below is invented rather than issued by a
+-- provider, and the canonical string is this fixture's own construction, not
+-- any provider's documented signing format. A real integration must build the
+-- signing string the provider specifies — typically over the RAW request body
+-- together with a timestamp header — and verify it with the provider's own
+-- library. The control being demonstrated is that the receiver recomputes and
+-- refuses a mismatch.
 --
 -- The value below is invented and is not a credential. It is deliberately
 -- self-describing so that if it ever appeared in output, a reader would know
@@ -200,7 +211,12 @@ stable
 security definer
 set search_path = ''
 as $$
-  select md5(m.material || '|' || synthetic.canonical_payload(p_delivery_id))
+  select encode(
+           extensions.hmac(
+             synthetic.canonical_payload(p_delivery_id),
+             m.material,
+             'sha256'),
+           'hex')
   from synthetic.webhook_signing_material m;
 $$;
 

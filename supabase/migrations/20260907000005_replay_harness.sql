@@ -434,7 +434,7 @@ as $$
       join pg_catalog.pg_namespace n on n.oid = cl.relnamespace
       where n.nspname = 'synthetic' and cl.relname = 'processed_events'
         and con.contype = 'p'),
-    'signature_algorithm', 'md5 over a canonical payload string, standing in for the provider HMAC a real integration must verify'
+    'signature_algorithm', 'HMAC-SHA256 over a canonical payload string built from the delivery fields; a real integration signs the provider''s documented string, normally the raw request body and a timestamp header'
   );
 $$;
 

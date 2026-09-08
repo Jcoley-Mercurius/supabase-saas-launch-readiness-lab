@@ -288,6 +288,33 @@ begin
   raise notice 'PASS: % deliveries verify and % do not', valid_count, forged_count;
 end $$;
 
+\echo '— safety: the computed signature is HMAC-SHA256, not a weaker digest'
+do $$
+declare sample text; hmac_matches boolean;
+begin
+  perform synthetic.reset_replay_fixture();
+  select synthetic.expected_signature('del_nw2041_a') into sample;
+
+  -- 64 lowercase hex characters. An md5 stand-in would be 32 and would fail
+  -- here, so a silent regression to a weaker digest cannot pass unnoticed.
+  if sample !~ '^[0-9a-f]{64}$' then
+    raise exception 'FAIL: expected_signature returned %, which is not a sha256-length hex digest', sample;
+  end if;
+
+  -- And it is genuinely keyed: recomputing with the signing material as a
+  -- plain prefix, the shape the fixture used before, must NOT reproduce it.
+  select sample = encode(extensions.hmac(
+           synthetic.canonical_payload('del_nw2041_a'),
+           (select m.material from synthetic.webhook_signing_material m),
+           'sha256'), 'hex')
+    into hmac_matches;
+  if not hmac_matches then
+    raise exception 'FAIL: expected_signature is not the HMAC of the canonical payload under the signing material';
+  end if;
+
+  raise notice 'PASS: signatures are keyed HMAC-SHA256 over the canonical payload';
+end $$;
+
 \echo '— safety: the replay fixture holds no credential-shaped value'
 do $$
 declare hits integer;
