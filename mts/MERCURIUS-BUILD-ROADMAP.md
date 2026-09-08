@@ -5,7 +5,7 @@ Consumed: MPS v1.1 → MDS v1.0 → MTS v0.6-draft
 Classification: greenfield
 Current phase: S5 inquiry path
 Current slice: S5 — implemented, checkpointed, and proved end to end against the isolated hosted project
-Readiness: P0, S1, S2, S3 and S4 verified and approved. S5 is implemented on `slice/s5-inquiry-path`, all ten checkpoint observations are ruled on, and the whole path — store, deduplication, credential guard, authorization boundary, and notification — has been proved against the real isolated project with a real submission and a real email. One hosted-only privilege defect was found and fixed in the process (`MTS-OBS-044`). One owner action remains: the retention secret.
+Readiness: P0, S1, S2, S3 and S4 verified and approved. S5 is implemented on `slice/s5-inquiry` (PR #8), all ten checkpoint observations are ruled on, and the whole path — store, deduplication, credential guard, authorization boundary, and notification — has been proved against the real isolated project with a real submission and a real email. One hosted-only privilege defect was found and fixed in the process (`MTS-OBS-044`). One owner action remains: the retention secret.
 
 ## Approved route
 
