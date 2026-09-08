@@ -85,19 +85,22 @@ Three owner decisions were taken before implementation, all at the S4 pre-implem
 | Findings list | Static and fully expanded; no severity filter, no collapse | `MTS-OBS-029` |
 | The S1 deferral | Populate both landing regions now from real derived data | `MTS-DEV-001`, resolved |
 
-**S4 opens one MDS gap.** `MDS-GAP-S4-001`: the MDS requires the report to be printable without dark-page backgrounds but defines no print appearance. It is implemented without inventing a value — the print block redefines the approved tokens for the print medium, so no print-only colour exists — and three browser checks verify it in the print medium itself. It needs an MDS decision to confirm or replace, and is mirrored into the MDS state as its own open gap (`MDS-CHG-002`).
+**S4 opened one MDS gap, now closed.** `MDS-GAP-S4-001`: the MDS required the report to be printable without dark-page backgrounds but defined no print appearance. It was implemented without inventing a value — the print block redefines the approved tokens for the print medium, so no print-only colour exists — and three browser checks verify it in the print medium itself. The owner confirmed that treatment on 2026-09-07, so it is now an approved MDS decision, recorded as `MDS-CHG-003` and resolved in both state files. The rule it establishes: any future printable surface flips the approved tokens for print, never authors a print-only colour, and drops only controls that cannot function on paper — never evidence, state, limitation, recovery, or the CTA.
 
 ## Next action
 
-Decide `MDS-GAP-S4-001` above. It is the last open S4 item and S5 does not begin until it is
-settled.
+**S4 is approved and S5 may begin.** Merge PR #6, then start S5, the inquiry path.
 
-The owner approved `MTS-OBS-028` through `MTS-OBS-033` on 2026-09-07, recorded as `MTS-CHG-010`.
-None required further work: four restate decisions already taken at the S4 pre-implementation
-checkpoint, and the other two record the derived/authored module split and two responsive defects
-found and fixed during implementation. The gap was mirrored into `mds/MDS-PROJECT-STATE.yaml` on
-the same day as `MDS-CHG-002`, so the design system carries its own open record of it; both
-entries state the same gap and both remain open.
+The owner approved `MTS-OBS-028` through `MTS-OBS-033` on 2026-09-07 (`MTS-CHG-010`) and confirmed
+`MDS-GAP-S4-001` the same day (`MDS-CHG-003`, `MTS-CHG-011`), closing the last open S4 item. None of
+the six observations required further work: four restate decisions already taken at the S4
+pre-implementation checkpoint, and the other two record the derived/authored module split and two
+responsive defects found and fixed during implementation.
+
+**No gap, exception, or deviation is open anywhere in the MDS or MTS state.** PR #6 is green on all
+three CI jobs including WebKit and awaits merge; update the `S4` row in `completed_slices` with the
+merge commit when it lands. `/inquiry` still renders the S1 build-state notice — that is the
+remaining half of `MTS-DEV-002` and is S5's work.
 
 **CI is wired** (`MTS-OBS-016`, resolved ahead of S6 on owner instruction). `.github/workflows/verify.yml` runs on every push to `main`, every pull request, and on demand:
 
