@@ -211,6 +211,8 @@ export function GuidedLab({
       </aside>
 
       <div className="desktop:order-1 flex min-w-0 flex-col gap-8">
+        <LabStepper statuses={stepStatuses(phase)} />
+
         <FindingSummary
           finding={scenario.finding}
           severity={scenario.severity}
@@ -221,8 +223,6 @@ export function GuidedLab({
           boundary={scenario.tenantBoundary}
           state={summaryState}
         />
-
-        <LabStepper statuses={stepStatuses(phase)} />
 
         {/*
          * The live region. It carries a concise result only; the full

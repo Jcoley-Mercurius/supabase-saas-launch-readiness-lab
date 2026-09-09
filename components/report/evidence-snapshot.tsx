@@ -18,6 +18,14 @@ import { buildPolicySnapshot, type ReportModel } from "@/lib/evidence/report";
  * are derived from the committed transcripts, so the hero states the same
  * numbers the report does and cannot drift from them.
  *
+ * Layout follows MDS-REF-002 literally: the counted states occupy a left
+ * column and the policy excerpt a right column of the same panel, rather than
+ * stacking one above the other. The first implementation stacked them, which
+ * made the panel roughly twice the height the reference draws and cost the
+ * hero the compactness the composition proposal asks for. The columns split at
+ * `wide`; at and below `desktop` the panel is too narrow to seat two readable
+ * columns, so it stacks there.
+ *
  * It sits on the deep-ink hero, so the state glyphs carry their semantic hue
  * from the shared evidence-state component while the labels beside them are
  * rendered in inverse text — the canonical label is always present, and
@@ -49,14 +57,14 @@ function SnapshotRow({
   explanation: string;
 }) {
   return (
-    <li className="flex items-start gap-3">
+    <li className="flex items-start gap-2">
       <span className={`mt-0.5 shrink-0 ${glyphColour(state)}`}>
         <StateGlyph
           shape={evidenceStateGlyph(state) ?? "ring-circle"}
           size={20}
         />
       </span>
-      <span className="text-h4 text-inverse w-8 shrink-0 tabular-nums">
+      <span className="text-h4 text-inverse w-6 shrink-0 tabular-nums">
         {count}
       </span>
       <span className="flex min-w-0 flex-col">
@@ -70,6 +78,16 @@ function SnapshotRow({
   );
 }
 
+/*
+ * A recorded predicate may or may not already carry its own parentheses
+ * (`true` does not; `(tenant_id = ...)` does). Wrapping only when it does not
+ * keeps the excerpt to one line per configuration without printing a doubled
+ * paren, which would not be the statement the fixture ran.
+ */
+function usingClause(predicate: string): string {
+  return `select using ${predicate.startsWith("(") ? predicate : `(${predicate})`};`;
+}
+
 export function EvidenceSnapshot({ model }: { model: ReportModel }) {
   const snapshot = buildPolicySnapshot();
   const untested =
@@ -80,7 +98,7 @@ export function EvidenceSnapshot({ model }: { model: ReportModel }) {
       ?.count ?? 0;
 
   return (
-    <div className="border-inverse/15 bg-inverse/5 rounded-card border p-6">
+    <div className="border-inverse/15 bg-inverse/5 rounded-card wide:p-4 border p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
         <h2 className="text-h4 text-inverse">
           Evidence snapshot (synthetic data)
@@ -90,58 +108,71 @@ export function EvidenceSnapshot({ model }: { model: ReportModel }) {
         </p>
       </div>
 
-      <ul className="mt-5 flex flex-col gap-4">
-        {model.severityCounts.map((entry) => (
-          <SnapshotRow
-            key={entry.severity}
-            state="vulnerable"
-            count={entry.count}
-            label={`${entry.severity} severity findings`}
-            explanation="Each with the basis for the rating stated with it."
-          />
-        ))}
-        <SnapshotRow
-          state="vulnerable"
-          count={model.checks.asFound.unmet}
-          label="Checks unmet as found"
-          explanation={`Of ${model.checks.asFound.total} documented checks run against the project as found.`}
-        />
-        <SnapshotRow
-          state="remediated"
-          count={model.checks.afterFix.met}
-          label="Constrained after the documented fix"
-          explanation="The identical checks, repeated. Evidence for those checks only."
-        />
-        <SnapshotRow
-          state="untested"
-          count={untested + notApplicable}
-          label="Operations with no result"
-          explanation={`${untested} untested and ${notApplicable} not applicable. An untested check is never a pass.`}
-        />
-      </ul>
+      <div className="wide:grid-cols-[minmax(0,232px)_minmax(0,1fr)] wide:gap-4 wide:items-start mt-5 grid grid-cols-1 gap-6">
+        <div className="flex min-w-0 flex-col">
+          <ul className="flex flex-col gap-3">
+            {model.severityCounts.map((entry) => (
+              <SnapshotRow
+                key={entry.severity}
+                state="vulnerable"
+                count={entry.count}
+                label={`${entry.severity} severity findings`}
+                explanation="Basis for each rating stated with it."
+              />
+            ))}
+            <SnapshotRow
+              state="vulnerable"
+              count={model.checks.asFound.unmet}
+              label="Checks unmet as found"
+              explanation={`Of ${model.checks.asFound.total} documented checks, as found.`}
+            />
+            <SnapshotRow
+              state="remediated"
+              count={model.checks.afterFix.met}
+              label="Constrained after the fix"
+              explanation="The identical documented checks, repeated. Those checks only."
+            />
+            <SnapshotRow
+              state="untested"
+              count={untested + notApplicable}
+              label="Operations with no result"
+              explanation={`${untested} untested, ${notApplicable} not applicable. Untested is never a pass.`}
+            />
+          </ul>
 
-      {snapshot ? (
-        <div className="mt-6">
+          <ul className="border-inverse/15 tablet:flex-row tablet:gap-6 wide:flex-col wide:gap-1 mt-5 flex flex-col gap-1 border-t pt-4">
+            <li className="text-body-sm text-inverse/70">
+              Documented synthetic scope
+            </li>
+            <li className="text-body-sm text-inverse/70">
+              Scenario evidence only
+            </li>
+          </ul>
+        </div>
+
+        {snapshot ? (
           <CodeExcerpt
             tabs={[
               {
                 id: "policy",
                 label: `Policy check (${snapshot.caseId})`,
-                description: `The ${snapshot.policyName} policy on ${snapshot.resource} under both documented configurations, with the result documented test ${snapshot.caseId} produced against each.`,
+                description: `${snapshot.caseTitle}. The ${snapshot.policyName} policy on ${snapshot.resource} under both documented configurations, with the result documented test ${snapshot.caseId} produced against each.`,
+                /*
+                 * One line per configuration. The reference draws a short
+                 * excerpt, and the full statement — with the actor, the role,
+                 * and the untruncated title — travels with the scenario panel
+                 * and the report. What must survive the trim is that the
+                 * as-found and after-fix configurations stay distinct and that
+                 * each keeps its own recorded result line verbatim.
+                 */
                 lines: [
-                  `-- ${snapshot.resource} · policy ${snapshot.policyName}`,
-                  `-- Documented test ${snapshot.caseId}: ${snapshot.caseTitle}`,
-                  "",
+                  `-- ${snapshot.resource}`,
+                  `-- policy ${snapshot.policyName} · test ${snapshot.caseId}`,
                   "-- As found",
-                  "select using (",
-                  `  ${snapshot.asFound.predicate}`,
-                  ");",
+                  usingClause(snapshot.asFound.predicate),
                   `  ${snapshot.asFound.result}`,
-                  "",
                   "-- After the documented fix",
-                  "select using (",
-                  `  ${snapshot.afterFix.predicate}`,
-                  ");",
+                  usingClause(snapshot.afterFix.predicate),
                   `  ${snapshot.afterFix.result}`,
                 ],
               },
@@ -154,17 +185,10 @@ export function EvidenceSnapshot({ model }: { model: ReportModel }) {
              * cannot be dropped is that this is a replay of a recording rather
              * than a live query, and that is stated here in full.
              */
-            caption="Recorded from an isolated local PostgreSQL fixture and replayed here. The published application holds no database connection and runs no query. Full provenance travels with the report and each scenario."
+            caption="Replayed from a recording made against an isolated local PostgreSQL fixture. The published application runs no query. Full provenance travels with the report."
           />
-        </div>
-      ) : null}
-
-      <ul className="border-inverse/15 tablet:flex-row tablet:gap-8 mt-6 flex flex-col gap-2 border-t pt-5">
-        <li className="text-body-sm text-inverse/70">
-          Documented synthetic scope
-        </li>
-        <li className="text-body-sm text-inverse/70">Scenario evidence only</li>
-      </ul>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -234,6 +234,8 @@ export function ReplayLab({
       </aside>
 
       <div className="desktop:order-1 flex min-w-0 flex-col gap-8">
+        <LabStepper statuses={stepStatuses(phase)} />
+
         <FindingSummary
           finding={scenario.finding}
           severity={scenario.severity}
@@ -244,8 +246,6 @@ export function ReplayLab({
           boundary={scenario.boundary}
           state={summaryState}
         />
-
-        <LabStepper statuses={stepStatuses(phase)} />
 
         {/*
          * The live region. It carries a concise result only; the full

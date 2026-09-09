@@ -297,30 +297,56 @@ test.describe("responsive composition", () => {
   }) => {
     await page.goto("/scenarios");
 
-    /** Cards sharing the topmost row are the column count for that width. */
-    async function columnCount(width: number) {
-      await page.setViewportSize({ width, height: 900 });
-      // Let the resize settle before measuring, so a pending layout from the
-      // previous width cannot be read as the new composition.
-      await page.waitForFunction(
-        (expected) => window.innerWidth === expected,
-        width,
-      );
-      await page.waitForTimeout(150);
+    /*
+     * Settle the first paint before measuring anything.
+     *
+     * On a cold load the four cards briefly share a top while the webfonts and
+     * the content above them are still resolving, which reads as 4-up at every
+     * width. Waiting for the cards to be present and the network to go quiet
+     * puts the first measurement after that, not inside it.
+     */
+    const cards = page.locator("li a[href^='/scenarios/']");
+    await expect(cards.first()).toBeVisible();
+    await page.waitForLoadState("networkidle");
 
-      const tops = await page
-        .locator("li a[href^='/scenarios/']")
-        .evaluateAll((nodes) =>
-          nodes.map((node) => Math.round(node.getBoundingClientRect().top)),
-        );
+    /** Cards sharing the topmost row are the column count for that width. */
+    async function measureColumns() {
+      const tops = await cards.evaluateAll((nodes) =>
+        nodes.map((node) => Math.round(node.getBoundingClientRect().top)),
+      );
       const first = Math.min(...tops);
       return tops.filter((top) => Math.abs(top - first) <= 2).length;
     }
 
-    expect(await columnCount(390), "mobile is 1-up").toBe(1);
-    expect(await columnCount(768), "tablet is 2-up").toBe(2);
-    expect(await columnCount(1000), "desktop is 2-up").toBe(2);
-    expect(await columnCount(1440), "wide is 4-up").toBe(4);
+    /*
+     * Resize, then poll the measurement until the new composition settles.
+     *
+     * `window.innerWidth` reports the new width before the grid has finished
+     * reflowing to it, so a single measurement taken straight after the resize
+     * can still read the previous width's row — the largest starting viewport
+     * measured 4-up at 390px that way. A fixed settle delay only makes that
+     * window smaller; polling closes it, and a genuinely wrong count still
+     * fails, just after the retries are exhausted.
+     */
+    async function expectColumns(
+      width: number,
+      expected: number,
+      message: string,
+    ) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.waitForFunction(
+        (target) => window.innerWidth === target,
+        width,
+      );
+      await expect
+        .poll(measureColumns, { message, timeout: 10_000 })
+        .toBe(expected);
+    }
+
+    await expectColumns(390, 1, "mobile is 1-up");
+    await expectColumns(768, 2, "tablet is 2-up");
+    await expectColumns(1000, 2, "desktop is 2-up");
+    await expectColumns(1440, 4, "wide is 4-up");
   });
 
   test("no route scrolls horizontally at any approved width", async ({

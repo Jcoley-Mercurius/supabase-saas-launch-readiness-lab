@@ -456,11 +456,26 @@ test.describe("accessibility", () => {
   }) => {
     await openInquiry(page);
 
+    /*
+     * Tab from the top of the document until the last field of the form has
+     * been reached, rather than for a fixed number of presses.
+     *
+     * A fixed budget silently encodes how many focusable elements happen to
+     * precede the form, so approved composition changes ahead of it — the S6
+     * breadcrumb and review-pillar links, the header navigation that expands
+     * at desktop — break this check without any keyboard defect. The cap only
+     * stops a runaway loop if the last field is never reached; falling back on
+     * it fails the assertions below, which is the correct outcome.
+     */
+    const LAST_FIELD = "authorizationStatus";
+    const CAP = 60;
+
     const order: string[] = [];
-    for (let index = 0; index < 24; index += 1) {
+    for (let index = 0; index < CAP; index += 1) {
       await page.keyboard.press("Tab");
       const id = await page.evaluate(() => document.activeElement?.id ?? "");
       if (id) order.push(id);
+      if (id.includes(LAST_FIELD)) break;
     }
 
     const index = (fragment: string) =>

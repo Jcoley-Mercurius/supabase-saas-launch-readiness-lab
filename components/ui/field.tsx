@@ -90,7 +90,26 @@ type SharedFieldProps = {
   hint?: ReactNode;
   error?: string;
   required?: boolean;
+  /*
+   * Set on fields that share a row so their controls land on a common
+   * baseline. Without it a hinted field pushes its own control down and the
+   * pair reads as two unrelated rows, which MDS-REF-008 does not show.
+   *
+   * The field becomes a four-row subgrid - label, hint, control, error - of
+   * the row's own grid, so every part of one field aligns with the same part
+   * of its neighbour whether or not that neighbour has a hint or an error.
+   * The parent row supplies `grid-rows-[auto_auto_1fr_auto]`.
+   */
+  rowAligned?: boolean;
 };
+
+/** Classes that make a field a row-aligned subgrid from desktop up. */
+export const ROW_ALIGNED =
+  "desktop:grid desktop:grid-rows-subgrid desktop:row-span-4 desktop:gap-1.5";
+
+/** The row wrapper a pair of `rowAligned` fields needs. */
+export const FIELD_ROW =
+  "desktop:grid-cols-2 desktop:grid-rows-[auto_auto_1fr_auto] grid grid-cols-1 gap-5";
 
 function FieldShell({
   id,
@@ -98,18 +117,36 @@ function FieldShell({
   hint,
   error,
   required,
+  rowAligned,
   className = "",
   children,
 }: SharedFieldProps & { className?: string; children: ReactNode }) {
   return (
-    <div className={`flex flex-col gap-1.5 ${className}`.trim()}>
+    <div
+      className={`flex flex-col gap-1.5 ${rowAligned ? ROW_ALIGNED : ""} ${className}`.trim()}
+    >
       <label htmlFor={id} className="text-body-sm text-strong font-semibold">
         {label}
         {required ? <RequiredMark /> : null}
       </label>
-      {hint ? <FieldHint id={`${id}-hint`}>{hint}</FieldHint> : null}
+      {/*
+       * A row-aligned field always emits the hint and error rows, empty when
+       * it has nothing to say, so its four subgrid rows stay in step with its
+       * neighbour's. An empty row is `auto` height, so it costs nothing but
+       * the row gap. The placeholders carry no text and are hidden from
+       * assistive technology, so nothing announces an absent hint or error.
+       */}
+      {hint ? (
+        <FieldHint id={`${id}-hint`}>{hint}</FieldHint>
+      ) : rowAligned ? (
+        <span aria-hidden="true" />
+      ) : null}
       {children}
-      {error ? <FieldMessage id={`${id}-error`}>{error}</FieldMessage> : null}
+      {error ? (
+        <FieldMessage id={`${id}-error`}>{error}</FieldMessage>
+      ) : rowAligned ? (
+        <span aria-hidden="true" />
+      ) : null}
     </div>
   );
 }
@@ -127,6 +164,7 @@ export function TextField({
   hint,
   error,
   required,
+  rowAligned,
   className,
   ...props
 }: TextFieldProps) {
@@ -137,6 +175,7 @@ export function TextField({
       hint={hint}
       error={error}
       required={required}
+      rowAligned={rowAligned}
       className={className}
     >
       <input
@@ -213,6 +252,7 @@ export function SelectField({
   hint,
   error,
   required,
+  rowAligned,
   className,
   options,
   placeholderOption,
@@ -225,6 +265,7 @@ export function SelectField({
       hint={hint}
       error={error}
       required={required}
+      rowAligned={rowAligned}
       className={className}
     >
       <select

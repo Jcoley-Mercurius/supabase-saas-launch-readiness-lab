@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AuthorizedReviewBand } from "@/components/layout/authorized-review-band";
+import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { Container, Section } from "@/components/layout/container";
 import { GuidedLab } from "@/components/evidence/guided-lab";
 import { ReplayLab } from "@/components/evidence/replay-lab";
@@ -99,27 +99,12 @@ export default async function ScenarioPage({
     <>
       <Section tone="canvas" spacing="compact">
         <Container width="evidence">
-          <nav aria-label="Breadcrumb">
-            <ol className="text-body-sm text-subtle flex items-center gap-2">
-              <li>
-                <Link
-                  href="/scenarios"
-                  className="hover:text-strong inline-flex min-h-11 items-center underline underline-offset-4"
-                >
-                  Scenarios
-                </Link>
-              </li>
-              <li
-                aria-hidden="true"
-                className="text-untested flex items-center"
-              >
-                <Icon name="chevron-right" size={16} />
-              </li>
-              <li className="text-strong" aria-current="page">
-                {scenario.pillar}
-              </li>
-            </ol>
-          </nav>
+          <Breadcrumb
+            trail={[
+              { label: "Scenarios", href: "/scenarios" },
+              { label: scenario.pillar },
+            ]}
+          />
 
           {/*
            * The approved wide lab shell: 240-264px scenario rail, flexible
