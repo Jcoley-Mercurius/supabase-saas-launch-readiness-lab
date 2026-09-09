@@ -15,6 +15,8 @@ P0 Bootstrap → S1 Public Shell → S2 Evidence/RLS → S3 Replay/Recovery → 
 
 Create the standalone Git repository, Vercel project, isolated Supabase environments, verified Resend domain, and private environment values. These actions are not silently performed by the coding agent.
 
+Status as of 2026-09-08: the repository, the isolated Supabase environments (local fixture plus the dedicated hosted inquiry project), and the private environment values are all in place. Two remain, both S6 and both owner-gated: the **Vercel project**, which blocks preview and production deployment, and a **verified Resend from-domain for production** plus a preview destination that cannot deliver to a real buyer. Neither blocked S5 — a real notification was sent and accepted on 2026-09-08.
+
 ## Phase route
 
 | Phase | Agent produces | User owns | Verification/checkpoint |
