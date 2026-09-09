@@ -48,7 +48,7 @@ export default function LandingPage() {
     <>
       <Section tone="ink" className="desktop:py-20 py-14">
         <Container>
-          <div className="desktop:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] desktop:gap-12 grid grid-cols-1 items-start gap-10">
+          <div className="desktop:grid-cols-2 desktop:gap-10 grid grid-cols-1 items-start gap-10">
             <div>
               <p className="text-label text-inverse/70 uppercase">
                 {PRODUCT.eyebrow}
@@ -177,7 +177,18 @@ export default function LandingPage() {
 
       <Section tone="canvas" aria-labelledby="service-boundary">
         <Container>
-          <div className="max-w-[760px]">
+          {/*
+           * Centred on the page at the owner's direction (2026-09-08). MDS
+           * states no alignment rule for this section and MDS-REF-002 does not
+           * draw it, so the decision is recorded rather than inferred.
+           *
+           * The limitation callout keeps its own left-aligned icon-and-text
+           * composition — it is an approved component, and centring a
+           * multi-line qualifying statement would cost it readability without
+           * any approval to do so. Only the block is centred, not the callout's
+           * interior.
+           */}
+          <div className="mx-auto max-w-[760px] text-center">
             <SectionEyebrow>Service boundary</SectionEyebrow>
             <h2 id="service-boundary" className="text-h2 text-strong mt-3">
               What this lab is, and what it is not
@@ -187,7 +198,7 @@ export default function LandingPage() {
               through documented synthetic scenarios. It demonstrates how the
               work is done and what the evidence looks like.
             </p>
-            <LimitationCallout className="mt-6">
+            <LimitationCallout className="mt-6 text-left">
               <p>
                 Every demonstration runs on synthetic data in an isolated
                 environment. It is not a certification, a compliance
