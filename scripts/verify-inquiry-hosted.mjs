@@ -102,5 +102,5 @@ if (!response.ok) {
 }
 
 console.log(
-  `— all inquiry authorization checks passed against the hosted project ${ref}`,
+  `— all inquiry and measurement authorization checks passed against the hosted project ${ref}`,
 );

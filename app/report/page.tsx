@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AuthorizedReviewBand } from "@/components/layout/authorized-review-band";
 import { Container, Section } from "@/components/layout/container";
 import { CoverageMatrix } from "@/components/evidence/coverage-matrix";
+import { RecordView } from "@/components/measurement/record-view";
 import { ProofSteps } from "@/components/scenarios/proof-steps";
 import { ReportFindingArticle } from "@/components/report/report-finding";
 import { ReportHeader } from "@/components/report/report-header";
@@ -85,6 +86,8 @@ export default function ReportPage() {
 
   return (
     <>
+      {/* MPS-MET-004 — is the published proof being reused? */}
+      <RecordView event="report_viewed" surface="report" />
       <ReportHeader recordedAt={model.recordedAt} />
 
       <Section tone="canvas" spacing="compact">
