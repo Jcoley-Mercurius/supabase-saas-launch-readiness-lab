@@ -3,6 +3,7 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { Container, Section } from "@/components/layout/container";
 import { InquiryExpectations } from "@/components/inquiry/inquiry-expectations";
 import { InquiryForm } from "@/components/inquiry/inquiry-form";
+import { RecordView } from "@/components/measurement/record-view";
 import { RiskPillarCards } from "@/components/scenarios/risk-pillars";
 import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -40,6 +41,8 @@ export default function InquiryPage() {
   return (
     <Section tone="canvas">
       <Container>
+        {/* MPS-MET-003 — the top of the conversion path. */}
+        <RecordView event="inquiry_started" surface="inquiry" />
         <Breadcrumb
           trail={[{ label: "Home", href: "/" }, { label: INQUIRY_PAGE.title }]}
         />

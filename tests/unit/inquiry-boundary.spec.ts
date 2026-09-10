@@ -15,8 +15,23 @@ import { expect, test } from "@playwright/test";
  * "Separate path" is only true while nothing imports across it, and an import
  * is one autocomplete away. So these tests walk the actual static import graph
  * of both trees and fail if either reaches the other, if the evidence engine
- * acquires a database client, or if a credential name appears outside the two
+ * acquires a database client, or if a credential name appears outside the
  * modules approved to read one.
+ *
+ * S6 AMENDED THE SHAPE OF THIS CONTROL — MTS-CHG-019.
+ *
+ * Until S6 the control read "lib/inquiry/store.ts is the only module that
+ * constructs a database client", because the inquiry store was the only thing
+ * needing a connection. First-party measurement (MTS-DEC-016) needs one too,
+ * which forced a choice: widen the control to a LIST of approved modules,
+ * couple measurement to the inquiry module, or move construction out of both
+ * so it is still exactly one.
+ *
+ * The owner chose the third on 2026-09-09. The assertion below still demands
+ * exactly one construction site; it is now lib/supabase/server-client.ts, and
+ * both stores are thin callers of it. The control was amended, not weakened —
+ * the number of places that can reach a database is still one, and the count
+ * of modules permitted to read a credential did not grow.
  */
 
 const ROOTS = ["app", "components", "lib", "scripts"];
@@ -95,7 +110,12 @@ test.describe("the inquiry path and the evidence engine stay separate", () => {
   });
 
   test("only the two approved modules read a credential from the environment", () => {
-    const approved = new Set(["lib/inquiry/store.ts", "lib/inquiry/notify.ts"]);
+    // Still two. lib/inquiry/store.ts gave its half up to the shared factory
+    // when MTS-CHG-019 moved client construction out of it.
+    const approved = new Set([
+      "lib/supabase/server-client.ts",
+      "lib/inquiry/notify.ts",
+    ]);
     const secretNames =
       /process\.env\.(SUPABASE_SERVICE_ROLE_KEY|RESEND_API_KEY|NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)/;
 
@@ -122,9 +142,11 @@ test.describe("the inquiry path and the evidence engine stay separate", () => {
 
   test("the client bundle cannot import a server-only inquiry module", () => {
     for (const file of [
+      "lib/supabase/server-client.ts",
       "lib/inquiry/store.ts",
       "lib/inquiry/notify.ts",
       "lib/inquiry/submit.ts",
+      "lib/measurement/store.ts",
     ]) {
       expect(
         readFileSync(file, "utf8"),
@@ -133,10 +155,35 @@ test.describe("the inquiry path and the evidence engine stay separate", () => {
     }
   });
 
-  test("the inquiry store is reached from exactly one module", () => {
+  test("a database client is constructed in exactly one module", () => {
     const constructors = ALL_FILES.filter((file) =>
       /createClient\s*\(/.test(readFileSync(file, "utf8")),
     );
-    expect(constructors).toEqual(["lib/inquiry/store.ts"]);
+    expect(constructors).toEqual(["lib/supabase/server-client.ts"]);
+  });
+
+  test("measurement cannot reach an inquiry, and neither reaches the other", () => {
+    // MTS-OBS-050 placed measurement in the same PROJECT as inquiries and
+    // required that it share no data. In the database that is enforced by
+    // schema separation and grants; here it is enforced against the import
+    // graph, so the separation cannot decay into a convenience import.
+    for (const file of ALL_FILES.filter((f) =>
+      f.startsWith("lib/measurement/"),
+    )) {
+      for (const imported of importsOf(file)) {
+        expect(
+          imported,
+          `${file} imports ${imported}; measurement must not reach the inquiry path`,
+        ).not.toMatch(/lib\/inquiry\//);
+      }
+    }
+    for (const file of ALL_FILES.filter((f) => f.startsWith("lib/inquiry/"))) {
+      for (const imported of importsOf(file)) {
+        expect(
+          imported,
+          `${file} imports ${imported}; the inquiry path must not reach measurement`,
+        ).not.toMatch(/lib\/measurement\//);
+      }
+    }
   });
 });

@@ -6,6 +6,7 @@ import { Container, Section } from "@/components/layout/container";
 import { GuidedLab } from "@/components/evidence/guided-lab";
 import { ReplayLab } from "@/components/evidence/replay-lab";
 import { ScenarioRail } from "@/components/evidence/scenario-navigation";
+import { RecordView } from "@/components/measurement/record-view";
 import { Alert } from "@/components/ui/alert";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -97,6 +98,12 @@ export default async function ScenarioPage({
 
   return (
     <>
+      {/* MPS-MET-001 — did the proof land, and for which scenario? */}
+      <RecordView
+        event="scenario_viewed"
+        surface="scenario"
+        scenarioSlug={scenarioSlug}
+      />
       <Section tone="canvas" spacing="compact">
         <Container width="evidence">
           <Breadcrumb

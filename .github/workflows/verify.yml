@@ -84,6 +84,17 @@ jobs:
         with:
           version: 2.111.0
 
+      # The runner image ships third-party apt sources this project never
+      # installs from. `apt-get update` fails the whole command when any one
+      # configured source fails its integrity check, so an outage at an
+      # unrelated vendor takes down the verification gate: on 2026-09-09 both
+      # apt-using jobs died on a Google chrome-stable index whose hash
+      # disagreed with its own Release file (MTS-OBS-047). Removing those
+      # sources first leaves the gate depending only on the Ubuntu archive it
+      # actually installs from.
+      - name: Remove unrelated third-party apt sources
+        run: sudo rm -f /etc/apt/sources.list.d/google-chrome.list /etc/apt/sources.list.d/google-chrome.sources /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources
+
       # The recorder and verifier both drive psql directly.
       - name: Install psql client
         run: |
@@ -120,6 +131,13 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      # Same reason as the evidence job: `playwright install --with-deps` runs
+      # apt-get update internally, so an unrelated third-party source failing
+      # its integrity check takes the browser matrix down with it
+      # (MTS-OBS-047).
+      - name: Remove unrelated third-party apt sources
+        run: sudo rm -f /etc/apt/sources.list.d/google-chrome.list /etc/apt/sources.list.d/google-chrome.sources /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources
 
       # --with-deps supplies the system packages WebKit needs and that the
       # owner's workstation does not carry (MTS-EXC-002).

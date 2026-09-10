@@ -31,7 +31,19 @@ import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-const CHECKS = "supabase/inquiry/tests/authorization-checks.sql";
+/*
+ * Both meta-command-free check files, run against the real project.
+ *
+ * MTS-OBS-044 is the reason this runner exists: a privilege can be correct
+ * locally and wrong hosted, because a hosted Supabase project ships default
+ * privileges the local container does not. Measurement was added in S6 under
+ * MTS-OBS-050 and inherits that rule exactly — its deny paths prove nothing
+ * about an environment they have not run in, so they run here too.
+ */
+const CHECKS = [
+  "supabase/inquiry/tests/authorization-checks.sql",
+  "supabase/inquiry/tests/measurement-checks.sql",
+];
 
 function projectRef() {
   const explicit = process.argv[2];
@@ -73,7 +85,9 @@ const response = await fetch(
       Authorization: `Bearer ${accessToken()}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ query: readFileSync(CHECKS, "utf8") }),
+    body: JSON.stringify({
+      query: CHECKS.map((file) => readFileSync(file, "utf8")).join("\n"),
+    }),
   },
 );
 
@@ -88,5 +102,5 @@ if (!response.ok) {
 }
 
 console.log(
-  `— all inquiry authorization checks passed against the hosted project ${ref}`,
+  `— all inquiry and measurement authorization checks passed against the hosted project ${ref}`,
 );

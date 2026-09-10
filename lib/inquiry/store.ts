@@ -1,6 +1,6 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
 import { dedupeKey } from "@/lib/inquiry/dedupe";
+import { serverClient, supabaseConfigured } from "@/lib/supabase/server-client";
 import type { InquiryInput } from "@/lib/inquiry/schema";
 
 /*
@@ -18,21 +18,23 @@ import type { InquiryInput } from "@/lib/inquiry/schema";
  * database through it. S5 necessarily adds one, and the residual the risk
  * record names is precisely this file. Four things keep the control intact:
  *
- *   1. This module is the ONLY place in the repository that constructs a
- *      database client. lib/evidence/* holds no connection, no credential, and
- *      no endpoint, and imports nothing from lib/inquiry/*.
+ *   1. This module constructs no database client of its own. Exactly one
+ *      module in the repository does — lib/supabase/server-client.ts — and
+ *      this file is one of its two callers (MTS-CHG-019). lib/evidence/* holds
+ *      no connection, no credential, and no endpoint, and imports nothing from
+ *      lib/inquiry/*.
  *   2. The import graph is one-way and tested. tests/unit/inquiry-boundary
  *      walks the static imports of both trees and fails if either reaches the
  *      other, so the separation cannot decay into a convenience import.
  *   3. `server-only` makes a client-component import of this file a build
  *      error, so the client cannot be bundled into the browser by mistake.
- *   4. The client is built with the PUBLISHABLE key, never a service-role key.
- *      That key reaches no table: every privilege on both inquiry tables is
- *      revoked and RLS is enabled with no policy. Its entire reach is the two
- *      SECURITY DEFINER functions, which accept a closed set of scalars and
- *      return no inquiry content. INTEGRATION-MANIFEST admits a service-role
- *      key "only if a later approved server operation requires it"; none does,
- *      so none is read here.
+ *   4. The shared factory builds the client with the PUBLISHABLE key, never a
+ *      service-role key. That key reaches no table: every privilege on both
+ *      inquiry tables is revoked and RLS is enabled with no policy. Its entire
+ *      reach is the two SECURITY DEFINER functions, which accept a closed set
+ *      of scalars and return no inquiry content. INTEGRATION-MANIFEST admits a
+ *      service-role key "only if a later approved server operation requires
+ *      it"; none does, so none is read anywhere.
  *
  * The store is also allowed to be absent. An unconfigured environment returns
  * `unconfigured` and the submission ends as UNCONFIRMED — never acknowledged.
@@ -61,14 +63,7 @@ function environment(): Environment {
 }
 
 function client() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return null;
-
-  return createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { "x-application-name": "inquiry" } },
-  });
+  return serverClient("inquiry");
 }
 
 export interface InquiryStore {
@@ -138,8 +133,5 @@ export const supabaseInquiryStore: InquiryStore = {
 
 /** True when the environment can actually reach a store. */
 export function inquiryStoreConfigured() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-  );
+  return supabaseConfigured();
 }
