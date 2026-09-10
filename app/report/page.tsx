@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AuthorizedReviewBand } from "@/components/layout/authorized-review-band";
 import { Container, Section } from "@/components/layout/container";
 import { CoverageMatrix } from "@/components/evidence/coverage-matrix";
+import { RecordPrint } from "@/components/measurement/record-print";
 import { RecordView } from "@/components/measurement/record-view";
 import { ProofSteps } from "@/components/scenarios/proof-steps";
 import { ReportFindingArticle } from "@/components/report/report-finding";
@@ -88,6 +89,11 @@ export default function ReportPage() {
     <>
       {/* MPS-MET-004 — is the published proof being reused? */}
       <RecordView event="report_viewed" surface="report" />
+      {/*
+       * MPS-MET-004 — a printed or saved-as-PDF report is the clearest
+       * first-party signal that the published proof is being reused.
+       */}
+      <RecordPrint surface="report" />
       <ReportHeader recordedAt={model.recordedAt} />
 
       <Section tone="canvas" spacing="compact">
