@@ -10,14 +10,19 @@
  * either side of the server boundary. The write path is lib/measurement/store.
  *
  * The names here MUST match the check constraint in
- * supabase/inquiry/migrations/20260909000003_measurement_store.sql. The
- * database is the definition; this is the typed mirror of it, and
+ * supabase/inquiry/migrations/20260909000003_measurement_store.sql, as
+ * amended by 20260909000005_measurement_landing_event.sql. The database is
+ * the definition; this is the typed mirror of it, and
  * tests/unit/measurement-boundary.spec.ts fails if the two drift apart. That
  * direction is deliberate: a taxonomy enforced only in TypeScript would be a
  * convention, and a caller reaching the function directly could write anything.
  */
 
 export const MEASUREMENT_EVENTS = [
+  // MPS-MET-003 — the funnel's first step. A count of landing views, never a
+  // count of people: this store holds no visitor identifier by design, so a
+  // repeat visit is indistinguishable from a new one.
+  "landing_viewed",
   // MPS-MET-001 — did the proof land?
   "scenario_viewed",
   "evidence_excerpt_opened",

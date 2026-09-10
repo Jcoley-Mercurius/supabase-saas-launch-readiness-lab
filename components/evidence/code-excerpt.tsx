@@ -1,7 +1,9 @@
 "use client";
 
 import { useId, useRef, useState } from "react";
+import { useScenarioMeasurement } from "@/components/measurement/scenario-measurement";
 import { Icon } from "@/components/ui/icon";
+import { sendMeasurement } from "@/lib/measurement/client";
 
 /*
  * Code / log evidence panel (MDS COMPONENTS-PROPOSAL "Code or log excerpt";
@@ -20,6 +22,16 @@ import { Icon } from "@/components/ui/icon";
  *
  * Tabs follow the WAI-ARIA tabs pattern: roving tabindex, arrow/Home/End keys,
  * and a single tab stop for the whole tablist.
+ *
+ * MEASUREMENT (MPS-MET-001; MTS-CAP-008, MTS-DEC-016).
+ *
+ * The excerpt is on the page from the moment it renders, so "opened" is taken
+ * to mean a deliberate act on it — switching to another view, or copying it —
+ * rather than its presence. Scrolling past an excerpt is not comprehension,
+ * and MPS-MET-001 says as much: do not infer understanding from views. At most
+ * one event is sent per excerpt per visit, and none at all outside a scenario
+ * (the report renders excerpts too, where the event has no scenario to belong
+ * to and is therefore not recorded).
  */
 
 export type ExcerptTab = {
@@ -42,6 +54,8 @@ export function CodeExcerpt({
   redaction?: string;
 }) {
   const baseId = useId();
+  const scenarioSlug = useScenarioMeasurement();
+  const excerptRecorded = useRef(false);
   const [activeId, setActiveId] = useState(tabs[0]?.id);
   const [copied, setCopied] = useState(false);
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -50,8 +64,20 @@ export function CodeExcerpt({
   if (!active) return null;
   const single = tabs.length === 1;
 
+  /** At most once per excerpt, and never outside a scenario. */
+  function recordExcerptOpened() {
+    if (!scenarioSlug || excerptRecorded.current) return;
+    excerptRecorded.current = true;
+    sendMeasurement({
+      event: "evidence_excerpt_opened",
+      surface: "scenario",
+      scenarioSlug,
+    });
+  }
+
   function focusTab(index: number) {
     const next = tabs[(index + tabs.length) % tabs.length];
+    recordExcerptOpened();
     setActiveId(next.id);
     tabRefs.current[next.id]?.focus();
   }
@@ -69,6 +95,7 @@ export function CodeExcerpt({
   }
 
   async function copy() {
+    recordExcerptOpened();
     try {
       await navigator.clipboard.writeText(active!.lines.join("\n"));
       setCopied(true);
@@ -120,7 +147,10 @@ export function CodeExcerpt({
                   aria-controls={`${baseId}-panel-${tab.id}`}
                   tabIndex={selected ? 0 : -1}
                   data-print-hide={selected ? undefined : "true"}
-                  onClick={() => setActiveId(tab.id)}
+                  onClick={() => {
+                    recordExcerptOpened();
+                    setActiveId(tab.id);
+                  }}
                   onKeyDown={(event) => onKeyDown(event, index)}
                   className={`text-body-sm min-h-11 shrink-0 border-b-2 px-4 font-semibold whitespace-nowrap transition-colors duration-(--motion-default) ${
                     selected

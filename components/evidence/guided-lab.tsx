@@ -1,22 +1,31 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { replayDocumentedTest } from "@/app/scenarios/[slug]/actions";
-import { EvidenceComparison } from "@/components/evidence/before-after";
+import {
+  COMPARISON_REGION_ID,
+  EvidenceComparison,
+} from "@/components/evidence/before-after";
 import { ContextPanel } from "@/components/evidence/context-panel";
 import { CoverageMatrix } from "@/components/evidence/coverage-matrix";
 import { FindingSummary } from "@/components/evidence/finding-summary";
 import { LabStepper, type StepStatus } from "@/components/evidence/lab-stepper";
+import { RecordInView } from "@/components/measurement/record-in-view";
+import { ScenarioMeasurementProvider } from "@/components/measurement/scenario-measurement";
 import { Alert } from "@/components/ui/alert";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
-import { LimitationCallout } from "@/components/ui/limitation-callout";
+import {
+  LimitationCallout,
+  SCENARIO_LIMITATION_ID,
+} from "@/components/ui/limitation-callout";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import type { EvidenceRun } from "@/lib/evidence/executor";
 import type { EvidenceScenario } from "@/lib/evidence/catalog";
 import { EVIDENCE_PROVENANCE_NOTE } from "@/lib/evidence/catalog";
 import type { EvidenceMode } from "@/lib/evidence/types";
+import { sendMeasurement } from "@/lib/measurement/client";
 
 /*
  * Guided lab orchestrator.
@@ -34,6 +43,20 @@ import type { EvidenceMode } from "@/lib/evidence/types";
  *  - status changes announce through a live region while the full explanation
  *    stays visible;
  *  - focus is not moved on a status update, only on deliberate recovery.
+ *
+ * MEASUREMENT (MPS-MET-001, MPS-MET-002; MTS-CAP-008, MTS-DEC-016).
+ *
+ * A step advance is recorded when a documented run actually produces a result,
+ * not when a control is pressed: a press that ends in the unavailable state
+ * advanced nothing, and counting it would make MPS-MET-002 read like progress
+ * the evidence never delivered. MPS-MET-002 is defined as reaching a
+ * before/after result for at least one scenario, so completion IS the
+ * remediated result — the moment both sides of the comparison exist — and it
+ * is recorded once per visit however often the run is repeated afterwards.
+ *
+ * The provider below scopes every excerpt inside this lab to this scenario,
+ * so a code/log excerpt records what it belongs to without every intervening
+ * component carrying an analytics prop.
  */
 
 type Phase =
@@ -76,6 +99,7 @@ export function GuidedLab({
   const [announcement, setAnnouncement] = useState("");
   const [problem, setProblem] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+  const completed = useRef(false);
 
   function replay(mode: EvidenceMode) {
     // The run controls stay focusable while busy, so re-entry is guarded here
@@ -116,12 +140,30 @@ export function GuidedLab({
         if (mode === "vulnerable") {
           setBefore(result.run);
           setPhase("vulnerable");
+          sendMeasurement({
+            event: "scenario_step_advanced",
+            surface: "scenario",
+            scenarioSlug: scenario.id,
+          });
           setAnnouncement(
             `Documented test complete. ${failures} of ${result.run.cases.length} checks reproduced the boundary failure.`,
           );
         } else {
           setAfter(result.run);
           setPhase("remediated");
+          sendMeasurement({
+            event: "scenario_step_advanced",
+            surface: "scenario",
+            scenarioSlug: scenario.id,
+          });
+          if (!completed.current) {
+            completed.current = true;
+            sendMeasurement({
+              event: "scenario_completed",
+              surface: "scenario",
+              scenarioSlug: scenario.id,
+            });
+          }
           setAnnouncement(
             `Repeated documented test complete. ${result.run.cases.length} of ${result.run.cases.length} checks were constrained as expected.`,
           );
@@ -197,220 +239,244 @@ export function GuidedLab({
      * beneath the scenario heading and before the primary proof, which the
      * order utilities below express directly in the DOM order — so the reading
      * order and the visual order agree at every viewport.
+     *
+     * The provider adds no element and changes nothing on screen; it only tells
+     * the excerpts inside which scenario they belong to.
      */
-    <div className="desktop:grid-cols-[minmax(0,1fr)_300px] desktop:items-start grid min-w-0 grid-cols-1 gap-8">
-      <aside
-        aria-label="Scenario context"
-        className="desktop:order-2 desktop:sticky desktop:top-6 min-w-0"
-      >
-        <ContextPanel
-          scenario={scenario}
-          relation={contextRelation}
-          modeLabel={modeLabel}
-        />
-      </aside>
+    <ScenarioMeasurementProvider scenarioSlug={scenario.id}>
+      <div className="desktop:grid-cols-[minmax(0,1fr)_300px] desktop:items-start grid min-w-0 grid-cols-1 gap-8">
+        <aside
+          aria-label="Scenario context"
+          className="desktop:order-2 desktop:sticky desktop:top-6 min-w-0"
+        >
+          <ContextPanel
+            scenario={scenario}
+            relation={contextRelation}
+            modeLabel={modeLabel}
+          />
+        </aside>
 
-      <div className="desktop:order-1 flex min-w-0 flex-col gap-8">
-        <LabStepper statuses={stepStatuses(phase)} />
+        <div className="desktop:order-1 flex min-w-0 flex-col gap-8">
+          <LabStepper statuses={stepStatuses(phase)} />
 
-        <FindingSummary
-          finding={scenario.finding}
-          severity={scenario.severity}
-          severityBasis={scenario.severityBasis}
-          impact={scenario.impact}
-          affectedArea={scenario.affectedArea}
-          boundaryLabel="Tenant boundary"
-          boundary={scenario.tenantBoundary}
-          state={summaryState}
-        />
+          <FindingSummary
+            finding={scenario.finding}
+            severity={scenario.severity}
+            severityBasis={scenario.severityBasis}
+            impact={scenario.impact}
+            affectedArea={scenario.affectedArea}
+            boundaryLabel="Tenant boundary"
+            boundary={scenario.tenantBoundary}
+            state={summaryState}
+          />
 
-        {/*
-         * The live region. It carries a concise result only; the full
-         * explanation always remains visible in the page beneath it.
-         */}
-        <p aria-live="polite" className="sr-only">
-          {announcement}
-        </p>
+          {/*
+           * The live region. It carries a concise result only; the full
+           * explanation always remains visible in the page beneath it.
+           */}
+          <p aria-live="polite" className="sr-only">
+            {announcement}
+          </p>
 
-        <Card className="flex flex-col gap-5 p-5">
-          <div>
-            <h2 className="text-h4 text-strong">Documented test</h2>
-            <p className="text-body text-subtle mt-2">{documentedTest}</p>
-          </div>
+          <Card className="flex flex-col gap-5 p-5">
+            <div>
+              <h2 className="text-h4 text-strong">Documented test</h2>
+              <p className="text-body text-subtle mt-2">{documentedTest}</p>
+            </div>
 
-          {phase === "untested" ? (
-            <StatusIndicator
-              state="untested"
-              variant="block"
-              explanation="No documented test has been run in this session. An untested check is not a pass."
-            />
-          ) : null}
+            {phase === "untested" ? (
+              <StatusIndicator
+                state="untested"
+                variant="block"
+                explanation="No documented test has been run in this session. An untested check is not a pass."
+              />
+            ) : null}
 
-          {running ? (
-            <StatusIndicator
-              state="running"
-              variant="block"
-              explanation={
-                phase === "running-vulnerable"
-                  ? "Replaying the documented test against the vulnerable policy set. Any earlier result stays visible until this one completes."
-                  : "Replaying the same documented test against the remediated policy set."
+            {running ? (
+              <StatusIndicator
+                state="running"
+                variant="block"
+                explanation={
+                  phase === "running-vulnerable"
+                    ? "Replaying the documented test against the vulnerable policy set. Any earlier result stays visible until this one completes."
+                    : "Replaying the same documented test against the remediated policy set."
+                }
+              />
+            ) : null}
+
+            {phase === "unavailable" ? (
+              <>
+                <StatusIndicator
+                  state="unavailable"
+                  variant="block"
+                  explanation={
+                    problem ??
+                    "The documented evidence could not be retrieved. No result is implied."
+                  }
+                />
+                <Alert tone="warning" title="This is not a result">
+                  <p>
+                    An unavailable demonstration says nothing about whether the
+                    control holds. The scenario keeps its context and you can
+                    retry, or continue to the report and the other scenarios.
+                  </p>
+                </Alert>
+              </>
+            ) : null}
+
+            <div className="flex flex-wrap gap-3">
+              {/*
+               * whitespace-normal overrides the shared button default. These
+               * labels are long by necessity, and at 320px a nowrap label is
+               * wider than the content column, which scrolls the whole page
+               * sideways. Wrapping keeps the control inside the gutter without
+               * shortening a label that has to stay precise.
+               */}
+              <Button
+                onClick={() => replay("vulnerable")}
+                loading={phase === "running-vulnerable"}
+                loadingLabel="Running documented test"
+                disableWhileLoading={false}
+                className="max-w-full whitespace-normal"
+              >
+                {before
+                  ? "Run the vulnerable test again"
+                  : "Run the documented test"}
+              </Button>
+
+              <Button
+                variant="secondary"
+                onClick={() => replay("remediated")}
+                loading={phase === "running-remediated"}
+                loadingLabel="Running documented test"
+                disableWhileLoading={false}
+                disabled={!before}
+                aria-describedby={!before ? "remediation-hint" : undefined}
+                className="max-w-full whitespace-normal"
+              >
+                Apply remediation and repeat the test
+              </Button>
+
+              <Button
+                variant="quiet"
+                onClick={reset}
+                aria-disabled={running || undefined}
+                className="max-w-full whitespace-normal"
+              >
+                <Icon name="rotate-ccw" size={16} />
+                Reset and retry
+              </Button>
+            </div>
+
+            {!before ? (
+              <p id="remediation-hint" className="text-body-sm text-subtle">
+                The repeated test becomes available once the vulnerable proof
+                has been run, so the two results are always compared against the
+                same documented test.
+              </p>
+            ) : null}
+          </Card>
+
+          {before ? (
+            <EvidenceComparison
+              before={before.cases}
+              after={after ? after.cases : null}
+              boundary={scenario.affectedArea}
+              limitation={scenario.limitation}
+              provenance={provenance}
+              summary={
+                after
+                  ? "The same documented tests were repeated with no change to the statements, the actors, or the data — only the policy set changed. Every statement that previously crossed the tenant boundary now returns nothing or is refused, and the legitimate same-tenant paths still return their own rows."
+                  : "Only the vulnerable state has been recorded so far. Run the repeated test to compare each documented test against the remediated policy set."
               }
             />
           ) : null}
 
-          {phase === "unavailable" ? (
-            <>
-              <StatusIndicator
-                state="unavailable"
-                variant="block"
-                explanation={
-                  problem ??
-                  "The documented evidence could not be retrieved. No result is implied."
-                }
-              />
-              <Alert tone="warning" title="This is not a result">
-                <p>
-                  An unavailable demonstration says nothing about whether the
-                  control holds. The scenario keeps its context and you can
-                  retry, or continue to the report and the other scenarios.
+          {before ? (
+            <RecordInView
+              event="comparison_viewed"
+              surface="scenario"
+              scenarioSlug={scenario.id}
+              targetId={COMPARISON_REGION_ID}
+            />
+          ) : null}
+
+          {matrixRows ? (
+            <section
+              aria-labelledby="coverage-heading"
+              className="flex min-w-0 flex-col gap-4"
+            >
+              <div>
+                <h2 id="coverage-heading" className="text-h3 text-strong">
+                  RLS coverage matrix
+                </h2>
+                <p className="text-body text-subtle mt-2">
+                  Every protected resource and operation in the fixture,
+                  classified by what the documented tests actually produced —
+                  including the checks that belong to the other published
+                  scenario. A check with no documented test is shown as untested
+                  and must not be read as a pass.
                 </p>
-              </Alert>
-            </>
+              </div>
+              <CoverageMatrix
+                rows={matrixRows}
+                caption={`Every documented test recorded under the ${
+                  after ? "remediated" : "vulnerable"
+                } policy set, across the whole synthetic fixture — including checks outside ${scenarioTitle}. Derived from the recorded run, not authored.`}
+              />
+            </section>
           ) : null}
 
-          <div className="flex flex-wrap gap-3">
-            {/*
-             * whitespace-normal overrides the shared button default. These
-             * labels are long by necessity, and at 320px a nowrap label is
-             * wider than the content column, which scrolls the whole page
-             * sideways. Wrapping keeps the control inside the gutter without
-             * shortening a label that has to stay precise.
-             */}
-            <Button
-              onClick={() => replay("vulnerable")}
-              loading={phase === "running-vulnerable"}
-              loadingLabel="Running documented test"
-              disableWhileLoading={false}
-              className="max-w-full whitespace-normal"
-            >
-              {before
-                ? "Run the vulnerable test again"
-                : "Run the documented test"}
-            </Button>
-
-            <Button
-              variant="secondary"
-              onClick={() => replay("remediated")}
-              loading={phase === "running-remediated"}
-              loadingLabel="Running documented test"
-              disableWhileLoading={false}
-              disabled={!before}
-              aria-describedby={!before ? "remediation-hint" : undefined}
-              className="max-w-full whitespace-normal"
-            >
-              Apply remediation and repeat the test
-            </Button>
-
-            <Button
-              variant="quiet"
-              onClick={reset}
-              aria-disabled={running || undefined}
-              className="max-w-full whitespace-normal"
-            >
-              <Icon name="rotate-ccw" size={16} />
-              Reset and retry
-            </Button>
-          </div>
-
-          {!before ? (
-            <p id="remediation-hint" className="text-body-sm text-subtle">
-              The repeated test becomes available once the vulnerable proof has
-              been run, so the two results are always compared against the same
-              documented test.
-            </p>
-          ) : null}
-        </Card>
-
-        {before ? (
-          <EvidenceComparison
-            before={before.cases}
-            after={after ? after.cases : null}
-            boundary={scenario.affectedArea}
-            limitation={scenario.limitation}
-            provenance={provenance}
-            summary={
-              after
-                ? "The same documented tests were repeated with no change to the statements, the actors, or the data — only the policy set changed. Every statement that previously crossed the tenant boundary now returns nothing or is refused, and the legitimate same-tenant paths still return their own rows."
-                : "Only the vulnerable state has been recorded so far. Run the repeated test to compare each documented test against the remediated policy set."
-            }
-          />
-        ) : null}
-
-        {matrixRows ? (
           <section
-            aria-labelledby="coverage-heading"
+            aria-labelledby="remediation-heading"
             className="flex min-w-0 flex-col gap-4"
           >
-            <div>
-              <h2 id="coverage-heading" className="text-h3 text-strong">
-                RLS coverage matrix
-              </h2>
-              <p className="text-body text-subtle mt-2">
-                Every protected resource and operation in the fixture,
-                classified by what the documented tests actually produced —
-                including the checks that belong to the other published
-                scenario. A check with no documented test is shown as untested
-                and must not be read as a pass.
-              </p>
-            </div>
-            <CoverageMatrix
-              rows={matrixRows}
-              caption={`Every documented test recorded under the ${
-                after ? "remediated" : "vulnerable"
-              } policy set, across the whole synthetic fixture — including checks outside ${scenarioTitle}. Derived from the recorded run, not authored.`}
-            />
+            <h2 id="remediation-heading" className="text-h3 text-strong">
+              Remediation direction
+            </h2>
+            <ol className="flex flex-col gap-3">
+              {scenario.remediation.map((step, index) => (
+                <li key={step} className="flex items-start gap-3">
+                  <span className="border-line text-label text-subtle bg-base rounded-pill flex size-7 shrink-0 items-center justify-center border">
+                    {index + 1}
+                  </span>
+                  <span className="text-body text-subtle">{step}</span>
+                </li>
+              ))}
+            </ol>
           </section>
-        ) : null}
 
-        <section
-          aria-labelledby="remediation-heading"
-          className="flex min-w-0 flex-col gap-4"
-        >
-          <h2 id="remediation-heading" className="text-h3 text-strong">
-            Remediation direction
-          </h2>
-          <ol className="flex flex-col gap-3">
-            {scenario.remediation.map((step, index) => (
-              <li key={step} className="flex items-start gap-3">
-                <span className="border-line text-label text-subtle bg-base rounded-pill flex size-7 shrink-0 items-center justify-center border">
-                  {index + 1}
-                </span>
-                <span className="text-body text-subtle">{step}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
+          <RecordInView
+            event="limitation_viewed"
+            surface="scenario"
+            scenarioSlug={scenario.id}
+            targetId={SCENARIO_LIMITATION_ID}
+          />
 
-        <LimitationCallout title="What this proves, and what it does not">
-          <p>{scenario.limitation}</p>
-          <p className="mt-2">{EVIDENCE_PROVENANCE_NOTE}</p>
-          <p className="mt-2">
-            A result here describes this documented synthetic scenario only. It
-            is not a certification, a formal penetration test, or a statement
-            about any other system, and running it grants no permission to test
-            anyone else&rsquo;s project.
-          </p>
-        </LimitationCallout>
+          <LimitationCallout
+            id={SCENARIO_LIMITATION_ID}
+            title="What this proves, and what it does not"
+          >
+            <p>{scenario.limitation}</p>
+            <p className="mt-2">{EVIDENCE_PROVENANCE_NOTE}</p>
+            <p className="mt-2">
+              A result here describes this documented synthetic scenario only.
+              It is not a certification, a formal penetration test, or a
+              statement about any other system, and running it grants no
+              permission to test anyone else&rsquo;s project.
+            </p>
+          </LimitationCallout>
 
-        <div className="flex flex-wrap gap-3">
-          <ButtonLink href="/report" variant="secondary" trailingArrow>
-            View sample report
-          </ButtonLink>
-          <ButtonLink href="/scenarios" variant="quiet" trailingArrow>
-            Back to all scenarios
-          </ButtonLink>
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink href="/report" variant="secondary" trailingArrow>
+              View sample report
+            </ButtonLink>
+            <ButtonLink href="/scenarios" variant="quiet" trailingArrow>
+              Back to all scenarios
+            </ButtonLink>
+          </div>
         </div>
       </div>
-    </div>
+    </ScenarioMeasurementProvider>
   );
 }
