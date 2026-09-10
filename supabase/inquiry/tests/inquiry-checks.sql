@@ -16,6 +16,9 @@
 \echo '— authorization: deny and allow paths (shared with the hosted runner)'
 \i supabase/inquiry/tests/authorization-checks.sql
 
+\echo '— measurement: separation, deny paths, and taxonomy (shared with the hosted runner)'
+\i supabase/inquiry/tests/measurement-checks.sql
+
 \echo '— accept: a first submission persists once and returns a reference'
 begin;
 do $$
