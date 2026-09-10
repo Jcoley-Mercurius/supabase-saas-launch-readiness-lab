@@ -18,6 +18,7 @@
     "evidence:verify": "node scripts/verify-evidence.mjs",
     "inquiries:check": "node scripts/verify-inquiry.mjs",
     "inquiries:check:hosted": "node scripts/verify-inquiry-hosted.mjs",
+    "inquiries:migrate:hosted": "node scripts/apply-inquiry-migration.mjs",
     "inquiries:retain": "node scripts/retain-inquiries.mjs",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm evidence:check && pnpm test:unit && pnpm build",
     "test:unit": "NODE_OPTIONS=--conditions=react-server playwright test --config playwright.unit.config.ts",

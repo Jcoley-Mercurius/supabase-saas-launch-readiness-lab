@@ -215,3 +215,55 @@ begin
 
   raise notice 'PASS: record_event writes a valid event and the check cleans up after itself';
 end $$;
+
+-- ---------------------------------------------------------------------
+-- 7. Every declared event name is accepted by the environment being checked.
+--
+-- MTS-OBS-052 is why this exists. The taxonomy is defined by a check
+-- constraint, and a migration that widens it is applied to a hosted project by
+-- hand. A build that sends a name the deployed constraint does not yet accept
+-- does not fail loudly: measurement drops the event on purpose, so the symptom
+-- is a metric reading zero while everything looks healthy.
+--
+-- The list below must match MEASUREMENT_EVENTS in lib/measurement/events.ts.
+-- The unit suite holds that list against the migrations; this holds it against
+-- the database the application is actually pointed at, which is the half no
+-- amount of repository testing can prove.
+-- ---------------------------------------------------------------------
+do $$
+declare
+  expected text[] := array[
+    'landing_viewed',
+    'scenario_viewed', 'evidence_excerpt_opened', 'comparison_viewed',
+    'limitation_viewed', 'scenario_step_advanced', 'scenario_completed',
+    'report_viewed', 'report_section_opened', 'report_printed',
+    'inquiry_started', 'inquiry_submitted', 'inquiry_acknowledged'
+  ];
+  name text;
+  scoped boolean;
+begin
+  foreach name in array expected loop
+    scoped := name in (
+      'scenario_viewed', 'evidence_excerpt_opened', 'comparison_viewed',
+      'limitation_viewed', 'scenario_step_advanced', 'scenario_completed'
+    );
+
+    begin
+      insert into measurement.events (event_name, surface, scenario_slug, environment)
+      values (
+        name,
+        case when scoped then 'scenario' else 'report' end,
+        case when scoped then 'webhook-integrity' else null end,
+        'local'
+      );
+    exception when check_violation then
+      raise exception
+        'FAIL: % is declared in the application but REJECTED by this database. A migration has not been applied here.', name;
+    end;
+  end loop;
+
+  -- Leave the table as it was found.
+  delete from measurement.events where environment = 'local';
+
+  raise notice 'PASS: all 13 declared event names are accepted by this database';
+end $$;

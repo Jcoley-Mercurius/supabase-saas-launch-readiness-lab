@@ -41,10 +41,14 @@ stated here because it is easy to read a green branch as a hardened site.
 3. `pnpm inquiries:check:hosted` green against the hosted project — the inquiry
    and measurement deny paths, proved where they actually matter (MTS-OBS-044).
 4. **Migrations before code.** Any migration the new build depends on is applied
-   to the hosted project first, and the deny assertions are re-run afterwards.
-   A build that reaches a constraint the database does not yet have does not
-   fail loudly: measurement drops the event silently by design, so the symptom
-   is a metric reading zero rather than an error.
+   to the hosted project first with `pnpm inquiries:migrate:hosted <file> <ref>`,
+   and the deny assertions are re-run afterwards. A build that reaches a
+   constraint the database does not yet have does not fail loudly: measurement
+   drops the event silently by design, so the symptom is a metric reading zero
+   rather than an error. `pnpm inquiries:check:hosted` now asserts that every
+   declared event name is accepted by the target database, so a missed
+   migration fails the gate instead — but the order still matters, because the
+   gate is what catches it and the gate runs before the deploy.
 5. Environment variables are set per Vercel scope. Preview and production hold
    **separate** values, and preview points at a preview-safe notification
    destination (§5).
@@ -100,7 +104,7 @@ append-only history of what the database actually did.
 | Browser suite incl. WebKit | not run here | CI only (MTS-EXC-002); runs on the pull request |
 | Hosted deny paths (`inquiries:check:hosted`) | run, green | 2026-09-09, against project `vorxftvgvycrgduenark` |
 | Production response security headers | run, green | 2026-09-09; all six read back live, closing MTS-OBS-048 |
-| Migration `20260909000005` applied to the hosted project | **not run** | blocked in-session; MTS-OBS-052 |
+| Migration `20260909000005` applied to the hosted project | run, green | 2026-09-10, `pnpm inquiries:migrate:hosted`; deny paths re-proved after |
 | Preview deployment reviewed against MDS references | **not run** | needs a preview deployment of this branch |
 | Preview environment variables set separately from production | **not run** | owner action in the Vercel dashboard |
 | Preview-safe notification destination confirmed | **not run** | owner action; the application-side labelling is in place (§5) |
@@ -126,9 +130,27 @@ in the Vercel **Preview** scope separately from **Production**, with
 `INQUIRY_NOTIFICATION_TO` pointing at an address that is safe to fill with test
 submissions.
 
-**What neither half fixes (MTS-OBS-051).** There is one hosted Supabase project,
+**What neither half fixes (MTS-DEV-003).** There is one hosted Supabase project,
 so a preview submission writes a real row to the same inquiry store as a
 production submission, under the same retention policy and the same deduplication
-key. Labelling makes it visible; it does not make it separate. Options are a
-second Supabase project for preview, or accepting the shared store and treating
-preview submissions as live data. That is an owner decision and is not taken here.
+key — a test submission can occupy a genuine buyer's dedupe key and get their
+real inquiry treated as a duplicate. Labelling makes it visible; it does not make
+it separate.
+
+This is a **deviation from approved architecture, not an open question**.
+TECHNOLOGY-BLUEPRINT.md "Environment boundaries" already requires preview to hold
+isolated preview data and an isolated notification destination, and
+INTEGRATION-MANIFEST.md lists creating isolated Supabase *environments* as an
+owner dashboard action. The remedy is therefore specified, not chosen:
+
+1. Owner creates a second Supabase project for preview.
+2. Apply both migration sets to it:
+   `pnpm inquiries:migrate:hosted supabase/inquiry/migrations/<file> <new-ref>`
+   for each file in order.
+3. Point the Vercel **Preview** scope at it —
+   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — alongside
+   a preview-safe `INQUIRY_NOTIFICATION_TO`.
+4. `pnpm inquiries:check:hosted <new-ref>` to prove the deny paths and the full
+   taxonomy on the new project.
+
+Only step 1 needs the dashboard. Production is correct and unaffected either way.
