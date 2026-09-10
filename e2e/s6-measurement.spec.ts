@@ -309,7 +309,12 @@ test.describe("the declared events reach the endpoint", () => {
     await ready;
 
     await page.goto("/report");
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    // Wait for the page's own view event before dispatching. A visible heading
+    // only proves the server-rendered markup arrived; the print listener is
+    // attached in an effect, so dispatching before hydration would test
+    // nothing and fail intermittently by timing.
+    await expect.poll(() => names(sent)).toContain("report_viewed");
 
     await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")));
     await expect.poll(() => names(sent)).toContain("report_printed");
