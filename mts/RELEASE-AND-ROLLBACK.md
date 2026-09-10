@@ -94,10 +94,13 @@ append-only history of what the database actually did.
 
 | Step | Status | Evidence |
 |---|---|---|
-| `pnpm check` green from a deleted `.next` | run | S6 working tree, 2026-09-09 |
-| Browser suite, chromium-desktop | run | S6 working tree, 2026-09-09 |
-| Browser suite, all projects incl. WebKit | run in CI on `main` | verify workflow |
-| Hosted deny paths (`inquiries:check:hosted`) | run | S6, against project `vorxftvgvycrgduenark` |
+| `pnpm check` green from a deleted `.next` | run, green | 2026-09-09; 151 unit tests, exit 0 |
+| Browser suite, five local projects | run | 2026-09-09/10; 677 passed, 22 failed, 1 skipped, 1.4h at two workers |
+| Those 22 re-run serially | run | 21 passed at one worker — runner contention, not defects. The twenty-second is MTS-OBS-053, an intermittent focus assertion that passed 6/6 on this branch and 6/6 on `origin/main` when re-measured quietly |
+| Browser suite incl. WebKit | not run here | CI only (MTS-EXC-002); runs on the pull request |
+| Hosted deny paths (`inquiries:check:hosted`) | run, green | 2026-09-09, against project `vorxftvgvycrgduenark` |
+| Production response security headers | run, green | 2026-09-09; all six read back live, closing MTS-OBS-048 |
+| Migration `20260909000005` applied to the hosted project | **not run** | blocked in-session; MTS-OBS-052 |
 | Preview deployment reviewed against MDS references | **not run** | needs a preview deployment of this branch |
 | Preview environment variables set separately from production | **not run** | owner action in the Vercel dashboard |
 | Preview-safe notification destination confirmed | **not run** | owner action; the application-side labelling is in place (§5) |
