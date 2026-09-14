@@ -11,6 +11,7 @@ import { Alert } from "@/components/ui/alert";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
+import { PillarIcon } from "@/components/scenarios/pillar-icon";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { BOUNDARY_NOTES } from "@/lib/content/site";
 import { SCENARIOS, getScenario } from "@/lib/content/scenarios";
@@ -124,9 +125,12 @@ export default async function ScenarioPage({
 
             <div className="flex min-w-0 flex-col gap-6">
               <div className="flex items-start gap-4">
-                <span className="text-primary mt-1 shrink-0">
-                  <Icon name={scenario.icon} size={24} />
-                </span>
+                <PillarIcon
+                  pillar={scenario.pillar}
+                  name={scenario.icon}
+                  size={24}
+                  className="mt-1 shrink-0"
+                />
                 <div>
                   <h1 className="text-h1 text-strong">{scenario.pillar}</h1>
                   <p className="text-body-lg text-subtle mt-3 max-w-[64ch]">

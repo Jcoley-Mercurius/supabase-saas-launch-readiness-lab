@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Icon } from "@/components/ui/icon";
+import { PillarIcon } from "@/components/scenarios/pillar-icon";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import {
   RECOMMENDED_SCENARIO_SLUG,
@@ -34,9 +34,12 @@ export function ScenarioCard({ scenario }: { scenario: Scenario }) {
         {recommended ? <Badge tone="primary">Recommended</Badge> : null}
       </div>
 
-      <span className="text-primary mt-6 block">
-        <Icon name={scenario.icon} size={24} />
-      </span>
+      <PillarIcon
+        pillar={scenario.pillar}
+        name={scenario.icon}
+        size={24}
+        className="mt-6 block"
+      />
 
       <h3 className="text-h4 text-strong mt-4">{scenario.pillar}</h3>
       <p className="text-body-sm text-subtle mt-2">{scenario.summary}</p>

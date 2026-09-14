@@ -62,6 +62,10 @@ See `mds/specification/PRINCIPLES.md` for application rules.
 | Warning | `color.status.warning` | `#9A5B00` | Qualification or caution |
 | Information | `color.status.info` | `#175CD3` | Context and neutral guidance |
 | Untested | `color.status.untested` | `#667085` | No test result |
+| Webhook pillar | `color.pillar.webhook` | `#7C3AED` | Webhook integrity pillar icon only |
+| Reliability pillar | `color.pillar.reliability` | `#EA580C` | Reliability & recovery pillar icon only |
+
+Pillar hues identify a risk pillar's icon, as MDS-REF-002 and MDS-REF-005 render them; the other two pillars use `color.brand.primary`. They are decorative — the pillar title carries the meaning — and never mark evidence state, severity, or an action, and are not approved for text. Approved by Josh Coley 2026-09-14 (MDS-QA-R1-F004).
 
 Color never carries status alone. Pair it with an approved icon/shape, label, and explanatory text. Accent green is not approved for body text on white.
 
