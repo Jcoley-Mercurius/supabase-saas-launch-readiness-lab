@@ -97,17 +97,6 @@ const TYPE_SCALE: Record<string, { size: number; line: number }> = {
 /** DESIGN-SYSTEM.md section 6 — "Radius: 6 ... 10 ... 14 ... full pill". */
 const APPROVED_RADII = [0, 6, 10, 14];
 
-/**
- * One rendered radius is not on the approved scale: the inquiry consent
- * checkbox draws at 4px (`components/ui/field.tsx`, `rounded-[4px]`).
- *
- * Recorded as MDS-QA-R1-F001 and referenced from the Gate 1 findings table in
- * `mds/qa/MDS-QA-REPORT-R1.md`. It is named here rather than folded into
- * APPROVED_RADII so the exception is visible in the assertion itself; deleting
- * this constant is the fix once the owner rules on it.
- */
-const RADIUS_FINDING_MDS_QA_R1_F001 = 4;
-
 const PUBLIC_ROUTES = [
   "/",
   "/scenarios",
@@ -323,8 +312,10 @@ test.describe("Gate 1 — no unapproved value renders in the product", () => {
       await settle(page, route);
 
       const found = await page.evaluate(
-        (input: { radii: number[]; finding: number }) => {
-          const allowedRadii = new Set([...input.radii, input.finding]);
+        (input: { radii: number[] }) => {
+          // No allowance: MDS-QA-R1-F001 (a 4px consent checkbox) was ruled
+          // on 2026-09-14 and fixed to radius.small rather than excepted.
+          const allowedRadii = new Set(input.radii);
           const badRadii = new Set<string>();
           const shadows = new Set<string>();
 
@@ -365,7 +356,7 @@ test.describe("Gate 1 — no unapproved value renders in the product", () => {
           }
           return { badRadii: [...badRadii], shadows: [...shadows] };
         },
-        { radii: APPROVED_RADII, finding: RADIUS_FINDING_MDS_QA_R1_F001 },
+        { radii: APPROVED_RADII },
       );
 
       expect(found.badRadii, `unapproved radii on ${route}`).toEqual([]);
@@ -416,77 +407,118 @@ test.describe("Gate 1 — the approved type families load and apply", () => {
     );
   });
 
-  test("no element but the shell footer moves the layout", async ({ page }) => {
+  test("the shell footer never moves, and nothing moves on the landing route", async ({
+    page,
+    browser,
+    browserName,
+  }, testInfo) => {
     /*
      * MDS foundation order item 2: the fonts load "with stable fallbacks and no
      * avoidable layout shift".
      *
-     * Measured behaviour, recorded rather than tuned. Every public route
-     * records exactly one layout shift, value 0.121, sourced to a single
-     * element: the shell footer. The shell is a sticky footer (`body` is
-     * `flex min-h-full flex-col`, `main` is `flex-1`), so while the document is
-     * still parsing the footer sits at the viewport bottom and moves down as
-     * `main` fills. Whether it lands before or after first contentful paint
-     * varies between runs by a few tens of milliseconds, so it cannot be
-     * claimed to be invisible. It is recorded as MDS-QA-R1-F002 for owner
-     * ruling in `mds/qa/MDS-QA-REPORT-R1.md`.
+     * MDS-QA-R1-F002, ruled 2026-09-14 as an engineering defect: the footer
+     * must not produce a layout shift after first paint. The mechanism was the
+     * root Suspense boundary (app/loading.tsx). React outlines a large
+     * prerendered page, so the served HTML carries the loading fallback, then
+     * the shell footer, then the real page in a hidden node an inline script
+     * swaps in. A first paint taken before the swap pinned the sticky footer to
+     * the viewport bottom and the swap pushed it down: 0.121 at desktop and
+     * 0.255 at mobile. The fallback now reserves one viewport of height, so the
+     * footer is below the fold until the page arrives.
      *
-     * This test therefore asserts the invariant that IS a foundation defect if
-     * it breaks - that nothing else moves. A font swap, a hydration reflow, or
-     * a late-injected element would name a different source here and fail.
+     * Every public route is loaded, because the defect was in the shared shell
+     * and appeared on nearly all of them. The landing route additionally keeps
+     * the stronger invariant this test always held - nothing moves at all - now
+     * without the footer allowance it used to carry. That half is not extended
+     * to every route: under heavy CPU throttling a few in-content shifts under
+     * 0.05 occur on unmodified main as well, recorded separately, and they are
+     * not this finding.
+     *
+     * Each route loads in a fresh browser context. A warm page carries cached
+     * scripts and styles between navigations, which changes when the first
+     * paint lands; against the unfixed build a warm page missed the defect on
+     * mobile while a cold context caught it on nearly every load.
      */
-    await page.addInitScript(() => {
-      (
-        window as Window & { __shifts?: { value: number; sources: string[] }[] }
-      ).__shifts = [];
-      new PerformanceObserver((list) => {
-        for (const entry of list.getEntries() as (PerformanceEntry & {
-          value: number;
-          hadRecentInput: boolean;
-          sources?: { node?: Element }[];
-        })[]) {
-          if (entry.hadRecentInput) continue;
-          (
-            window as Window & {
-              __shifts?: { value: number; sources: string[] }[];
-            }
-          ).__shifts?.push({
-            value: entry.value,
-            sources: (entry.sources ?? []).map((source) =>
-              source.node ? source.node.tagName.toLowerCase() : "detached",
-            ),
-          });
-        }
-      }).observe({ type: "layout-shift", buffered: true });
-    });
+    const supported = await page.evaluate(() =>
+      PerformanceObserver.supportedEntryTypes.includes("layout-shift"),
+    );
+    test.skip(
+      !supported,
+      `${browserName} does not implement the Layout Instability API, so a pass here would measure nothing`,
+    );
+    test.setTimeout(180_000);
 
-    await page.goto("/", { waitUntil: "load" });
-    await page.evaluate(() => document.fonts.ready);
-    await page.waitForTimeout(1200);
+    const measured: string[] = [];
+    const footerMoves: string[] = [];
+    let landingShifts: { value: number; sources: string[] }[] = [];
 
-    const shifts = await page.evaluate(
-      () =>
+    for (const route of PUBLIC_ROUTES) {
+      const context = await browser.newContext({
+        ...testInfo.project.use,
+        baseURL: testInfo.project.use.baseURL ?? "http://localhost:3000",
+      });
+      const fresh = await context.newPage();
+      await fresh.addInitScript(() => {
         (
           window as Window & {
             __shifts?: { value: number; sources: string[] }[];
           }
-        ).__shifts ?? [],
-    );
+        ).__shifts = [];
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries() as (PerformanceEntry & {
+            value: number;
+            hadRecentInput: boolean;
+            sources?: { node?: Element }[];
+          })[]) {
+            if (entry.hadRecentInput) continue;
+            (
+              window as Window & {
+                __shifts?: { value: number; sources: string[] }[];
+              }
+            ).__shifts?.push({
+              value: entry.value,
+              sources: (entry.sources ?? []).map((source) =>
+                source.node ? source.node.tagName.toLowerCase() : "detached",
+              ),
+            });
+          }
+        }).observe({ type: "layout-shift", buffered: true });
+      });
 
-    const otherThanFooter = shifts.filter((shift) =>
-      shift.sources.some((source) => source !== "footer"),
-    );
-    expect(
-      otherThanFooter,
-      "only the shell footer may move; anything else is a font, hydration, or injection defect",
-    ).toEqual([]);
+      await fresh.goto(route, { waitUntil: "load" });
+      await fresh.evaluate(() => document.fonts.ready);
+      await fresh.waitForTimeout(1200);
 
-    // Recorded for the QA report. The known footer settle measures ~0.121.
-    const total = shifts.reduce((sum, shift) => sum + shift.value, 0);
+      const shifts = await fresh.evaluate(
+        () =>
+          (
+            window as Window & {
+              __shifts?: { value: number; sources: string[] }[];
+            }
+          ).__shifts ?? [],
+      );
+      await context.close();
+
+      const total = shifts.reduce((sum, shift) => sum + shift.value, 0);
+      const sources = [...new Set(shifts.flatMap((s) => s.sources))];
+      measured.push(
+        `${route} ${total.toFixed(3)} (${sources.join(", ") || "none"})`,
+      );
+      if (sources.includes("footer"))
+        footerMoves.push(`${route} ${total.toFixed(3)}`);
+      if (route === "/") landingShifts = shifts;
+    }
+
     test.info().annotations.push({
       type: "measured-cls",
-      description: `${total.toFixed(3)} across ${shifts.length} shift(s), sources: ${[...new Set(shifts.flatMap((s) => s.sources))].join(", ") || "none"}`,
+      description: measured.join("; "),
     });
+
+    expect(footerMoves, "the shell footer moved (MDS-QA-R1-F002)").toEqual([]);
+    expect(
+      landingShifts,
+      "nothing may move on the landing route; a source here is a font, hydration, or injection defect",
+    ).toEqual([]);
   });
 });
 

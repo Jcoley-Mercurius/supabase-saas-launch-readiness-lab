@@ -319,7 +319,7 @@ export function Checkbox({
         type="checkbox"
         aria-invalid={error ? true : undefined}
         aria-describedby={describedById}
-        className={`accent-primary size-5 shrink-0 rounded-[4px] ${
+        className={`accent-primary rounded-small size-5 shrink-0 ${
           error ? "outline-vulnerable outline-2 outline-offset-2" : ""
         }`.trim()}
         {...props}

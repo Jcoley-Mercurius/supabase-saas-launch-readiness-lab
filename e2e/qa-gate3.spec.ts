@@ -514,10 +514,15 @@ test.describe("Gate 3 — the approved composition transforms", () => {
     page,
   }) => {
     /*
-     * MDS responsive.rules.order and AGENTS.md "Mobile order": scenario
-     * selector, step summary, vulnerable proof, remediation, comparison,
-     * limitation, recovery/report/CTA. Verified by rendered vertical position,
-     * which is what a visitor experiences, rather than by source order.
+     * MDS responsive.rules.order, DESIGN-SYSTEM section 12, and AGENTS.md
+     * "Mobile order": scenario selector, synthetic context panel, step summary,
+     * vulnerable proof, remediation, comparison, limitation,
+     * recovery/report/CTA. Verified by rendered vertical position, which is
+     * what a visitor experiences, rather than by source order.
+     *
+     * The context panel's place between the selector and the step summary was
+     * unwritten until the owner approved it on 2026-09-14 (MDS-QA-R1-F006), so
+     * this check now holds it there too.
      */
     await page.setViewportSize({ width: 390, height: 900 });
     await settle(page, "/scenarios/authorization-and-rls");
@@ -550,6 +555,7 @@ test.describe("Gate 3 — the approved composition transforms", () => {
       };
       return {
         selector: top("main details summary"),
+        context: top("main aside[aria-label='Scenario context']"),
         steps: top("main nav[aria-label='Scenario steps']"),
         proof: byHeading("documented test"),
         remediation: byHeading("remediation"),
@@ -558,8 +564,12 @@ test.describe("Gate 3 — the approved composition transforms", () => {
     });
 
     expect(positions.selector, "scenario selector is first").toBeLessThan(
-      positions.steps,
+      positions.context,
     );
+    expect(
+      positions.context,
+      "the synthetic context panel precedes the step summary (MDS-QA-R1-F006)",
+    ).toBeLessThan(positions.steps);
     expect(positions.steps, "the step summary precedes the proof").toBeLessThan(
       positions.proof,
     );
