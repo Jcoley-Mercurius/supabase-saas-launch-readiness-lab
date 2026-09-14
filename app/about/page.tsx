@@ -9,7 +9,7 @@ import { BoundaryNotes } from "@/components/layout/boundary-notes";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LimitationCallout } from "@/components/ui/limitation-callout";
-import { Icon } from "@/components/ui/icon";
+import { PillarIcon } from "@/components/scenarios/pillar-icon";
 import { RISK_PILLARS } from "@/lib/content/site";
 
 /*
@@ -80,9 +80,11 @@ export default function AboutPage() {
           <ul className="tablet:grid-cols-2 mt-4 grid grid-cols-1 gap-4">
             {RISK_PILLARS.map((pillar) => (
               <Card as="li" key={pillar.title} className="p-5">
-                <span className="text-primary">
-                  <Icon name={pillar.icon} size={20} />
-                </span>
+                <PillarIcon
+                  pillar={pillar.title}
+                  name={pillar.icon}
+                  size={20}
+                />
                 <h3 className="text-h4 text-strong mt-3">{pillar.title}</h3>
                 <p className="text-body-sm text-subtle mt-1">{pillar.body}</p>
               </Card>

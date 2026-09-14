@@ -162,7 +162,7 @@ Two artefacts of the capture method, so they are not read as product defects:
 
 | ID | Severity | Class | Finding |
 |---|---|---|---|
-| MDS-QA-R1-F004 | minor | GAP | MDS-REF-002 and MDS-REF-005 render the four pillar icons in four different hues — green, green, **purple**, **orange**. Neither purple nor orange exists in the approved palette (`mds/tokens/tokens.json`, DESIGN-SYSTEM §4). The implementation renders all four in `color.brand.primary` (`components/scenarios/scenario-card.tsx`, `risk-pillars.tsx`), which is why the Gate 1 colour census is clean. Written tokens outrank a canonical reference (authority order items 3 and 5), so this is recorded as an **MDS gap**: the references show a per-pillar hue the token system does not define. Ruling needed: keep the single approved hue, or approve pillar-hue tokens. |
+| MDS-QA-R1-F004 | minor | GAP | MDS-REF-002 and MDS-REF-005 render the four pillar icons in four different hues — green, green, **purple**, **orange**. Neither purple nor orange exists in the approved palette (`mds/tokens/tokens.json`, DESIGN-SYSTEM §4). The implementation renders all four in `color.brand.primary` (`components/scenarios/scenario-card.tsx`, `risk-pillars.tsx`), which is why the Gate 1 colour census is clean. Written tokens outrank a canonical reference (authority order items 3 and 5), so this is recorded as an **MDS gap**: the references show a per-pillar hue the token system does not define. Ruling needed: keep the single approved hue, or approve pillar-hue tokens. **Ruled 2026-09-14 (Josh Coley): approve pillar-hue tokens.** `color.pillar.webhook` `#7C3AED` and `color.pillar.reliability` `#EA580C` added to `tokens.json` and DESIGN-SYSTEM §4, decorative and icon-only; every pillar icon (landing and inquiry pillar rows, scenario cards, lab header, about) renders through `components/scenarios/pillar-icon.tsx`. |
 | MDS-QA-R1-F005 | minor | EXCEPTION (proposed) | MDS-REF-007 shows the report as **three** columns — index, body, and a right sidebar carrying Methodology, Scope & limitations, and the CTA. `mds/COMPOSITION-PROPOSAL.md` "Audit report shell" specifies **two**: "Desktop uses a sticky section index beside the report", with method and limitations as section 7 and the CTA as section 8. The implementation follows the written composition. Written MDS outranks the reference; recorded so the difference is approved rather than silent. |
 | MDS-QA-R1-F006 | minor | GAP | On mobile the scenario **context panel** sits between the scenario selector and the step summary. The written mobile order (DESIGN-SYSTEM §12, AGENTS.md) lists "scenario selector and step summary, vulnerable proof, remediation, comparison, limitation, retry/report/CTA" and does not mention the context panel; MDS-REF-009 panel 3 does not show one. The tablet rule — "context moves before proof" — is satisfied, and Gate 3 confirms selector → steps → proof → remediation → CTA. Ruling needed: confirm the context panel's mobile position, or specify it. |
 | MDS-QA-R1-F007 | minor | observation | MDS-REF-006 shows **one** before/after pair on the lab canvas. The implementation renders **eleven**, one per documented test, so the remediated lab is 13,564 px tall at 1440. Every pair is real evidence the fixture produced, and suppressing any of it would be the worse error, but the reference's single-screen density is not preserved. Ruling needed on whether the canvas should group, paginate, or collapse repeated pairs — which would be an MDS change, not an implementation choice. |
@@ -263,7 +263,7 @@ unit tests, and recorded in `mps/qa/MPS-QA-REPORT-R1.md`.
 | MDS-QA-R1-F001 | 1 | minor | DEVIATION | Open — owner ruling |
 | MDS-QA-R1-F002 | 1 | observation | observation | Open — owner ruling |
 | MDS-QA-R1-F003 | 3 | observation | observation | Open — no action proposed |
-| MDS-QA-R1-F004 | 2 | minor | GAP | Open — owner ruling |
+| MDS-QA-R1-F004 | 2 | minor | GAP | **Closed** — owner ruling 2026-09-14: pillar-hue tokens approved |
 | MDS-QA-R1-F005 | 2 | minor | EXCEPTION (proposed) | Open — owner approval |
 | MDS-QA-R1-F006 | 2 | minor | GAP | Open — owner ruling |
 | MDS-QA-R1-F007 | 2 | minor | observation | Open — owner ruling |
@@ -271,7 +271,7 @@ unit tests, and recorded in `mps/qa/MPS-QA-REPORT-R1.md`.
 | MDS-QA-R1-F009 | 1 | observation | observation | Open — no action proposed |
 | MDS-QA-R1-F010 | 3 | **major** | DEVIATION | **Closed in this pass** — found, cause identified, fixed, verified |
 
-Counts, still open: **0 critical, 0 major, 5 minor, 4 observations.** One major
+Counts, still open: **0 critical, 0 major, 4 minor, 4 observations.** One major
 deviation (MDS-QA-R1-F010) was found and closed inside this pass. No prohibited claim, no
 safety-boundary violation, no untested required viewport or state, and no
 unavailable design-delivery capability.

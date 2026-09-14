@@ -63,6 +63,8 @@ const COLOR_VARIABLES: Record<string, string> = {
   "status.warning": "--color-warning",
   "status.info": "--color-info",
   "status.untested": "--color-untested",
+  "pillar.webhook": "--color-pillar-webhook",
+  "pillar.reliability": "--color-pillar-reliability",
 };
 
 const RADIUS_VARIABLES: Record<string, string> = {

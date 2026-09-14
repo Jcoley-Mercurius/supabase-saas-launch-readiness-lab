@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
+import { PillarIcon } from "@/components/scenarios/pillar-icon";
 import { SCENARIOS } from "@/lib/content/scenarios";
 import { RISK_PILLARS } from "@/lib/content/site";
 
@@ -52,9 +53,7 @@ export function RiskPillarCards({
 
         return (
           <Card as="li" key={pillar.title} className="flex flex-col p-6">
-            <span className="text-primary">
-              <Icon name={pillar.icon} size={24} />
-            </span>
+            <PillarIcon pillar={pillar.title} name={pillar.icon} size={24} />
             <h3 className="text-h4 text-strong mt-4">{pillar.title}</h3>
             <p className="text-body-sm text-subtle mt-2">{pillar.body}</p>
 

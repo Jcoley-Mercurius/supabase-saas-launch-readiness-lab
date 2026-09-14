@@ -59,6 +59,13 @@
   --color-info: #175cd3;
   --color-untested: #667085;
 
+  /* --- Color: risk-pillar icons (color.pillar.*) ----------------------
+   * Decorative identity hues for two pillar icons, as MDS-REF-002/005 render
+   * them. Never state, severity, action, or text. Closes MDS-QA-R1-F004.
+   */
+  --color-pillar-webhook: #7c3aed;
+  --color-pillar-reliability: #ea580c;
+
   /* --- Typography families (font.*) ----------------------------------- */
   --font-sans:
     var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
