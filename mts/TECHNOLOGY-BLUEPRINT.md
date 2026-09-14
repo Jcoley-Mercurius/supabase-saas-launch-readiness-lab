@@ -14,7 +14,7 @@ Project mode: greenfield
 | Data | Supabase Postgres | Inquiry persistence and bounded synthetic fixtures; never unrestricted public vulnerability |
 | Authorization | PostgreSQL grants + Supabase RLS | Server/database enforcement; tests required for allow and deny paths |
 | Email | Resend | Server-side operator notification only |
-| Measurement | First-party event boundary; PostHog conditional | Bounded events; no inquiry text or secrets |
+| Measurement | First-party event boundary; destination is the project's own Supabase Postgres, no third-party analytics provider (MTS-DEC-016, 2026-09-09) | Bounded events; no inquiry text or secrets |
 | Verification | Playwright Test plus selected accessibility/security checks | Browser, responsive, recovery, and release evidence |
 | Custom logic | Deterministic synthetic evidence engine | Resettable and isolated from production inquiry data |
 
@@ -29,7 +29,7 @@ Project mode: greenfield
 1. Public browser to Next.js public routes and interactive scenario controls.
 2. Scenario control to server-side bounded evidence executor to synthetic result to browser.
 3. Inquiry form to server validation, rate limit, and deduplication to Supabase inquiry record to Resend notification.
-4. Browser/application events to first-party measurement boundary to approved measurement destination.
+4. Browser/application events to first-party measurement boundary to approved measurement destination: a separate `measurement` schema in the isolated inquiry project, with no foreign key, shared identifier, or content column linking it to inquiries (MTS-DEC-016, MTS-OBS-050).
 
 ## Reliability and recovery
 

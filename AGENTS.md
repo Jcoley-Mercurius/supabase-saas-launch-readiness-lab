@@ -112,7 +112,7 @@ A new reusable visual convention is an MDS gap. Stop and report it; do not hide 
 - Gutters: 24/32/48 px mobile/tablet/desktop.
 - Scenario cards: 1-up mobile, 2-up intermediate, 4-up wide.
 - Scenario rail becomes an in-flow selector below 960 px.
-- Mobile order: scenario selector, step summary, vulnerable proof, remediation, comparison, limitation, recovery/report/CTA.
+- Mobile order: scenario selector, synthetic context panel, step summary, vulnerable proof, remediation, comparison, limitation, recovery/report/CTA (context-panel position approved 2026-09-14, MDS-QA-R1-F006).
 - Report and inquiry sidebars move inline below desktop.
 - Never hide evidence state, limitation, recovery, report route, or primary CTA for viewport size.
 - Primary touch targets are at least 44 × 44 CSS pixels.
@@ -134,7 +134,7 @@ Before work mapped to an MTS-required skill:
 
 ## Approved MTS architecture
 
-MTS v0.6-draft is the current implementation-readiness authority. The approved architecture is Next.js App Router + TypeScript, Vercel preview/production, Supabase Postgres with tested grants/RLS, Resend server-side inquiry notification, a first-party measurement boundary with PostHog conditional, Playwright verification, and a bounded custom synthetic evidence engine.
+MTS v0.6-draft is the current implementation-readiness authority. The approved architecture is Next.js App Router + TypeScript, Vercel preview/production, Supabase Postgres with tested grants/RLS, Resend server-side inquiry notification, a first-party measurement boundary that counts bounded events into the project's own Supabase Postgres with no third-party analytics provider (MTS-DEC-016), Playwright verification, and a bounded custom synthetic evidence engine.
 
 Read and follow:
 

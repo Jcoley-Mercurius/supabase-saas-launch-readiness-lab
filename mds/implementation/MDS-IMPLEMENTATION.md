@@ -3,7 +3,7 @@
 Status: Approved — Gate 7 complete  
 System: Mercurius Design System v1.0  
 Product: MPS v1.1  
-Date: 2026-09-05
+Date: 2026-09-05 (repository status reconciled 2026-09-14)
 
 ## Authority map
 
@@ -22,7 +22,7 @@ Date: 2026-09-05
 
 ## Repository status
 
-The application repository exists in this workspace and every mapping below is observed, not planned. Slices P0 through S5 are merged to `main`; S6 (measurement boundary, combined QA, release) is in progress.
+The application repository exists in this workspace and every mapping below is observed, not planned. Slices P0 through S6 are merged to `main` (fcb30f5, 2026-09-14) and deployed to production. The combined MDS QA record is `mds/qa/MDS-QA-REPORT-R1.md`: Gate 1 and Gate 3 pass; Gate 2 awaits owner sign-off on the recaptured comparison.
 
 | Concern | Observed path |
 |---|---|
@@ -31,7 +31,7 @@ The application repository exists in this workspace and every mapping below is o
 | Styling system | Tailwind CSS v4 `@theme` layer |
 | Runtime tokens and global styles | `app/globals.css` |
 | Font loading | Geist Sans and Geist Mono via `next/font` in `app/layout.tsx` |
-| Icons | `components/ui/icon.tsx` (Lucide-style outline set, inline SVG) |
+| Icons | `components/ui/icon.tsx` (Lucide-style outline set, inline SVG); risk-pillar icons and their `color.pillar.*` hues through `components/scenarios/pillar-icon.tsx` |
 | Shared layout | `components/layout/` — container, breadcrumb, header, footer, review band |
 | Shared controls and states | `components/ui/` — button, field, card, alert, badge, status indicator, state glyph, states, limitation callout |
 | Evidence primitives | `components/evidence/` — panel, code excerpt, matrix, comparison, finding, stepper, guided and replay labs |
@@ -39,7 +39,7 @@ The application repository exists in this workspace and every mapping below is o
 | Approved content | `lib/content/` |
 | Routes | `app/` — landing, scenarios index, scenario lab, report, method, about, inquiry |
 | Data, security, inquiry, deployment architecture | MTS artifacts; see `mts/TECHNOLOGY-BLUEPRINT.md` and `mts/SECURITY-ARCHITECTURE.md` |
-| Testing and browser verification | `playwright.config.ts` (browser matrix at the approved breakpoints), `playwright.unit.config.ts`, `pnpm check` |
+| Testing and browser verification | `playwright.config.ts` (browser matrix at the approved breakpoints), `playwright.unit.config.ts`, `pnpm check`; MDS QA gates `e2e/qa-gate1.spec.ts` and `e2e/qa-gate3.spec.ts`; Gate 2 render capture `qa/capture.spec.ts` via `playwright.capture.config.ts` (`pnpm qa:capture`, not a gate) |
 | Agent skills | `mts/AGENT-SKILL-MANIFEST.yaml` |
 
 Runtime paths are still never invented: a path enters this table only after it exists in the repository.
@@ -116,10 +116,11 @@ MTS must choose, approve, install, and verify the specific skills/tools/provider
 
 ## Exceptions, gaps, and status
 
-- Approved MDS exceptions: none
-- Open MDS gaps: none
-- Implementation deviations: none open
-- High-level status: design-approved; P0-S5 implemented and merged; S6 combined QA and release in progress; repository mapping current
+- Approved MDS exceptions: MDS-EXC-001 — two-column report shell instead of the three-column MDS-REF-007 board (MDS-QA-R1-F005, approved 2026-09-14)
+- Open MDS gaps: none. MDS-QA-R1-F004 closed by the `color.pillar.*` tokens (MDS-CHG-006); MDS-QA-R1-F006 closed by writing the approved mobile context-panel position into DESIGN-SYSTEM §12 (MDS-CHG-007)
+- Implementation deviations: none open. MDS-QA-R1-F001 (4px checkbox radius) fixed to `radius.small`; MDS-QA-R1-F002 (post-paint footer shift) fixed; MDS-QA-R1-F010 (acknowledgement focus) fixed
+- Accepted for R1, deferred: MDS-QA-R1-F007 — the lab renders every documented before/after pair; improved evidence navigation, grouping, or summarization is an R2 investigation candidate only
+- High-level status: design-approved; P0–S6 implemented, merged, and deployed; MDS compliance in progress pending Gate 2 owner sign-off; repository mapping current
 
 ## Maintenance
 

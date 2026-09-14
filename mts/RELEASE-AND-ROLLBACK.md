@@ -1,6 +1,6 @@
 # Supabase SaaS Launch-Readiness Lab — Release and Rollback Record
 
-Status: S6 working record  
+Status: R1 release record — S6 merged and deployed (`fcb30f5`, 2026-09-14); formal release approval and the rollback drill outstanding\
 Authority: MTS v0.6-draft — TECHNOLOGY-BLUEPRINT.md ("deployments use preview before
 production and retain a prior deployment for rollback"; "migrations are
 additive/reversible where possible; production migration and rollback are
@@ -25,10 +25,14 @@ Vercel project: `supabase-saas-launch-readiness-lab`, connected 2026-09-09
 (MTS-CHG-018). Production URL:
 <https://supabase-saas-launch-readiness-lab.vercel.app/>.
 
-**Production tracks `main`.** Anything on a slice branch — including the response
-security headers added in S6 (MTS-OBS-048) — is live only in preview until the
-branch is merged. This is the ordinary consequence of the approved model and is
-stated here because it is easy to read a green branch as a hardened site.
+**Production tracks `main`.** Anything on a slice branch is live only in preview
+until the branch is merged. This is the ordinary consequence of the approved
+model and is stated here because it is easy to read a green branch as a hardened
+site. (The S6 response security headers, MTS-OBS-048, were branch-only when this
+was first written; they merged and are verified live.)
+
+As of 2026-09-14 production serves merge commit `fcb30f5` (PR #13). The prior
+production deployment, `f7e1f8b`, is the rollback target a drill would promote.
 
 ---
 
@@ -98,20 +102,30 @@ append-only history of what the database actually did.
 
 | Step | Status | Evidence |
 |---|---|---|
-| `pnpm check` green from a deleted `.next` | run, green | 2026-09-09; 151 unit tests, exit 0 |
-| Browser suite, five local projects | run | 2026-09-09/10; 677 passed, 22 failed, 1 skipped, 1.4h at two workers |
-| Those 22 re-run serially | run | 21 passed at one worker — runner contention, not defects. The twenty-second is MTS-OBS-053, an intermittent focus assertion that passed 6/6 on this branch and 6/6 on `origin/main` when re-measured quietly |
-| Browser suite incl. WebKit | not run here | CI only (MTS-EXC-002); runs on the pull request |
-| Hosted deny paths (`inquiries:check:hosted`) | run, green | 2026-09-09, against project `vorxftvgvycrgduenark` |
-| Production response security headers | run, green | 2026-09-09; all six read back live, closing MTS-OBS-048 |
+| `pnpm check` green from a deleted `.next` (earlier run) | run, green | 2026-09-09; 151 unit tests, exit 0 |
+| Browser suite, five local projects (earlier run) | run | 2026-09-09/10; 677 passed, 22 failed, 1 skipped, 1.4h at two workers — superseded by the QA-pass run below |
+| Those 22 re-run serially | run | 21 passed at one worker — runner contention. The twenty-second was MTS-OBS-053, later found to be a real focus defect and fixed in the QA pass |
+| Browser suite, five local projects (combined QA pass) | run, green | 2026-09-10, at one worker on `55b9357` plus the uncommitted QA additions: 904 passed, 0 failed, 1 skipped. Local evidence for the QA tree, not for final `main` |
+| `pnpm check` (combined QA pass) | run, green | 2026-09-10, from a deleted `.next`: 151 unit tests passed, 1 skipped (the live-delivery harness) |
+| Browser suite incl. WebKit — pull request #13 head `383c780` | run, green | CI run 34842941040, 2026-09-14: 1,083 passed, 1 flaky (a WebKit `page.goto` internal error before any assertion, passed on retry), 2 skipped |
+| Browser suite incl. WebKit — merge commit `fcb30f5` on `main` | run, green | CI run 34852162894, 2026-09-14: checks (151 unit passed, 1 skipped), evidence (clean-database reproduction), browsers (1,084 passed, 2 skipped, 0 failed, 0 flaky) — the final merged-tree evidence |
+| Production serves the merged build | run, green | 2026-09-14, by request: all ten public routes 200, both API routes 405 to GET, all six security headers present, and the `fcb30f5` pillar-hue classes present in the served HTML |
+| Hosted deny paths (`inquiries:check:hosted`) | run, green | 2026-09-09, and again 2026-09-10 after the landing migration, against project `vorxftvgvycrgduenark`. No inquiry migration has changed since; not re-run |
+| Production response security headers | run, green | 2026-09-09; all six read back live, closing MTS-OBS-048; re-read 2026-09-14 |
 | Migration `20260909000005` applied to the hosted project | run, green | 2026-09-10, `pnpm inquiries:migrate:hosted`; deny paths re-proved after |
-| MDS QA protocol executed and recorded | run | 2026-09-10; `mds/qa/MDS-QA-REPORT-R1.md` — Gate 1 PASS, Gate 3 PASS, Gate 2 rendered and compared with five findings for owner ruling |
+| Production inquiry path end to end (MTS-OBS-049) | run, green | 2026-09-09 on owner instruction: one marked verification inquiry acknowledged with delivery accepted by Resend. It was then redacted through the approved path, `public.redact_inquiry`; only bounded deduplication and operational metadata remain, and the original inquiry content is not stored. This activity must be excluded from MPS-MET-003 and every conversion figure |
+| Production sending domain | **not confirmed** | production delivery was accepted, but whether `RESEND_FROM_EMAIL` is a verified domain or the sandbox sender is not observable from the repository; owner to confirm |
+| Production measurement event reaches the hosted table | **not observed** | needs a read-only query with owner access |
+| Edge request rate limiting (MTS-OBS-037) | **not configured / not recorded** | owner action in Vercel; the in-database counters still bound what reaches the store |
+| MDS QA protocol executed and recorded | run | 2026-09-10; `mds/qa/MDS-QA-REPORT-R1.md` — Gate 1 PASS, Gate 3 PASS. Every Gate 2 finding ruled on by the owner 2026-09-14; F001 and F002 fixed and renders recaptured on `chore/r1-closeout` |
 | MPS QA protocol executed and recorded | run, green | 2026-09-10; `mps/qa/MPS-QA-REPORT-R1.md` — all sixteen acceptance criteria |
-| MTS QA protocol executed and recorded | run | 2026-09-10; `mts/qa/MTS-QA-REPORT-R1.md` — pass with two owner actions outstanding |
-| Preview deployment reviewed against MDS references | **not run** | needs a preview deployment of this branch |
-| MDS Gate 2 owner sign-off | **not run** | owner action; the renders and the comparison are ready in `mds/qa/renders/` and `mds/qa/MDS-QA-REPORT-R1.md` §4 |
+| MTS QA protocol executed and recorded | run | 2026-09-10; `mts/qa/MTS-QA-REPORT-R1.md` — pass with owner actions outstanding |
+| Preview deployment reviewed against MDS references | **not run** | a preview deployment exists for every pull request (for example `383c780`); an owner review has not been recorded |
+| MDS Gate 2 owner sign-off | **not run** | withheld by the owner until the recaptured comparison is reviewed |
+| Formal S6 release approval | **not run** | owner checkpoint |
 | Preview environment variables set separately from production | **not run** | owner action in the Vercel dashboard |
 | Preview-safe notification destination confirmed | **not run** | owner action; the application-side labelling is in place (§5) |
+| Separate Supabase project for preview (MTS-DEV-003) | **not run** | owner action; the rest is scripted (§5) |
 | Promote a prior deployment (rollback drill) | **not run** | owner action; needs Vercel access |
 | Post-rollback inquiry data intact | **not run** | follows the drill |
 

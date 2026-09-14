@@ -8,25 +8,37 @@ severity-ranked, buyer-readable evidence with an authorized-review inquiry path.
 **Project ID:** `POB-2026-36-02` · **Release:** R1 — Portfolio Launch-Readiness Proof
 **Owner / decision authority:** Josh Coley
 
+**Production:** <https://supabase-saas-launch-readiness-lab.vercel.app/> ·
+**Repository:** <https://github.com/Jcoley-Mercurius/supabase-saas-launch-readiness-lab>
+
 ---
 
 ## Current status
 
-| System           | Version    | Lifecycle | Gate                                                                 |
-| ---------------- | ---------- | --------- | -------------------------------------------------------------------- |
-| MPS — Product    | v1.1       | approved  | Approval/handoff complete; product validation pending implementation |
-| MDS — Design     | v1.0       | approved  | Gate 7 handoff complete                                              |
-| MTS — Technology | v0.6-draft | draft     | Gates 1–6 complete; Gate 7 implementation-readiness in progress      |
+Reconciled 2026-09-14.
 
-**Application:** P0 through S4 are approved and merged to `main`. S5, the authorized-review inquiry
-path, is implemented on `slice/s5-inquiry-path` and awaiting the owner checkpoint. Every approved
-route now renders its approved content — the S1 build-state notice is gone from the last route that
-carried it.
+| System           | Version    | Lifecycle | Gate / QA state                                                                                                      |
+| ---------------- | ---------- | --------- | -------------------------------------------------------------------------------------------------------------------- |
+| MPS — Product    | v1.1       | approved  | R1 implementation QA **PASS** (all 16 acceptance criteria); product-validation closeout awaits the owner             |
+| MDS — Design     | v1.0       | approved  | QA Gate 1 **PASS**, Gate 3 **PASS**; Gate 2 **review required** — owner sign-off withheld pending recaptured renders |
+| MTS — Technology | v0.6-draft | draft     | Gates 1–6 complete; R1 QA **PASS WITH OPEN OWNER ACTIONS**; Gate 7 and verification closeout await the owner         |
 
-**Next action:** rule on the S5 checkpoint (`MTS-OBS-034`–`043` in
-[mts/MTS-PROJECT-STATE.yaml](mts/MTS-PROJECT-STATE.yaml)), then S6. Two S5 items need an owner
-action rather than a ruling: **nothing schedules the retention command**, and **no real inquiry
-notification has ever been sent**. See [mts/MERCURIUS-BUILD-ROADMAP.md](mts/MERCURIUS-BUILD-ROADMAP.md).
+**Application:** P0 through S6 are merged to `main` (S6 as `fcb30f5`, PR #13) and Vercel production
+serves that build. The post-merge `verify` run (34852162894) is green on checks, clean-database
+evidence reproduction, and the browser matrix including WebKit. R1 is **deployed but not formally
+released**: the owner S6 checkpoint has not been recorded.
+
+**In progress:** the R1 closeout on `chore/r1-closeout` — the owner's MDS Gate 2 rulings
+(2026-09-14), recaptured Gate 2 renders, and this status reconciliation.
+
+**Still open (owner):** MDS Gate 2 sign-off · formal S6 release approval · the production rollback
+drill · a separate Supabase project for preview (`MTS-DEV-003`) · preview-scope environment values
+and a preview-safe notification destination · edge request rate limiting (`MTS-OBS-037`) ·
+confirming the production sending domain · observing a production measurement event in the hosted
+table. Until preview has its own Supabase project, **do not submit test inquiries on preview
+deployments** — they write to the production store. Details:
+[mts/RELEASE-AND-ROLLBACK.md](mts/RELEASE-AND-ROLLBACK.md) and
+[mts/MERCURIUS-BUILD-ROADMAP.md](mts/MERCURIUS-BUILD-ROADMAP.md).
 
 ## Governance model
 
@@ -58,7 +70,7 @@ implementation work**. `CLAUDE.md` imports it and additionally hosts the Next.js
 | Data               | Supabase Postgres — inquiry persistence and bounded synthetic evidence only |
 | Authorization      | PostgreSQL grants + Supabase RLS, with tested allow/deny behavior           |
 | Inquiry delivery   | Resend, server-side, after verified domain setup                            |
-| Measurement        | First-party measurement boundary; PostHog conditional                       |
+| Measurement        | First-party boundary into the project's own Supabase Postgres (MTS-DEC-016) |
 | Verification       | Playwright Test                                                             |
 | Evidence execution | Custom bounded synthetic scenario engine                                    |
 
@@ -89,29 +101,27 @@ pnpm dev          # http://localhost:3000
 | `pnpm evidence:verify`              | Re-records the transcripts from a clean database and compares byte for byte                                                           |
 | `pnpm inquiries:check`              | Builds the inquiry schema in its own database and runs the inquiry authorization, duplicate, abuse-control, and retention checks      |
 | `pnpm inquiries:check:hosted`       | Runs the same authorization deny/allow assertions against the real Supabase project through the Management API (no database password) |
+| `pnpm inquiries:migrate:hosted`     | Applies one inquiry migration to a hosted project through the Management API; refuses files outside `supabase/inquiry/migrations`     |
 | `pnpm inquiries:retain`             | Operator retention: redacts inquiry content 12 months after latest activity (`--dry-run`, `--delete <uuid>`)                          |
+| `pnpm qa:capture`                   | MDS QA Gate 2 render capture into `mds/qa/renders/` — evidence for owner comparison, not a gate                                       |
 
 ### Browser verification
 
-`playwright.config.ts` is a baseline harness only — it asserts no product behavior. Viewport
-projects match the approved MDS breakpoints (mobile 390, tablet 768, desktop 1200, wide 1440) and
-run on Chromium and Firefox. `e2e/smoke.spec.ts` confirms the app serves and the pipeline runs;
-scenario, evidence, report, and inquiry specs arrive with their own slices.
+`playwright.config.ts` builds and serves a production build for every run (`reuseExistingServer:
+false`, MTS-DEC-011) and runs the specs in `e2e/`: the slice suites (`s1`–`s6`) and the MDS QA
+Gate 1 and Gate 3 suites. Viewport projects match the approved MDS breakpoints (mobile, tablet 768,
+desktop 1200, wide 1440) on Chromium, plus Firefox desktop.
 
-The per-test timeout is 60s because Next's dev server compiles routes on demand and parallel
-workers otherwise exceed Playwright's 30s default on a cold start.
-
-**WebKit runs in CI only.** Its binaries are installed here, but it needs 121 system packages on
-this Ubuntu 26.04 host (the full GStreamer stack, Mesa, GTK4, ONNX Runtime). The owner decision is
-to skip that local install and take WebKit evidence from a CI runner using a Playwright image that
-ships the dependencies. Set `PLAYWRIGHT_WEBKIT=1` to add the `webkit-desktop` project:
+**WebKit runs in CI only** (MTS-EXC-002). It needs 121 system packages on this Ubuntu 26.04 host,
+so WebKit evidence comes from the `verify` workflow (`.github/workflows/verify.yml`), which runs on
+every pull request and on `main`. Set `PLAYWRIGHT_WEBKIT=1` to add the `webkit-desktop` project:
 
 ```bash
 PLAYWRIGHT_WEBKIT=1 pnpm test:e2e
 ```
 
-The CI workflow itself is not wired yet — that belongs to S6 (release and combined verification),
-along with recording this verification decision in the MTS canonical state.
+CI runs three jobs — checks, clean-database evidence reproduction, and the full browser matrix at
+one worker. Retention runs monthly from `.github/workflows/retention.yml`.
 
 `pnpm typecheck` runs `next typegen` first because Next generates route types (`LayoutProps` and
 friends) into `.next/types`; a bare `tsc --noEmit` fails on a clean tree without it.
@@ -121,7 +131,10 @@ friends) into `.next/types`; a bare `tsc --noEmit` fails on a clean tree without
 ```
 AGENTS.md                     Merged agent operating contract (read first)
 CLAUDE.md                     Imports AGENTS.md; hosts the Next.js-managed agent block
-app/                          Next.js App Router source (starter scaffold)
+app/                          Next.js App Router routes and API routes
+components/, lib/             UI components; evidence, inquiry, measurement, and content modules
+supabase/                     Synthetic fixture migrations and the separate inquiry/measurement set
+qa/                           MDS Gate 2 render capture (not a gate)
 public/                       Static assets
 e2e/                          Playwright specs
 playwright.config.ts          Browser-verification harness (MDS breakpoint projects)
@@ -172,10 +185,10 @@ at every checkpoint. Details in [mts/MERCURIUS-BUILD-ROADMAP.md](mts/MERCURIUS-B
 
 ## Owner prerequisites (not performed by an agent)
 
-1. Git repository — exists: `Jcoley-Mercurius/supabase-saas-launch-readiness-lab`
-2. Vercel project with separate preview and production environments
-3. Isolated Supabase projects/environments for preview, test, and production
-4. Verified Resend sending domain and a notification destination
+1. Git repository — done: `Jcoley-Mercurius/supabase-saas-launch-readiness-lab`
+2. Vercel project — connected 2026-09-09; **preview-scope values not yet set separately from production**
+3. Isolated Supabase environments — local fixture and the hosted inquiry project exist; **a separate preview project does not** (`MTS-DEV-003`)
+4. Resend — production delivery verified 2026-09-09; **verified sending-domain status unconfirmed**, preview-safe destination not configured
 5. Private environment values configured in the dashboards — **never** in source, prompts, logs, or commits
 
 Production promotion, paid upgrades, and secret activation are explicit owner actions and are not

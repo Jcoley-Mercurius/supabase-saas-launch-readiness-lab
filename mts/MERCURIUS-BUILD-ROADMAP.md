@@ -4,8 +4,8 @@ Status: Gate 7 implementation-readiness draft
 Consumed: MPS v1.1 → MDS v1.0 → MTS v0.6-draft
 Classification: greenfield
 Current phase: S6 combined QA and release
-Current slice: S6 — not started
-Readiness: P0, S1, S2, S3, S4 and S5 verified and approved. S5 merged to `main` as `c3515f8` (PR #8) and the post-merge `verify` run went green on all three jobs. The whole inquiry path — store, deduplication, credential guard, authorization boundary, and notification — was proved against the real isolated project with a real submission and a real email, and one hosted-only privilege defect was found and fixed in the process (`MTS-OBS-044`). All thirteen checkpoint observations are ruled on and none remains open. The retention workflow has now run for real: its first dispatch reported 0 records due and 0 redacted, printing counts and no content.
+Current slice: S6 — merged to `main` as `fcb30f5` (PR #13, 2026-09-14); R1 closeout reconciliation in progress on `chore/r1-closeout`; awaiting the owner S6 checkpoint
+Readiness (reconciled 2026-09-14): P0 through S5 verified and approved; S6 implemented, merged, and deployed to production, with its combined MPS/MDS/MTS QA recorded (`mps/qa/MPS-QA-REPORT-R1.md` PASS, `mds/qa/MDS-QA-REPORT-R1.md` REVIEW REQUIRED pending Gate 2 sign-off, `mts/qa/MTS-QA-REPORT-R1.md` PASS WITH OPEN OWNER ACTIONS). The S5 history follows. S5 merged to `main` as `c3515f8` (PR #8) and the post-merge `verify` run went green on all three jobs. The whole inquiry path — store, deduplication, credential guard, authorization boundary, and notification — was proved against the real isolated project with a real submission and a real email, and one hosted-only privilege defect was found and fixed in the process (`MTS-OBS-044`). All thirteen checkpoint observations are ruled on and none remains open. The retention workflow has now run for real: its first dispatch reported 0 records due and 0 redacted, printing counts and no content.
 
 ## Approved route
 
@@ -15,7 +15,9 @@ P0 Bootstrap → S1 Public Shell → S2 Evidence/RLS → S3 Replay/Recovery → 
 
 Create the standalone Git repository, Vercel project, isolated Supabase environments, verified Resend domain, and private environment values. These actions are not silently performed by the coding agent.
 
-Status as of 2026-09-08: the repository, the isolated Supabase environments (local fixture plus the dedicated hosted inquiry project), and the private environment values are all in place. Two remain, both S6 and both owner-gated: the **Vercel project**, which blocks preview and production deployment, and a **verified Resend from-domain for production** plus a preview destination that cannot deliver to a real buyer. Neither blocked S5 — a real notification was sent and accepted on 2026-09-08.
+Status as of 2026-09-14: the repository, the Vercel project (connected 2026-09-09), the dedicated hosted inquiry project, and the private environment values are in place, and production delivery of the inquiry notification was verified on 2026-09-09 (`MTS-OBS-049`). Still owner-gated: a second Supabase project for preview (`MTS-DEV-003`), preview-scope environment values and a preview-safe notification destination, confirmation of whether the production sender is a verified domain, and edge request rate limiting (`MTS-OBS-037`).
+
+Historical status as of 2026-09-08: the repository, the isolated Supabase environments (local fixture plus the dedicated hosted inquiry project), and the private environment values are all in place. Two remain, both S6 and both owner-gated: the **Vercel project**, which blocks preview and production deployment, and a **verified Resend from-domain for production** plus a preview destination that cannot deliver to a real buyer. Neither blocked S5 — a real notification was sent and accepted on 2026-09-08.
 
 ## Phase route
 
@@ -43,7 +45,7 @@ The current manifest is mts/AGENT-SKILL-MANIFEST.yaml. Required skills are MTS m
 | S3 | approved | `pnpm check` green from a deleted `.next`; `pnpm evidence:verify` green against a live database (8/8 steps — both transcripts reproduced byte for byte from a clean database, twice); 12 SQL fixture-safety checks; 79 unit tests; 405 Playwright checks against a build confirmed to contain the change under test (324 chromium desktop/wide/tablet/mobile at 8 workers, 0 failed and 0 flaky; 81 firefox-desktop at 1 worker); WebKit remains CI-only under MTS-EXC-002 |
 | S4 | approved | Merged to `main` as `ff89b28`. Owner approved `MTS-OBS-028`–`033` (`MTS-CHG-010`) and confirmed `MDS-GAP-S4-001` (`MDS-CHG-003`) on 2026-09-07.  `pnpm check` green from a deleted `.next` (91 unit tests, including 12 that recompute every published report count straight from the transcript JSON); 500 Playwright checks across five projects at 1 worker — 500 passed, 0 failed, 0 flaky, in 8.1 minutes against a production build the suite built and served itself; three of those checks run in the print medium itself; WebKit remains CI-only under MTS-EXC-002 |
 | S5 | approved | Merged to `main` as `c3515f8`; post-merge `verify` green on all three jobs (run 34277038707). 12 SQL inquiry checks green against a real database (authorization deny paths, RLS, isolation, accept, duplicate, abuse control, delivery metadata, retention, manual deletion, credential patterns); 125 unit tests green, 34 of them new (33 at implementation plus the duplicate follow-up-alert test added by the `MTS-OBS-038` ruling), including 8 that walk the static import graph to enforce the `MTS-RISK-001` residual; 23 new browser checks per project covering all eight approved inquiry states, the responsive transformation, keyboard order, focus, contrast, and the route boundary; `pnpm check` green from a deleted `.next`. The Resend delivery half was then proved with a real message sent and accepted, closing `MTS-OBS-042`, and `.github/workflows/retention.yml` was dispatched and observed green (run 34277980502), closing `MTS-OBS-039` |
-| S6 | in progress | Branch `slice/s6-combined-qa-release`. MDS Gate 2 fidelity merged ahead of the slice record as PR #10 (`2c848b2`): `MDS-CHG-004`, `MDS-CHG-005`, and a repair to two browser checks that had encoded the composition around them. The Vercel project was connected on 2026-09-09 and is verified serving the merged build, closing the last owner prerequisite. **Two items are blocked and not started**: the measurement boundary, because `MTS-CAP-008` still carries `approved_selection: null` and choosing a provider is an owner decision; and the release gate, because CI is red on `main` under `MTS-OBS-047`. Still carries in `MTS-OBS-037` (edge rate limiting), `MTS-OBS-042` (a verified from-domain for production and preview-environment delivery), and `MTS-OBS-044` (`pnpm inquiries:check:hosted` as a release gate) |
+| S6 | merged — awaiting owner checkpoint | Merged to `main` as `fcb30f5` (PR #13, 2026-09-14) after PRs #10, #11 and #12; post-merge `verify` run 34852162894 green on all three jobs (1,084 browser checks passed, 2 skipped, 0 failed, 0 flaky, WebKit included; 151 unit tests passed, 1 skipped); Vercel production deployed `fcb30f5` and was confirmed serving it. Delivered: MDS Gate 2 fidelity (`MDS-CHG-004`, `-005`), the CI gate hardening and response security headers (`MTS-OBS-047`, `-048`), the first-party measurement boundary (`MTS-DEC-016`, `MTS-CHG-019`–`021`), the landing migration applied and made a reviewed script (`MTS-OBS-052`, `MTS-CHG-022`), the production inquiry path verified (`MTS-OBS-049`), the combined QA pass and the acknowledgement-focus fix (`MTS-OBS-053`), and the pillar-hue tokens (`MDS-CHG-006`). Earlier blockers — the measurement provider decision and CI red on `main` — are both resolved. Open at the checkpoint: see Next action |
 
 Open S1 items carried into the S2 checkpoint are MTS-DEV-001, MTS-DEV-002 (now partially resolved), and MTS-OBS-001 through MTS-OBS-004. **Both MDS gaps are closed**: `MDS-GAP-S1-001` by the approved `color.border.control` token and `MDS-GAP-S1-002` by applying the COMPONENTS-PROPOSAL evidence-state shapes, together recorded as `MDS-CHG-001`.
 
@@ -116,24 +118,31 @@ The deny assertions were already right, and had passed 12/12 locally on every ru
 
 ## Next action
 
-**S5 is complete, merged, and verified on `main`. No observation, gap, exception, or deviation is open anywhere in the MDS or MTS state.** The owner ruled on all thirteen S5 observations on 2026-09-08: ten confirmed, `MTS-OBS-038` decided and implemented, `MTS-OBS-039` resolved by the retention workflow, and `MTS-OBS-042` resolved by a real notification sent and accepted.
+**Reconciled 2026-09-14.** S6 is merged and deployed; R1 is not yet formally released or closed. The earlier "Next action" text (S5 closeout, the measurement-provider decision, and the red CI gate) is superseded: all of it happened and is recorded in `mts/MTS-PROJECT-STATE.yaml`.
 
-Three rules are now binding on everything that follows:
+Three rules from S5 remain binding on everything that follows:
 
 1. **A deny assertion proves nothing about an environment it has not run in.** Any schema applied to a hosted project has its deny paths re-run there (`MTS-OBS-044`).
 2. **An operator guard distinguishes environments by host, never by database name** (`MTS-OBS-045`).
 3. **No credential-shaped literal enters this repository, not even a published example.** Assemble it at runtime, and never resolve a push-protection block by allowlisting (`MTS-OBS-046`).
 
-**S5 closeout is done.** [PR #8](https://github.com/Jcoley-Mercurius/supabase-saas-launch-readiness-lab/pull/8) merged as `c3515f8`; the post-merge `verify` run on `main` (34277038707) went green on checks, evidence, and browsers. `.github/workflows/retention.yml` then became dispatchable — GitHub restricts `workflow_dispatch` to workflows present on the default branch — and its first run (34277980502) reported `0 inquiry record(s) are past 12 months of inactivity` on the dry run and `0 inquiry record(s) redacted (was 0 due)` on the real pass, printing counts and no content. Retention is now an unattended monthly process rather than an available command, which is what `MPS-REQ-015` asks for.
+**In progress — R1 closeout (`chore/r1-closeout`).** The owner ruled on the MDS Gate 2 findings on 2026-09-14: F001 and F002 are fixed in code, F005 is approved as `MDS-EXC-001`, F006's mobile order is written into DESIGN-SYSTEM §12 and AGENTS.md, and F007 is accepted for R1 with evidence navigation as an R2 investigation candidate. The stale status records are reconciled and the Gate 2 renders recaptured from the resulting tree.
 
-**S6 is open** on `slice/s6-combined-qa-release`: the measurement boundary, combined QA, the preview release, and the rollback record. Three S5 items are carried into it — edge rate limiting (`MTS-OBS-037`), a verified from-domain for production plus preview-environment delivery (`MTS-OBS-042`), and `pnpm inquiries:check:hosted` as a release gate against the preview and production projects (`MTS-OBS-044`).
+**Owner decisions still open:**
 
-The owner connected the repository to Vercel on 2026-09-09, which closes the last outstanding prerequisite. The deployment answers on all six approved routes and was confirmed to be serving the merged S6 build rather than an earlier one, because `MTS-OBS-014` records that a green result against an unconfirmed build is not evidence.
+- MDS Gate 2 visual sign-off, withheld until the recaptured comparison is reviewed.
+- Formal S6 release approval, and whether to record MPS product validation, MDS compliance, and MTS Gate 7 and verification as closed.
 
-**Two owner decisions gate the rest of S6, and neither can be taken on agent authority:**
+**Owner operations still open (none may be recorded as passed until performed and observed):**
 
-1. **The measurement provider.** `MTS-CAP-008` carries `approved_selection: null` and `implementation_status: absent`. The blueprint describes the boundary as `conditional_PostHog`, but that is an architecture note rather than an approved selection, and `MPS-MET-001` through `MPS-MET-005` stay unsatisfied until the choice is made. Connecting Vercel did not make it.
-2. **The CI verification gate** (`MTS-OBS-047`). Both apt-using jobs fail on `main` against a third-party source the runner image ships and this project never installs from. A release gate cannot be certified while it cannot run, and the same failure can recur during the release itself.
+| Item | Blocking effect |
+|---|---|
+| Production rollback drill (`mts/RELEASE-AND-ROLLBACK.md` §3) | Full MTS closeout; recommended before any promotion push |
+| Second Supabase project for preview (`MTS-DEV-003`) | Preview conformity and MTS closeout. Until it exists, do not submit test inquiries on preview deployments: they write to the production store |
+| Preview-scope environment values | Preview conformity |
+| Preview-safe notification destination | Preview conformity |
+| Edge request rate limiting (`MTS-OBS-037`) | MTS closeout; recommended before promotion |
+| Confirm whether the production sender is a verified domain | MTS closeout (`resend_verified_domain_and_preview_safe_destination`) |
+| Observe a production measurement event in the hosted measurement table | MTS closeout (`MTS-CAP-008`) |
 
-What is unblocked and needs no decision: the combined MPS/MDS/MTS QA pass against the merged build, and wiring `pnpm inquiries:check:hosted` against the existing inquiry project.
-
+**Then:** the portfolio-polish slice under `MPS-DEC-008` through `MPS-DEC-013`, its QA, the promotion package after the rollback drill, and — separately and outside R1 — an MPS Gate 1 for any read-only scanner.

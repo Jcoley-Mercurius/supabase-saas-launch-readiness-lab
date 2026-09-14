@@ -4,6 +4,10 @@ Status: Gate 7 implementation-readiness draft
 Project mode: greenfield
 Consumed: MPS v1.1, MDS v1.0, MTS v0.6-draft
 
+## Implementation status (reconciled 2026-09-14)
+
+This plan is the approved Gate 7 slice plan and is kept as written. All of P0 and S1–S6 are implemented and merged to `main` (S6 as `fcb30f5`, PR #13) and production is deployed from it; the owner S6 checkpoint and Gate 7 closeout are not yet recorded. Two recorded differences apply to the text below: the repository is flattened to the root (`app/`, `components/`, `lib/`, `e2e/`, `tests/unit/`) instead of the planned `src/` and `tests/` layout, under MTS-EXC-001; and rollback promotes the prior known-good **production** deployment and then reverts on `main`, never touching inquiry data — the operative procedure is `mts/RELEASE-AND-ROLLBACK.md` §3, where the drill is recorded as not run.
+
 ## Bootstrap command lane (WSL/Ubuntu)
 
 Run from the user-selected parent directory. Do not run against a production directory.
