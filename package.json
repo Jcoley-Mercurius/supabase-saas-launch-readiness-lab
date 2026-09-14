@@ -22,7 +22,8 @@
     "inquiries:retain": "node scripts/retain-inquiries.mjs",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm evidence:check && pnpm test:unit && pnpm build",
     "test:unit": "NODE_OPTIONS=--conditions=react-server playwright test --config playwright.unit.config.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "qa:capture": "playwright test --config playwright.capture.config.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",

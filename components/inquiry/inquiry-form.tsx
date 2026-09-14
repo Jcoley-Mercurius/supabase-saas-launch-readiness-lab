@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -103,21 +103,47 @@ export function InquiryForm() {
    * other outcome sends it to the panel that explains what happened. Both are
    * the result of the buyer pressing submit, so neither is a surprise.
    */
+  /*
+   * The move is requested here and performed in an effect, AFTER React has
+   * committed the outcome.
+   *
+   * It used to be done in a requestAnimationFrame callback, and that could run
+   * before the commit. The live region carries `empty:hidden`, so while it
+   * still has no children it is `display: none` - and `focus()` on a hidden
+   * element is a silent no-op that never retries. Focus then stayed where the
+   * submit button had been, and a keyboard or screen-reader buyer was never
+   * taken to the acknowledgement. Intermittent, because it depended on whether
+   * the frame beat the commit: recorded as MTS-OBS-053 and reproduced at one
+   * worker during the S6 QA pass.
+   *
+   * An effect cannot lose that race. It runs after the commit, so the region
+   * has its children and is no longer `:empty`.
+   */
+  /**
+   * What the next commit should focus: the id of a control to correct, or
+   * `null` for the outcome panel itself. Resolved at request time so the effect
+   * below depends on nothing but the commit.
+   */
+  const pendingFocus = useRef<{ controlId: string | null } | null>(null);
+
   function focusOutcome(next: InquiryOutcome) {
-    requestAnimationFrame(() => {
-      if (next.state === "invalid") {
-        const first = Object.keys(next.errors)[0];
-        const control = first
-          ? formRef.current?.querySelector<HTMLElement>(
-              `#${CSS.escape(field(first))}`,
-            )
-          : null;
-        (control ?? outcomeRef.current)?.focus();
-        return;
-      }
-      outcomeRef.current?.focus();
-    });
+    const first =
+      next.state === "invalid" ? Object.keys(next.errors)[0] : undefined;
+    pendingFocus.current = { controlId: first ? field(first) : null };
   }
+
+  useEffect(() => {
+    const pending = pendingFocus.current;
+    if (!pending) return;
+    pendingFocus.current = null;
+
+    const control = pending.controlId
+      ? formRef.current?.querySelector<HTMLElement>(
+          `#${CSS.escape(pending.controlId)}`,
+        )
+      : null;
+    (control ?? outcomeRef.current)?.focus();
+  }, [outcome]);
 
   /*
    * MEASUREMENT (MPS-MET-003 qualified inquiry conversion, MPS-MET-005 buyer

@@ -105,7 +105,11 @@ append-only history of what the database actually did.
 | Hosted deny paths (`inquiries:check:hosted`) | run, green | 2026-09-09, against project `vorxftvgvycrgduenark` |
 | Production response security headers | run, green | 2026-09-09; all six read back live, closing MTS-OBS-048 |
 | Migration `20260909000005` applied to the hosted project | run, green | 2026-09-10, `pnpm inquiries:migrate:hosted`; deny paths re-proved after |
+| MDS QA protocol executed and recorded | run | 2026-09-10; `mds/qa/MDS-QA-REPORT-R1.md` — Gate 1 PASS, Gate 3 PASS, Gate 2 rendered and compared with five findings for owner ruling |
+| MPS QA protocol executed and recorded | run, green | 2026-09-10; `mps/qa/MPS-QA-REPORT-R1.md` — all sixteen acceptance criteria |
+| MTS QA protocol executed and recorded | run | 2026-09-10; `mts/qa/MTS-QA-REPORT-R1.md` — pass with two owner actions outstanding |
 | Preview deployment reviewed against MDS references | **not run** | needs a preview deployment of this branch |
+| MDS Gate 2 owner sign-off | **not run** | owner action; the renders and the comparison are ready in `mds/qa/renders/` and `mds/qa/MDS-QA-REPORT-R1.md` §4 |
 | Preview environment variables set separately from production | **not run** | owner action in the Vercel dashboard |
 | Preview-safe notification destination confirmed | **not run** | owner action; the application-side labelling is in place (§5) |
 | Promote a prior deployment (rollback drill) | **not run** | owner action; needs Vercel access |
