@@ -28,7 +28,7 @@ All nine references are approved and canonical. Gate 5 is complete with no open 
 
 ## R1 implementation reconciliation (MDS QA Gate 2, 2026-09-14)
 
-Added after the R1 combined QA pass compared rendered output against these references (`mds/qa/MDS-QA-REPORT-R1.md` §4). Each entry records how a difference between a reference and the written MDS was resolved, by owner ruling. The Gate 5 record above is unchanged. Gate 2 sign-off itself is recorded in the QA report, not here.
+Added after the R1 combined QA pass compared rendered output against these references (`mds/qa/MDS-QA-REPORT-R1.md` §4). Each entry records how a difference between a reference and the written MDS was resolved, by owner ruling. The Gate 5 record above is unchanged. Gate 2 sign-off itself is recorded in the QA report (§13), not here: Josh Coley approved the recaptured comparison on 2026-09-14, and MDS compliance is PASS WITH APPROVED EXCEPTIONS with MDS-EXC-001 the only exception.
 
 | Finding | Reference | Difference | Owner ruling (Josh Coley, 2026-09-14) | Record |
 |---|---|---|---|---|

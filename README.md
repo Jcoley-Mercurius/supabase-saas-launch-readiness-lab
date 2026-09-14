@@ -17,21 +17,21 @@ severity-ranked, buyer-readable evidence with an authorized-review inquiry path.
 
 Reconciled 2026-09-14.
 
-| System           | Version    | Lifecycle | Gate / QA state                                                                                                      |
-| ---------------- | ---------- | --------- | -------------------------------------------------------------------------------------------------------------------- |
-| MPS — Product    | v1.1       | approved  | R1 implementation QA **PASS** (all 16 acceptance criteria); product-validation closeout awaits the owner             |
-| MDS — Design     | v1.0       | approved  | QA Gate 1 **PASS**, Gate 3 **PASS**; Gate 2 **review required** — owner sign-off withheld pending recaptured renders |
-| MTS — Technology | v0.6-draft | draft     | Gates 1–6 complete; R1 QA **PASS WITH OPEN OWNER ACTIONS**; Gate 7 and verification closeout await the owner         |
+| System           | Version    | Lifecycle | Gate / QA state                                                                                              |
+| ---------------- | ---------- | --------- | ------------------------------------------------------------------------------------------------------------ |
+| MPS — Product    | v1.1       | approved  | R1 implementation QA **PASS** (all 16 acceptance criteria); product-validation closeout awaits the owner     |
+| MDS — Design     | v1.0       | approved  | Compliance **PASS WITH APPROVED EXCEPTIONS** (MDS-EXC-001); Gate 2 signed off by the owner 2026-09-14        |
+| MTS — Technology | v0.6-draft | draft     | Gates 1–6 complete; R1 QA **PASS WITH OPEN OWNER ACTIONS**; Gate 7 and verification closeout await the owner |
 
 **Application:** P0 through S6 are merged to `main` (S6 as `fcb30f5`, PR #13) and Vercel production
 serves that build. The post-merge `verify` run (34852162894) is green on checks, clean-database
 evidence reproduction, and the browser matrix including WebKit. R1 is **deployed but not formally
 released**: the owner S6 checkpoint has not been recorded.
 
-**In progress:** the R1 closeout on `chore/r1-closeout` — the owner's MDS Gate 2 rulings
-(2026-09-14), recaptured Gate 2 renders, and this status reconciliation.
+**R1 closeout:** merged as `739b2a7` (PR #14) — the owner's MDS Gate 2 rulings, recaptured Gate 2
+renders, and status reconciliation. MDS Gate 2 was signed off by the owner on 2026-09-14.
 
-**Still open (owner):** MDS Gate 2 sign-off · formal S6 release approval · the production rollback
+**Still open (owner):** formal S6 release approval · the production rollback
 drill · a separate Supabase project for preview (`MTS-DEV-003`) · preview-scope environment values
 and a preview-safe notification destination · edge request rate limiting (`MTS-OBS-037`) ·
 confirming the production sending domain · observing a production measurement event in the hosted

@@ -83,7 +83,7 @@ None of these is recorded as passing, and none may be until it is performed and 
 - Edge request rate limiting (MTS-OBS-037) — carried to S6, never recorded as configured
 - Confirmation of whether the production sender is a verified domain
 - Observation of a production measurement event in the hosted measurement table
-- MDS Gate 2 owner sign-off and formal S6 release approval
+- Formal S6 release approval (MDS Gate 2 owner sign-off was given 2026-09-14; MDS compliance PASS WITH APPROVED EXCEPTIONS)
 
 ## Result
 

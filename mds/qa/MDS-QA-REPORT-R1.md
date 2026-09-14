@@ -1,9 +1,9 @@
 # Supabase SaaS Launch-Readiness Lab — MDS QA Compliance Report (R1)
 
 Protocol: `mds/qa/MDS-QA.md`
-Status: **REVIEW REQUIRED** — Gate 1 and Gate 3 executed and passed; every Gate 2 finding ruled on by the owner (2026-09-14); Gate 2 sign-off withheld until the owner reviews the comparison recaptured after the F001 and F002 fixes (§12)
-Reviewer: Claude (agent execution) — Gate 2 visual judgement reserved to Josh Coley
-Date: 2026-09-10 (QA execution); reconciled 2026-09-14 (owner rulings, fixes, recapture)
+Status: **PASS WITH APPROVED EXCEPTIONS** — Gate 1 PASS, Gate 3 PASS, Gate 2 signed off by the owner on the recaptured comparison (Josh Coley, 2026-09-14; §13). Approved exception: MDS-EXC-001
+Reviewer: Claude (agent execution) — Gate 2 visual judgement given by Josh Coley
+Date: 2026-09-10 (QA execution); reconciled 2026-09-14 (owner rulings, fixes, recapture, Gate 2 sign-off)
 
 > This report records what was executed and measured. No gate result in it is
 > claimed from an unrun check, and no fidelity claim is made beyond the rendered
@@ -61,6 +61,7 @@ the next manual pass.
 | Engineering gate | `pnpm check` from a deleted `.next` | **151 unit tests passed, 1 skipped**, exit 0 |
 | Merged tree, CI | `verify` run 34852162894 on `fcb30f5` | **1,084 passed, 0 failed, 0 flaky, 2 skipped** across six projects including WebKit; 151 unit passed, 1 skipped |
 | Closeout tree, local | see §12 | F001/F002 fixes, targeted suites, recapture |
+| Closeout tree, CI (PR #14) | `verify` run 34864693783 on `38a2ddd` | Browsers: **1,080 passed, 0 failed, 2 flaky, 4 skipped**; checks: 151 unit passed, 1 skipped, build green; evidence reproduction green. The two flaky tests are WebKit navigation retries — see §13 |
 
 The skipped unit test is `inquiry-live-delivery.spec.ts`, which sends a real
 message and runs only under `INQUIRY_LIVE_DELIVERY=1`. It is recorded as skipped,
@@ -105,7 +106,7 @@ that files were written, and Gate 2 is a judgement, not an assertion.
 meaning, prohibited claims, unsafe inquiry fields, or systemic one-off component
 duplication. None is present.
 
-## 4. Gate 2 — visual fidelity: **REVIEW REQUIRED (owner sign-off)**
+## 4. Gate 2 — visual fidelity: **PASS WITH APPROVED EXCEPTIONS (owner sign-off 2026-09-14, §13)**
 
 ### Method
 
@@ -173,10 +174,9 @@ Two artefacts of the capture method, so they are not read as product defects:
 | MDS-QA-R1-F007 | minor | observation | MDS-REF-006 shows **one** before/after pair on the lab canvas. The implementation renders **eleven**, one per documented test, so the remediated lab is 13,564 px tall at 1440. Every pair is real evidence the fixture produced, and suppressing any of it would be the worse error, but the reference's single-screen density is not preserved. Ruling needed on whether the canvas should group, paginate, or collapse repeated pairs — which would be an MDS change, not an implementation choice. **Ruled 2026-09-14 (Josh Coley): accepted for R1.** Evidence completeness outranks density; documented test pairs are not hidden to shorten the page, and no collapsing, pagination, or representative-only evidence is introduced in R1. Improved evidence navigation, grouping, or summarization is an **R2 investigation candidate** only. **Closed — accepted, deferred.** |
 | MDS-QA-R1-F008 | observation | observation | At 1440 the landing display type wraps to three lines ("Supabase SaaS / Launch-Readiness / Lab") where MDS-REF-002 shows two. The type scale is correct (display 56/64, DESIGN-SYSTEM §5); the hero's left column is narrower than the board's because the evidence snapshot beside it is wider. Composition and hierarchy are preserved. |
 
-None of these is a critical or major deviation. Gate 2 cannot be marked PASS by
-the agent regardless: the protocol assigns that judgement to the owner, and the
-owner has withheld it until the comparison recaptured after the F001 and F002
-fixes is reviewed (§12).
+None of these is a critical or major deviation. The protocol assigns the Gate 2
+judgement to the owner. The owner reviewed the comparison recaptured after the
+F001 and F002 fixes (§12) and signed off Gate 2 on 2026-09-14 (§13).
 
 ## 5. Gate 3 — product quality: **PASS**
 
@@ -277,7 +277,7 @@ unit tests, and recorded in `mps/qa/MPS-QA-REPORT-R1.md`.
 | MDS-QA-R1-F008 | 2 | observation | observation | Open — no action proposed |
 | MDS-QA-R1-F009 | 1 | observation | observation | Open — no action proposed |
 | MDS-QA-R1-F010 | 3 | **major** | DEVIATION | **Closed in this pass** — found, cause identified, fixed, verified |
-| MDS-QA-R1-F011 | 1 | observation | observation | Open — no action proposed (recorded 2026-09-14) |
+| MDS-QA-R1-F011 | 1 | observation | observation | Open — accepted by the owner 2026-09-14 as non-blocking; no action proposed |
 
 Counts, still open (reconciled 2026-09-14): **0 critical, 0 major, 0 minor, 4 observations** (F003, F008, F009, F011), none proposing action. One approved exception (MDS-EXC-001). At QA execution on 2026-09-10 the open count was 0 critical, 0 major, 5 minor, 4 observations. One major
 deviation (MDS-QA-R1-F010) was found and closed inside this pass. No prohibited claim, no
@@ -448,9 +448,9 @@ in the QA pass.
 **Accepted and deferred:** F007 — the fully expanded evidence canvas stands for R1;
 evidence navigation, grouping, or summarization is an R2 investigation candidate.
 
-**Blockers to an MDS PASS:** none of the release-rule conditions is met. The single
-remaining condition is Gate 2 sign-off, which the owner has withheld until the
-comparison recaptured after the fixes has been reviewed (§12).
+**Blockers to an MDS PASS:** none. Gate 2 sign-off, the last remaining condition,
+was given by the owner on 2026-09-14 after reviewing the recaptured comparison
+(§12, §13).
 
 **Carried from MTS, not raised here:** MTS-DEV-003 (preview and production share
 one Supabase project) blocks calling the preview environment compliant with the
@@ -473,16 +473,15 @@ No further MDS update is recommended by this report.
 
 ## 11. Overall result
 
-**REVIEW REQUIRED.**
+**PASS WITH APPROVED EXCEPTIONS.**
 
-Gate 1: **PASS**. Gate 3: **PASS**. Gate 2: rendered, compared, and reported —
-**owner sign-off outstanding**, which the protocol reserves to the owner and
-which no agent result can supply.
+Gate 1: **PASS**. Gate 3: **PASS**. Gate 2: rendered, compared, reported, and
+**signed off by the owner** (Josh Coley, 2026-09-14) on the comparison recaptured
+after the F001 and F002 fixes (§13).
 
-Every Gate 2 finding now has an owner ruling (2026-09-14) and none is open. On
-owner approval of the recaptured Gate 2 comparison (§12), this report supports
-**PASS WITH APPROVED EXCEPTIONS** (MDS-EXC-001). It does not support that result,
-or an unqualified PASS, before that review.
+Approved exception: MDS-EXC-001 (two-column report shell). Not an unqualified
+PASS. This result is MDS compliance only; it is not S6 release approval, MPS
+product validation, or MTS verification.
 
 Reviewer: Claude (agent execution), 2026-09-10; reconciled 2026-09-14.
 ## 12. R1 closeout — fixes, verification, and recapture (2026-09-14)
@@ -560,4 +559,61 @@ not sample content. Suggested order:
 6. **Everything else** — §4's reference-by-reference table still describes the
    unchanged renders.
 
-Gate 2 sign-off: _________________________ Josh Coley, date ____________
+Gate 2 sign-off: **approved — Josh Coley, 2026-09-14** (recorded in §13)
+
+## 13. Gate 2 owner sign-off (2026-09-14)
+
+**Owner:** Josh Coley. **Date:** 2026-09-14. **Recorded by:** Claude, on the owner's
+written instruction of the same date.
+
+**Ruling:** the refreshed visual comparison from PR #14 (§12) is approved. MDS
+compliance result: **PASS WITH APPROVED EXCEPTIONS**.
+
+| Finding | Final disposition |
+|---|---|
+| F001 | Resolved by the approved 6px checkbox radius (`radius.small`) |
+| F002 | Resolved by the loading-boundary space reservation and the verified zero-footer-shift result |
+| F004 | Closed through the approved pillar hues (MDS-CHG-006) |
+| F005 | Approved as MDS-EXC-001: the authoritative two-column report composition is retained |
+| F006 | Closed through approval and documentation of the current mobile context-panel order |
+| F007 | Accepted for R1: complete expanded evidence retained; evidence-navigation improvements carried to R2 investigation |
+| F010 | Remains closed |
+| F011 | Accepted as a non-blocking observation; does not prevent compliance approval |
+
+No additional visual or interaction change is required for R1.
+
+### PR #14 CI result (merge bookkeeping)
+
+`verify` run 34864693783 on the PR head `38a2ddd`, all required checks green:
+
+| Job | Result |
+|---|---|
+| checks (format, lint, types, freshness, unit, build) | success — 151 unit passed, 1 skipped (live-delivery harness) |
+| evidence (clean-database reproduction) | success |
+| browsers (chromium, firefox, webkit) | success — **1,080 passed, 0 failed, 2 flaky, 4 skipped** |
+| Vercel preview | success |
+
+The two flaky results are not clean passes. Both are `webkit-desktop` tests that
+failed their first attempt at `page.goto` with "WebKit encountered an internal
+error" and passed on Playwright's configured retry (`retry #1`):
+
+- `e2e/qa-gate3.spec.ts:96` — no route overflows horizontally at any required or
+  intermediate width (first attempt failed navigating to `/method`)
+- `e2e/s1-shell.spec.ts:352` — no route scrolls horizontally at any approved width
+  (first attempt failed navigating to `/scenarios`)
+
+The failures were in browser navigation, before any assertion ran. The retries
+passed, including every overflow assertion. They are recorded as WebKit navigation
+flakiness under MTS-EXC-002 (WebKit runs in CI only), not as defects in the
+closeout change and not as zero-retry passes. The earlier merged-tree run on
+`fcb30f5` recorded 0 flaky.
+
+PR #14 merged to `main` as `739b2a7` on 2026-09-14 (17:14 UTC). Production
+deployment and post-merge CI for that commit are recorded in the MTS release record
+and the pull request that carries this section.
+
+### Not covered by this sign-off
+
+Formal S6 release approval, MPS product validation, MTS verification and Gate 7,
+the production rollback drill, and every other owner-controlled operational item
+remain open.
