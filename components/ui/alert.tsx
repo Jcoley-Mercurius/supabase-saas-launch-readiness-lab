@@ -43,6 +43,7 @@ export function Alert({
   title,
   children,
   role,
+  id,
   className = "",
 }: {
   tone?: AlertTone;
@@ -50,12 +51,19 @@ export function Alert({
   children?: ReactNode;
   /** Use "alert"/"status" only for a genuinely dynamic message. */
   role?: "alert" | "status";
+  /**
+   * Addresses this alert from elsewhere without wrapping it. Used by
+   * components/measurement/record-in-view, which must not add a node to an
+   * approved composition. It has no visual effect.
+   */
+  id?: string;
   className?: string;
 }) {
   const spec = TONES[tone];
 
   return (
     <div
+      id={id}
       role={role}
       className={`rounded-card flex items-start gap-3 border p-4 ${spec.surface} ${className}`.trim()}
     >

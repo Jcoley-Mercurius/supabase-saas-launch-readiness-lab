@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { sendMeasurement, signalKey } from "@/lib/measurement/client";
 import type {
   MeasurementEvent,
   MeasurementSurface,
@@ -30,9 +31,10 @@ import type {
  * indistinguishable from new ones. That is the accepted cost recorded in
  * MTS-CHG-019: these are event counts, not unique visitors.
  *
- * Failure is silent by construction. `keepalive` lets the request outlive a
- * navigation, and a rejected promise is swallowed: a visitor must never see an
- * error, a console message, or a delay because a count did not land.
+ * Failure is silent by construction, and the request itself is built in
+ * lib/measurement/client — every emitter in the application shares that one
+ * path, so what an event may carry is decided in a single place rather than at
+ * each call site.
  */
 
 export function RecordView({
@@ -53,18 +55,11 @@ export function RecordView({
   const recorded = useRef<string | null>(null);
 
   useEffect(() => {
-    const key = `${event}:${surface}:${scenarioSlug ?? ""}`;
+    const key = signalKey({ event, surface, scenarioSlug });
     if (recorded.current === key) return;
     recorded.current = key;
 
-    void fetch("/api/measurement", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ event, surface, scenarioSlug }),
-      keepalive: true,
-    }).catch(() => {
-      // Deliberately empty. Measurement never changes what a visitor sees.
-    });
+    sendMeasurement({ event, surface, scenarioSlug });
   }, [event, surface, scenarioSlug]);
 
   return null;

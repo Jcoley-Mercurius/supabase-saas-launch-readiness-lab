@@ -1,22 +1,29 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { replayDocumentedSequence } from "@/app/scenarios/[slug]/actions";
 import { FindingSummary } from "@/components/evidence/finding-summary";
 import { LabStepper, type StepStatus } from "@/components/evidence/lab-stepper";
+import { COMPARISON_REGION_ID } from "@/components/evidence/before-after";
 import { ReplayComparison } from "@/components/evidence/replay-comparison";
 import { ReplayContextPanel } from "@/components/evidence/replay-context-panel";
+import { RecordInView } from "@/components/measurement/record-in-view";
+import { ScenarioMeasurementProvider } from "@/components/measurement/scenario-measurement";
 import { Alert } from "@/components/ui/alert";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
-import { LimitationCallout } from "@/components/ui/limitation-callout";
+import {
+  LimitationCallout,
+  SCENARIO_LIMITATION_ID,
+} from "@/components/ui/limitation-callout";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import type { ReplayRun } from "@/lib/evidence/replay";
 import type { ReplayScenario } from "@/lib/evidence/replay-catalog";
 import { REPLAY_PROVENANCE_NOTE } from "@/lib/evidence/replay-catalog";
 import { formatCents } from "@/lib/evidence/replay-present";
 import type { EvidenceMode } from "@/lib/evidence/types";
+import { sendMeasurement } from "@/lib/measurement/client";
 
 /*
  * Replay and recovery lab orchestrator.
@@ -34,6 +41,20 @@ import type { EvidenceMode } from "@/lib/evidence/types";
  *  - status changes announce through a live region while the full explanation
  *    stays visible;
  *  - focus is not moved on a status update, only on deliberate recovery.
+ *
+ * MEASUREMENT (MPS-MET-001, MPS-MET-002; MTS-CAP-008, MTS-DEC-016).
+ *
+ * A step advance is recorded when a documented replay actually produces a
+ * result, not when a control is pressed: a press that ends in the unavailable
+ * state advanced nothing, and counting it would make MPS-MET-002 read like
+ * progress the evidence never delivered. MPS-MET-002 is defined as reaching a
+ * before/after result for at least one scenario, so completion IS the
+ * remediated result — the moment both sides of the comparison exist — and it
+ * is recorded once per visit however often the replay is repeated afterwards.
+ *
+ * The provider in the tree below scopes every excerpt inside this lab to this
+ * scenario, so an excerpt records what it belongs to without every intervening
+ * component carrying an analytics prop.
  *
  * It is a separate component rather than a widened GuidedLab because the two
  * read different transcripts through different bounded executors, and the unit
@@ -79,6 +100,7 @@ export function ReplayLab({
   const [announcement, setAnnouncement] = useState("");
   const [problem, setProblem] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+  const completed = useRef(false);
 
   function replay(mode: EvidenceMode) {
     // The run controls stay focusable while busy, so re-entry is guarded here
@@ -120,12 +142,30 @@ export function ReplayLab({
         if (mode === "vulnerable") {
           setBefore(result.run);
           setPhase("vulnerable");
+          sendMeasurement({
+            event: "scenario_step_advanced",
+            surface: "scenario",
+            scenarioSlug: scenario.id,
+          });
           setAnnouncement(
             `Documented sequences complete. ${failures} of ${total} sequences did not reach the required end state.`,
           );
         } else {
           setAfter(result.run);
           setPhase("remediated");
+          sendMeasurement({
+            event: "scenario_step_advanced",
+            surface: "scenario",
+            scenarioSlug: scenario.id,
+          });
+          if (!completed.current) {
+            completed.current = true;
+            sendMeasurement({
+              event: "scenario_completed",
+              surface: "scenario",
+              scenarioSlug: scenario.id,
+            });
+          }
           setAnnouncement(
             `Repeated sequences complete. ${total - failures} of ${total} sequences reached the required end state.`,
           );
@@ -220,246 +260,272 @@ export function ReplayLab({
      * beneath the scenario heading and before the primary proof, which the
      * order utilities below express directly in the DOM order — so the reading
      * order and the visual order agree at every viewport.
+     *
+     * The provider adds no element and changes nothing on screen; it only tells
+     * the excerpts inside which scenario they belong to.
      */
-    <div className="desktop:grid-cols-[minmax(0,1fr)_300px] desktop:items-start grid min-w-0 grid-cols-1 gap-8">
-      <aside
-        aria-label="Scenario context"
-        className="desktop:order-2 desktop:sticky desktop:top-6 min-w-0"
-      >
-        <ReplayContextPanel
-          scenario={scenario}
-          handler={activeRun?.handler}
-          modeLabel={modeLabel}
-        />
-      </aside>
+    <ScenarioMeasurementProvider scenarioSlug={scenario.id}>
+      <div className="desktop:grid-cols-[minmax(0,1fr)_300px] desktop:items-start grid min-w-0 grid-cols-1 gap-8">
+        <aside
+          aria-label="Scenario context"
+          className="desktop:order-2 desktop:sticky desktop:top-6 min-w-0"
+        >
+          <ReplayContextPanel
+            scenario={scenario}
+            handler={activeRun?.handler}
+            modeLabel={modeLabel}
+          />
+        </aside>
 
-      <div className="desktop:order-1 flex min-w-0 flex-col gap-8">
-        <LabStepper statuses={stepStatuses(phase)} />
+        <div className="desktop:order-1 flex min-w-0 flex-col gap-8">
+          <LabStepper statuses={stepStatuses(phase)} />
 
-        <FindingSummary
-          finding={scenario.finding}
-          severity={scenario.severity}
-          severityBasis={scenario.severityBasis}
-          impact={scenario.impact}
-          affectedArea={scenario.affectedArea}
-          boundaryLabel="Boundary"
-          boundary={scenario.boundary}
-          state={summaryState}
-        />
+          <FindingSummary
+            finding={scenario.finding}
+            severity={scenario.severity}
+            severityBasis={scenario.severityBasis}
+            impact={scenario.impact}
+            affectedArea={scenario.affectedArea}
+            boundaryLabel="Boundary"
+            boundary={scenario.boundary}
+            state={summaryState}
+          />
 
-        {/*
-         * The live region. It carries a concise result only; the full
-         * explanation always remains visible in the page beneath it.
-         */}
-        <p aria-live="polite" className="sr-only">
-          {announcement}
-        </p>
+          {/*
+           * The live region. It carries a concise result only; the full
+           * explanation always remains visible in the page beneath it.
+           */}
+          <p aria-live="polite" className="sr-only">
+            {announcement}
+          </p>
 
-        <Card className="flex flex-col gap-5 p-5">
-          <div>
-            <h2 className="text-h4 text-strong">Documented test</h2>
-            <p className="text-body text-subtle mt-2">{documentedTest}</p>
-            <p className="text-body-sm text-subtle mt-3">
-              Each documented sequence is an ordered set of synthetic
-              deliveries. Its result is a counted end state — how many payment
-              commitments exist and how much was applied — checked both at the
-              end and at named steps along the way, so a sequence cannot be
-              reported as correct because two errors happened to cancel.
-            </p>
-          </div>
+          <Card className="flex flex-col gap-5 p-5">
+            <div>
+              <h2 className="text-h4 text-strong">Documented test</h2>
+              <p className="text-body text-subtle mt-2">{documentedTest}</p>
+              <p className="text-body-sm text-subtle mt-3">
+                Each documented sequence is an ordered set of synthetic
+                deliveries. Its result is a counted end state — how many payment
+                commitments exist and how much was applied — checked both at the
+                end and at named steps along the way, so a sequence cannot be
+                reported as correct because two errors happened to cancel.
+              </p>
+            </div>
 
-          {phase === "untested" ? (
-            <StatusIndicator
-              state="untested"
-              variant="block"
-              explanation="No documented sequence has been replayed in this session. An untested check is not a pass."
-            />
-          ) : null}
-
-          {running ? (
-            <StatusIndicator
-              state="running"
-              variant="block"
-              explanation={
-                phase === "running-vulnerable"
-                  ? "Replaying the documented delivery sequences against the vulnerable handler. Any earlier result stays visible until this one completes."
-                  : "Replaying the same delivery sequences against the remediated handler."
-              }
-            />
-          ) : null}
-
-          {phase === "unavailable" ? (
-            <>
+            {phase === "untested" ? (
               <StatusIndicator
-                state="unavailable"
+                state="untested"
+                variant="block"
+                explanation="No documented sequence has been replayed in this session. An untested check is not a pass."
+              />
+            ) : null}
+
+            {running ? (
+              <StatusIndicator
+                state="running"
                 variant="block"
                 explanation={
-                  problem ??
-                  "The documented evidence could not be retrieved. No result is implied."
+                  phase === "running-vulnerable"
+                    ? "Replaying the documented delivery sequences against the vulnerable handler. Any earlier result stays visible until this one completes."
+                    : "Replaying the same delivery sequences against the remediated handler."
                 }
               />
-              <Alert tone="warning" title="This is not a result">
-                <p>
-                  An unavailable demonstration says nothing about whether the
-                  control holds. The scenario keeps its context and you can
-                  retry, or continue to the report and the other scenarios.
-                </p>
-              </Alert>
-            </>
+            ) : null}
+
+            {phase === "unavailable" ? (
+              <>
+                <StatusIndicator
+                  state="unavailable"
+                  variant="block"
+                  explanation={
+                    problem ??
+                    "The documented evidence could not be retrieved. No result is implied."
+                  }
+                />
+                <Alert tone="warning" title="This is not a result">
+                  <p>
+                    An unavailable demonstration says nothing about whether the
+                    control holds. The scenario keeps its context and you can
+                    retry, or continue to the report and the other scenarios.
+                  </p>
+                </Alert>
+              </>
+            ) : null}
+
+            {before ? (
+              <dl className="text-body-sm border-line tablet:grid-cols-[auto_minmax(0,1fr)] grid grid-cols-1 gap-x-6 gap-y-1 border-t pt-4">
+                <dt className="text-subtle font-semibold">
+                  Sequences replayed
+                </dt>
+                <dd className="text-strong">
+                  {before.sequences.length} under the vulnerable handler
+                  {after
+                    ? `, the same ${after.sequences.length} again under the remediated handler`
+                    : ""}
+                </dd>
+                <dt className="text-subtle font-semibold">
+                  Total committed, vulnerable handler
+                </dt>
+                <dd className="text-strong">
+                  {before.sequences.reduce(
+                    (sum, item) => sum + item.observed_commitments,
+                    0,
+                  )}{" "}
+                  commitment(s) ·{" "}
+                  {formatCents(
+                    before.sequences.reduce(
+                      (sum, item) => sum + item.observed_applied_cents,
+                      0,
+                    ),
+                  )}
+                </dd>
+                {after ? (
+                  <>
+                    <dt className="text-subtle font-semibold">
+                      Total committed, remediated handler
+                    </dt>
+                    <dd className="text-strong">
+                      {after.sequences.reduce(
+                        (sum, item) => sum + item.observed_commitments,
+                        0,
+                      )}{" "}
+                      commitment(s) ·{" "}
+                      {formatCents(
+                        after.sequences.reduce(
+                          (sum, item) => sum + item.observed_applied_cents,
+                          0,
+                        ),
+                      )}
+                    </dd>
+                  </>
+                ) : null}
+              </dl>
+            ) : null}
+
+            <div className="flex flex-wrap gap-3">
+              {/*
+               * whitespace-normal overrides the shared button default. These
+               * labels are long by necessity, and at 320px a nowrap label is
+               * wider than the content column, which scrolls the whole page
+               * sideways. Wrapping keeps the control inside the gutter without
+               * shortening a label that has to stay precise.
+               */}
+              <Button
+                onClick={() => replay("vulnerable")}
+                loading={phase === "running-vulnerable"}
+                loadingLabel="Replaying documented sequences"
+                disableWhileLoading={false}
+                className="max-w-full whitespace-normal"
+              >
+                {before
+                  ? "Replay the vulnerable sequences again"
+                  : "Replay the documented sequences"}
+              </Button>
+
+              <Button
+                variant="secondary"
+                onClick={() => replay("remediated")}
+                loading={phase === "running-remediated"}
+                loadingLabel="Replaying documented sequences"
+                disableWhileLoading={false}
+                disabled={!before}
+                aria-describedby={!before ? "remediation-hint" : undefined}
+                className="max-w-full whitespace-normal"
+              >
+                Apply the remediated handler and repeat
+              </Button>
+
+              <Button
+                variant="quiet"
+                onClick={reset}
+                aria-disabled={running || undefined}
+                className="max-w-full whitespace-normal"
+              >
+                <Icon name="rotate-ccw" size={16} />
+                Reset and retry
+              </Button>
+            </div>
+
+            {!before ? (
+              <p id="remediation-hint" className="text-body-sm text-subtle">
+                The repeated run becomes available once the vulnerable proof has
+                been replayed, so the two results are always compared against
+                the same deliveries.
+              </p>
+            ) : null}
+          </Card>
+
+          {before ? (
+            <ReplayComparison
+              before={before.sequences}
+              after={after ? after.sequences : null}
+              beforeHandler={before.handler}
+              afterHandler={after ? after.handler : null}
+              limitation={scenario.limitation}
+              provenance={provenance}
+              summary={finalState}
+            />
           ) : null}
 
           {before ? (
-            <dl className="text-body-sm border-line tablet:grid-cols-[auto_minmax(0,1fr)] grid grid-cols-1 gap-x-6 gap-y-1 border-t pt-4">
-              <dt className="text-subtle font-semibold">Sequences replayed</dt>
-              <dd className="text-strong">
-                {before.sequences.length} under the vulnerable handler
-                {after
-                  ? `, the same ${after.sequences.length} again under the remediated handler`
-                  : ""}
-              </dd>
-              <dt className="text-subtle font-semibold">
-                Total committed, vulnerable handler
-              </dt>
-              <dd className="text-strong">
-                {before.sequences.reduce(
-                  (sum, item) => sum + item.observed_commitments,
-                  0,
-                )}{" "}
-                commitment(s) ·{" "}
-                {formatCents(
-                  before.sequences.reduce(
-                    (sum, item) => sum + item.observed_applied_cents,
-                    0,
-                  ),
-                )}
-              </dd>
-              {after ? (
-                <>
-                  <dt className="text-subtle font-semibold">
-                    Total committed, remediated handler
-                  </dt>
-                  <dd className="text-strong">
-                    {after.sequences.reduce(
-                      (sum, item) => sum + item.observed_commitments,
-                      0,
-                    )}{" "}
-                    commitment(s) ·{" "}
-                    {formatCents(
-                      after.sequences.reduce(
-                        (sum, item) => sum + item.observed_applied_cents,
-                        0,
-                      ),
-                    )}
-                  </dd>
-                </>
-              ) : null}
-            </dl>
+            <RecordInView
+              event="comparison_viewed"
+              surface="scenario"
+              scenarioSlug={scenario.id}
+              targetId={COMPARISON_REGION_ID}
+            />
           ) : null}
+
+          <section
+            aria-labelledby="remediation-heading"
+            className="flex min-w-0 flex-col gap-4"
+          >
+            <h2 id="remediation-heading" className="text-h3 text-strong">
+              Remediation direction
+            </h2>
+            <ol className="flex flex-col gap-3">
+              {scenario.remediation.map((step, index) => (
+                <li key={step} className="flex items-start gap-3">
+                  <span className="border-line text-label text-subtle bg-base rounded-pill flex size-7 shrink-0 items-center justify-center border">
+                    {index + 1}
+                  </span>
+                  <span className="text-body text-subtle">{step}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <RecordInView
+            event="limitation_viewed"
+            surface="scenario"
+            scenarioSlug={scenario.id}
+            targetId={SCENARIO_LIMITATION_ID}
+          />
+
+          <LimitationCallout
+            id={SCENARIO_LIMITATION_ID}
+            title="What this proves, and what it does not"
+          >
+            <p>{scenario.limitation}</p>
+            <p className="mt-2">{REPLAY_PROVENANCE_NOTE}</p>
+            <p className="mt-2">
+              A result here describes this documented synthetic scenario only.
+              It is not a certification, a formal penetration test, or a
+              statement about any other system, and running it grants no
+              permission to test anyone else&rsquo;s project.
+            </p>
+          </LimitationCallout>
 
           <div className="flex flex-wrap gap-3">
-            {/*
-             * whitespace-normal overrides the shared button default. These
-             * labels are long by necessity, and at 320px a nowrap label is
-             * wider than the content column, which scrolls the whole page
-             * sideways. Wrapping keeps the control inside the gutter without
-             * shortening a label that has to stay precise.
-             */}
-            <Button
-              onClick={() => replay("vulnerable")}
-              loading={phase === "running-vulnerable"}
-              loadingLabel="Replaying documented sequences"
-              disableWhileLoading={false}
-              className="max-w-full whitespace-normal"
-            >
-              {before
-                ? "Replay the vulnerable sequences again"
-                : "Replay the documented sequences"}
-            </Button>
-
-            <Button
-              variant="secondary"
-              onClick={() => replay("remediated")}
-              loading={phase === "running-remediated"}
-              loadingLabel="Replaying documented sequences"
-              disableWhileLoading={false}
-              disabled={!before}
-              aria-describedby={!before ? "remediation-hint" : undefined}
-              className="max-w-full whitespace-normal"
-            >
-              Apply the remediated handler and repeat
-            </Button>
-
-            <Button
-              variant="quiet"
-              onClick={reset}
-              aria-disabled={running || undefined}
-              className="max-w-full whitespace-normal"
-            >
-              <Icon name="rotate-ccw" size={16} />
-              Reset and retry
-            </Button>
+            <ButtonLink href="/report" variant="secondary" trailingArrow>
+              View sample report
+            </ButtonLink>
+            <ButtonLink href="/scenarios" variant="quiet" trailingArrow>
+              Back to all scenarios
+            </ButtonLink>
           </div>
-
-          {!before ? (
-            <p id="remediation-hint" className="text-body-sm text-subtle">
-              The repeated run becomes available once the vulnerable proof has
-              been replayed, so the two results are always compared against the
-              same deliveries.
-            </p>
-          ) : null}
-        </Card>
-
-        {before ? (
-          <ReplayComparison
-            before={before.sequences}
-            after={after ? after.sequences : null}
-            beforeHandler={before.handler}
-            afterHandler={after ? after.handler : null}
-            limitation={scenario.limitation}
-            provenance={provenance}
-            summary={finalState}
-          />
-        ) : null}
-
-        <section
-          aria-labelledby="remediation-heading"
-          className="flex min-w-0 flex-col gap-4"
-        >
-          <h2 id="remediation-heading" className="text-h3 text-strong">
-            Remediation direction
-          </h2>
-          <ol className="flex flex-col gap-3">
-            {scenario.remediation.map((step, index) => (
-              <li key={step} className="flex items-start gap-3">
-                <span className="border-line text-label text-subtle bg-base rounded-pill flex size-7 shrink-0 items-center justify-center border">
-                  {index + 1}
-                </span>
-                <span className="text-body text-subtle">{step}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <LimitationCallout title="What this proves, and what it does not">
-          <p>{scenario.limitation}</p>
-          <p className="mt-2">{REPLAY_PROVENANCE_NOTE}</p>
-          <p className="mt-2">
-            A result here describes this documented synthetic scenario only. It
-            is not a certification, a formal penetration test, or a statement
-            about any other system, and running it grants no permission to test
-            anyone else&rsquo;s project.
-          </p>
-        </LimitationCallout>
-
-        <div className="flex flex-wrap gap-3">
-          <ButtonLink href="/report" variant="secondary" trailingArrow>
-            View sample report
-          </ButtonLink>
-          <ButtonLink href="/scenarios" variant="quiet" trailingArrow>
-            Back to all scenarios
-          </ButtonLink>
         </div>
       </div>
-    </div>
+    </ScenarioMeasurementProvider>
   );
 }

@@ -1,3 +1,4 @@
+import { COMPARISON_REGION_ID } from "@/components/evidence/before-after";
 import { CodeExcerpt } from "@/components/evidence/code-excerpt";
 import { DeliveryLedger } from "@/components/evidence/delivery-ledger";
 import { Card } from "@/components/ui/card";
@@ -129,6 +130,7 @@ export function ReplayComparison({
 }) {
   return (
     <section
+      id={COMPARISON_REGION_ID}
       aria-label="Before and after comparison"
       className="flex min-w-0 flex-col gap-8"
     >

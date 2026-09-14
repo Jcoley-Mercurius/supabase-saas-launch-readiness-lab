@@ -6,7 +6,7 @@ import {
   validateInquiry,
   REVIEW_REQUEST_MAX,
 } from "@/lib/inquiry/schema";
-import { buildNotification } from "@/lib/inquiry/notify";
+import { buildNotification, labelForEnvironment } from "@/lib/inquiry/notify";
 import { submitInquiry } from "@/lib/inquiry/submit";
 import type { InquiryStore, StoreOutcome } from "@/lib/inquiry/store";
 import type { NotificationTransport } from "@/lib/inquiry/notify";
@@ -394,6 +394,36 @@ test.describe("submission outcomes", () => {
       expect(stopsAtAuthorizationBoundary(status)).toBe(true);
     }
   });
+});
+
+test.describe("a non-production notification is unmistakable", () => {
+  /*
+   * MTS SECURITY-ARCHITECTURE ("use preview-safe notification destinations and
+   * separate environment variables"); MTS-OBS-051.
+   *
+   * The destination itself is per-environment configuration the owner sets.
+   * These assert the half the application controls: an operator can tell at a
+   * glance which deployment a message came from, so a preview submission is
+   * never answered as though a buyer sent it.
+   */
+  const MESSAGE = { subject: "New inquiry — Alex Rivera", text: "body" };
+
+  test("production is not labelled, because the unmarked message is the real one", () => {
+    expect(labelForEnvironment(MESSAGE, "production")).toEqual(MESSAGE);
+  });
+
+  for (const environment of ["preview", "local"] as const) {
+    test(`${environment} is labelled in both the subject and the first line`, () => {
+      const labelled = labelForEnvironment(MESSAGE, environment);
+
+      expect(labelled.subject.startsWith(`[${environment}]`)).toBe(true);
+      expect(labelled.subject).toContain(MESSAGE.subject);
+      expect(labelled.text.split("\n")[0]).toContain(environment);
+      expect(labelled.text).toContain("not from the live site");
+      // The inquiry itself is never dropped by the labelling.
+      expect(labelled.text).toContain(MESSAGE.text);
+    });
+  }
 });
 
 test.describe("the operator notification", () => {

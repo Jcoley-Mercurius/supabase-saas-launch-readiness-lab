@@ -4,6 +4,7 @@ import {
   type MeasurementEvent,
   type MeasurementSurface,
 } from "@/lib/measurement/events";
+import { deploymentEnvironment } from "@/lib/deployment";
 import { serverClient } from "@/lib/supabase/server-client";
 import { SCENARIOS } from "@/lib/content/scenarios";
 
@@ -40,14 +41,6 @@ import { SCENARIOS } from "@/lib/content/scenarios";
  * address through `scenarioSlug` would be rejected by the check constraint,
  * not merely by this file's good intentions.
  */
-
-type Environment = "local" | "preview" | "production";
-
-function environment(): Environment {
-  if (process.env.VERCEL_ENV === "production") return "production";
-  if (process.env.VERCEL_ENV === "preview") return "preview";
-  return "local";
-}
 
 const KNOWN_SLUGS = new Set(SCENARIOS.map((scenario) => scenario.slug));
 
@@ -95,7 +88,7 @@ export const supabaseMeasurementStore: MeasurementStore = {
         p_event_name: event,
         p_surface: surface,
         p_scenario_slug: scenarioSlug ?? null,
-        p_environment: environment(),
+        p_environment: deploymentEnvironment(),
       });
     } catch {
       /*

@@ -6,6 +6,7 @@ import {
 } from "@/components/layout/container";
 import { AuthorizedReviewBand } from "@/components/layout/authorized-review-band";
 import { BoundaryNotes } from "@/components/layout/boundary-notes";
+import { RecordView } from "@/components/measurement/record-view";
 import { EvidenceSnapshot } from "@/components/report/evidence-snapshot";
 import { ReportPreview } from "@/components/report/report-preview";
 import { ProofSteps } from "@/components/scenarios/proof-steps";
@@ -46,6 +47,13 @@ export default function LandingPage() {
 
   return (
     <>
+      {/*
+       * MPS-MET-003 — the funnel's first step. A count of landing views, not
+       * of people: this product holds no visitor identifier, so a conversion
+       * figure derived from it is a ratio between event totals over a period
+       * and must be described as one.
+       */}
+      <RecordView event="landing_viewed" surface="landing" />
       <Section tone="ink" className="desktop:py-20 py-14">
         <Container>
           <div className="desktop:grid-cols-2 desktop:gap-10 grid grid-cols-1 items-start gap-10">

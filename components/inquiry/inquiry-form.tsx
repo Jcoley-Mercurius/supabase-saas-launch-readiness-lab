@@ -13,6 +13,7 @@ import {
   TextField,
 } from "@/components/ui/field";
 import { LimitationCallout } from "@/components/ui/limitation-callout";
+import { sendMeasurement } from "@/lib/measurement/client";
 import { FORM, OUTCOMES } from "@/lib/content/inquiry";
 import {
   AUTHORIZATION_STATUSES,
@@ -118,6 +119,50 @@ export function InquiryForm() {
     });
   }
 
+  /*
+   * MEASUREMENT (MPS-MET-003 qualified inquiry conversion, MPS-MET-005 buyer
+   * signal capture; MTS-CAP-008, MTS-DEC-016).
+   *
+   * Two counts, and NEITHER OF THEM IS A COUNT OF QUALIFIED INQUIRIES. MPS
+   * defines qualified as manually reviewed for role, need, authorization
+   * posture, and relevance, and nothing here can know any of that — the events
+   * carry no field that could.
+   *
+   *   inquiry_submitted    a submission the server took as complete and
+   *                        carried to the store. A form returned for
+   *                        correction is not one, and neither is a submission
+   *                        refused by abuse control before it was read — both
+   *                        would inflate the count with attempts that never
+   *                        became an inquiry. A submission the store could not
+   *                        CONFIRM is one, because the buyer did submit it and
+   *                        the failure is ours.
+   *   inquiry_acknowledged an acknowledgement was actually shown. Duplicates
+   *                        are included, because a repeat submitter is shown
+   *                        the original acknowledgement and that is the state
+   *                        they saw.
+   *
+   * The difference between the two is the delivery-failure rate, which is why
+   * both exist rather than one. MPS guards against duplicates inflating demand
+   * (OUTCOMES-METRICS "do not use duplicate inquiries to inflate demand"), and
+   * that guard holds where it belongs: the inquiry store already refuses to
+   * create a second engagement, and neither event may be reported as demand.
+   *
+   * It is recorded from the browser rather than inside the inquiry route on
+   * purpose. Writing an event in the same request that writes an inquiry would
+   * put both on one server transaction path, and the separation between the
+   * inquiry store and the measurement schema (MTS-OBS-050) is the reason that
+   * schema exists.
+   */
+  function recordOutcome(next: InquiryOutcome) {
+    if (next.state === "invalid" || next.state === "rate_limited") return;
+
+    sendMeasurement({ event: "inquiry_submitted", surface: "inquiry" });
+
+    if (next.state === "acknowledged" || next.state === "duplicate") {
+      sendMeasurement({ event: "inquiry_acknowledged", surface: "inquiry" });
+    }
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting) return;
@@ -149,6 +194,7 @@ export function InquiryForm() {
     setErrors(next.state === "invalid" ? next.errors : {});
     setOutcome(next);
     focusOutcome(next);
+    recordOutcome(next);
   }
 
   const settled =

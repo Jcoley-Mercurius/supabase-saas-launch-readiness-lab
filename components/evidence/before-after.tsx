@@ -14,10 +14,17 @@ import type { RecordedCase } from "@/lib/evidence/types";
  * component specification requires. Pairing each test with its own repeat keeps
  * the labels synchronised and the hierarchy equal at every length.
  *
+ * The section carries a stable id so components/measurement/record-in-view
+ * can observe it without wrapping it in a node the approved composition does
+ * not have.
+ *
  * Below desktop each pair collapses to a vertical sequence with the vulnerable
  * state first, separated by an arrow rather than by colour alone, and the
  * persistent comparison summary sits beneath the whole set.
  */
+
+/** Stable across both labs; only one comparison exists on a scenario page. */
+export const COMPARISON_REGION_ID = "evidence-comparison";
 
 function ComparisonColumn({
   heading,
@@ -87,6 +94,7 @@ export function EvidenceComparison({
 }) {
   return (
     <section
+      id={COMPARISON_REGION_ID}
       aria-label="Before and after comparison"
       className="flex min-w-0 flex-col gap-8"
     >

@@ -1,5 +1,6 @@
 import "server-only";
 import { Resend } from "resend";
+import { deploymentEnvironment } from "@/lib/deployment";
 import type { DeliveryResult } from "@/lib/inquiry/types";
 import {
   AUTHORIZATION_STATUSES,
@@ -32,6 +33,23 @@ import {
  *
  * The transport is injectable so the failure, rejection, and unconfigured
  * paths can be tested without a network and without a key.
+ *
+ * PREVIEW AND PRODUCTION ARE NEVER CONFUSED IN THE INBOX.
+ *
+ * The SECURITY-ARCHITECTURE rule is separate variables and a preview-safe
+ * destination, and the values themselves are per-environment configuration the
+ * owner sets. Configuration alone is not enough to make the rule visible: a
+ * misconfigured preview would deliver a message indistinguishable from a real
+ * one, and the operator would answer a test submission as though a buyer had
+ * sent it. So every non-production notification is LABELLED in its subject and
+ * in its first line, by the deployment the server is actually running in
+ * rather than by anything a caller passes. Production is labelled with nothing,
+ * because the unmarked message is the real one.
+ *
+ * What labelling does NOT do, stated plainly: the preview deployment writes to
+ * the same isolated inquiry project as production (there is only one), so a
+ * preview submission is a real row under the same retention policy. That is
+ * recorded as MTS-OBS-051, not solved here.
  */
 
 export interface NotificationTransport {
@@ -185,6 +203,30 @@ export async function notifyOperatorOfFollowUp(
   );
 }
 
+/**
+ * Marks a message that did not come from production.
+ *
+ * Exported so the labelling can be asserted directly rather than inferred from
+ * a built subject line.
+ */
+export function labelForEnvironment(
+  message: { subject: string; text: string },
+  environment = deploymentEnvironment(),
+): { subject: string; text: string } {
+  if (environment === "production") return message;
+
+  const banner = `[${environment}]`;
+  return {
+    subject: `${banner} ${message.subject}`,
+    text: [
+      `${banner} This notification came from the ${environment} deployment, not from the live site.`,
+      "Treat it as a test submission unless you know otherwise. It was written to the same isolated inquiry store as a live inquiry and is subject to the same retention policy.",
+      "",
+      message.text,
+    ].join("\n"),
+  };
+}
+
 function send(
   message: { subject: string; text: string },
   replyTo: string,
@@ -196,5 +238,10 @@ function send(
     return Promise.resolve({ sent: false, failureClass: "unconfigured" });
   }
 
-  return transport.send({ from, to, replyTo, ...message });
+  return transport.send({
+    from,
+    to,
+    replyTo,
+    ...labelForEnvironment(message),
+  });
 }
