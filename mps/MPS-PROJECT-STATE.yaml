@@ -97,7 +97,7 @@ releases:
   - {id: MPS-REL-001, name: "Portfolio Launch-Readiness Proof", status: approved}
 
 downstream:
-  mds: {project_id: POB-2026-36-02-MDS, version: v1.0, status: implemented_compliance_review_required, compatible_mps_version: v1.1, last_synchronized: "2026-09-14", open_product_gaps: [], note: "MDS Gate 1 and Gate 3 pass; Gate 2 awaits owner sign-off (mds/qa/MDS-QA-REPORT-R1.md)."}
+  mds: {project_id: POB-2026-36-02-MDS, version: v1.0, status: implemented_compliance_pass_with_approved_exceptions, compatible_mps_version: v1.1, last_synchronized: "2026-09-14", open_product_gaps: [], note: "MDS compliance PASS WITH APPROVED EXCEPTIONS (MDS-EXC-001): Gate 1 and Gate 3 pass; Gate 2 signed off by Josh Coley 2026-09-14 (mds/qa/MDS-QA-REPORT-R1.md section 13). Does not close MPS product validation."}
   mts:
     status: implementation_readiness_in_progress
     project_id: supabase-saas-launch-readiness-lab

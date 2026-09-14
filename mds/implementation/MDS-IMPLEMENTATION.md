@@ -120,7 +120,7 @@ MTS must choose, approve, install, and verify the specific skills/tools/provider
 - Open MDS gaps: none. MDS-QA-R1-F004 closed by the `color.pillar.*` tokens (MDS-CHG-006); MDS-QA-R1-F006 closed by writing the approved mobile context-panel position into DESIGN-SYSTEM §12 (MDS-CHG-007)
 - Implementation deviations: none open. MDS-QA-R1-F001 (4px checkbox radius) fixed to `radius.small`; MDS-QA-R1-F002 (post-paint footer shift) fixed; MDS-QA-R1-F010 (acknowledgement focus) fixed
 - Accepted for R1, deferred: MDS-QA-R1-F007 — the lab renders every documented before/after pair; improved evidence navigation, grouping, or summarization is an R2 investigation candidate only
-- High-level status: design-approved; P0–S6 implemented, merged, and deployed; MDS compliance in progress pending Gate 2 owner sign-off; repository mapping current
+- High-level status: design-approved; P0–S6 implemented, merged, and deployed; MDS compliance complete 2026-09-14 — PASS WITH APPROVED EXCEPTIONS (MDS-EXC-001) on Gate 2 owner sign-off; repository mapping current
 
 ## Maintenance
 

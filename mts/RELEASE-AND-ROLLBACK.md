@@ -121,7 +121,7 @@ append-only history of what the database actually did.
 | MPS QA protocol executed and recorded | run, green | 2026-09-10; `mps/qa/MPS-QA-REPORT-R1.md` — all sixteen acceptance criteria |
 | MTS QA protocol executed and recorded | run | 2026-09-10; `mts/qa/MTS-QA-REPORT-R1.md` — pass with owner actions outstanding |
 | Preview deployment reviewed against MDS references | **not run** | a preview deployment exists for every pull request (for example `383c780`); an owner review has not been recorded |
-| MDS Gate 2 owner sign-off | **not run** | withheld by the owner until the recaptured comparison is reviewed |
+| MDS Gate 2 owner sign-off | run, approved | 2026-09-14, Josh Coley, on the comparison recaptured in PR #14 (merged `739b2a7`); MDS compliance PASS WITH APPROVED EXCEPTIONS (`mds/qa/MDS-QA-REPORT-R1.md` §13). Not release approval |
 | Formal S6 release approval | **not run** | owner checkpoint |
 | Preview environment variables set separately from production | **not run** | owner action in the Vercel dashboard |
 | Preview-safe notification destination confirmed | **not run** | owner action; the application-side labelling is in place (§5) |
