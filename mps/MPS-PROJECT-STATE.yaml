@@ -7,7 +7,7 @@ mps:
   mps_version: v1.1
   current_gate: approval_handoff
   created_at: "2026-09-05"
-  updated_at: "2026-09-05"
+  updated_at: "2026-09-14"
 
 project:
   product_type: service-proof portfolio product and synthetic audit lab
@@ -97,18 +97,18 @@ releases:
   - {id: MPS-REL-001, name: "Portfolio Launch-Readiness Proof", status: approved}
 
 downstream:
-  mds: {project_id: POB-2026-36-02-MDS, version: v1.0, status: implementation_ready, compatible_mps_version: v1.1, last_synchronized: "2026-09-05", open_product_gaps: []}
+  mds: {project_id: POB-2026-36-02-MDS, version: v1.0, status: implemented_compliance_review_required, compatible_mps_version: v1.1, last_synchronized: "2026-09-14", open_product_gaps: [], note: "MDS Gate 1 and Gate 3 pass; Gate 2 awaits owner sign-off (mds/qa/MDS-QA-REPORT-R1.md)."}
   mts:
     status: implementation_readiness_in_progress
     project_id: supabase-saas-launch-readiness-lab
     version: v0.6-draft
-    last_synchronized: "2026-09-06"
+    last_synchronized: "2026-09-14"
     engineering_capability_signals:
       - Safe synthetic multi-tenant fixtures and negative-authorization execution
       - Deterministic webhook replay and idempotency evidence
       - Secret-safe evidence and redacted telemetry
       - Reliable inquiry delivery, deduplication, recovery, and measurement
-  implementation: {status: not_started, manifest: mps/implementation/PRODUCT-IMPLEMENTATION.md}
+  implementation: {status: implemented_and_deployed, manifest: mps/implementation/PRODUCT-IMPLEMENTATION.md, merged: fcb30f5, merged_at: "2026-09-14", production_url: "https://supabase-saas-launch-readiness-lab.vercel.app/", note: "All six product slices are implemented, merged to main, and served by the production deployment. Formal S6 release approval is an owner checkpoint and has not been recorded."}
 
 governance:
   decisions:
@@ -119,6 +119,12 @@ governance:
     - {id: MPS-DEC-005, statement: "Position as launch-readiness review and remediation, not certification or formal penetration testing.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-05"}
     - {id: MPS-DEC-006, statement: "Approve the proposed buyer workflow, R1 boundary, requirements, rules, and acceptance criteria and proceed to MDS.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-05"}
     - {id: MPS-DEC-007, statement: "Retain inquiry records for no more than 12 months after latest activity, allow earlier manual deletion, and retain only minimal operational deduplication metadata afterward when necessary.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-05"}
+    - {id: MPS-DEC-008, statement: "The production site is intended to be publicly indexable. Preview deployments must not be treated as canonical or intentionally indexed.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-14", applies_in: "portfolio-polish slice (robots and sitemap behaviour are not added in the R1 closeout)"}
+    - {id: MPS-DEC-009, statement: "Simplify the first-contact explanation while preserving every synthetic-data, authorization, evidence, and non-certification guardrail, and explain relevance to founders, agencies, and development teams preparing to launch, accept payments, onboard customers, or expose real data.", status: approved_in_principle, approved_by: Josh Coley, approved_at: "2026-09-14", applies_in: "portfolio-polish slice"}
+    - {id: MPS-DEC-010, statement: "Positioning clarification and guardrail: the lab is relevant to AI-assisted, rapidly assembled, agency-delivered, or inherited Supabase applications. Named tools such as Lovable, Bolt, v0, and Cursor may appear as contextual examples only. Do not claim or imply that those tools inherently produce insecure applications; do not make those brands part of the permanent product identity; do not narrow the audience to users of those tools. The underlying risk statement stays focused on launch speed, unclear ownership, missing verification, and application-to-Supabase integration boundaries.", status: approved, approved_by: Josh Coley, approved_at: "2026-09-14", classification: "Positioning clarification and guardrail, not a claim about third-party products. It adds no requirement, rule, or acceptance criterion and does not change the approved actors.", version_intent: "Approved as the MPS v1.2 positioning clarification. mps_version stays v1.1 until the clarification is written into PRODUCT-BLUEPRINT.md and the downstream MDS and MTS consumers are synchronized, which belongs to the portfolio-polish slice."}
+    - {id: MPS-DEC-011, statement: "Beginner and technical-reviewer paths are optional variants of MPS-WFL-001. They converge on the existing scenario, report, and authorized-review workflow and create no account, personalized scan, or separate product workflow.", status: approved_in_principle, approved_by: Josh Coley, approved_at: "2026-09-14", applies_in: "portfolio-polish slice; the composition must be proposed under the approved MDS before implementation"}
+    - {id: MPS-DEC-012, statement: "The public application may link to the public GitHub repository through a restrained technical-implementation path. The link must not be presented as authorization to run the synthetic fixture against another system, and the distinction between published fixture code and a reusable public exploit endpoint is preserved.", status: approved_in_principle, approved_by: Josh Coley, approved_at: "2026-09-14", applies_in: "portfolio-polish slice; exact placement is an MDS composition decision"}
+    - {id: MPS-DEC-013, statement: "Social-preview image direction: reuse existing MDS tokens, typography, product identity, product mark, and ink-surface treatment; prefer the product name plus a neutral launch-readiness descriptor; avoid findings, scores, certification-style badges, guarantees, or claims that would need extensive qualification. The image is presented for owner approval before it becomes canonical.", status: approved_direction, approved_by: Josh Coley, approved_at: "2026-09-14", applies_in: "portfolio-polish slice"}
   assumptions:
     - {id: MPS-ASM-001, statement: "Synthetic proof can attract authorized work.", status: open, blocking: false}
     - {id: MPS-ASM-002, statement: "Buyers value reproducible remediation proof over a checklist alone.", status: open, blocking: false}
@@ -145,9 +151,9 @@ artifacts:
   requirements_rules: {path: mps/REQUIREMENTS-RULES.md, status: current}
   acceptance_criteria: {path: mps/ACCEPTANCE-CRITERIA.md, status: current}
   product_implementation: {path: mps/implementation/PRODUCT-IMPLEMENTATION.md, status: current}
-  agents_md: {path: AGENTS.md, status: missing, note: "Deferred until MDS and MTS can be merged."}
+  agents_md: {path: AGENTS.md, status: current, note: "Merged MPS, MDS, and MTS agent contract."}
   qa_protocol: {path: mps/qa/MPS-QA.md, status: current}
-  validation_report: {path: mps/qa/MPS-VALIDATION.md, status: not_applicable}
+  validation_report: {path: mps/qa/MPS-QA-REPORT-R1.md, status: current, note: "R1 implementation QA record (PASS, 2026-09-10; merged-tree CI evidence added 2026-09-14). The protocol's MPS-VALIDATION.md name was not used."}
 
 gates:
   discovery: {status: completed, completed_at: "2026-09-05", blocking_items: []}
@@ -157,9 +163,11 @@ gates:
   workflows_states: {status: completed, completed_at: "2026-09-05", blocking_items: []}
   requirements_acceptance: {status: completed, completed_at: "2026-09-05", blocking_items: []}
   approval_handoff: {status: completed, completed_at: "2026-09-05", blocking_items: []}
-  product_validation: {status: not_started, blocking_items: [implementation_not_started]}
+  product_validation: {status: implementation_qa_passed_awaiting_owner_closeout, blocking_items: [owner_release_approval], evidence: mps/qa/MPS-QA-REPORT-R1.md, note: "All sixteen MPS-ACC criteria pass. Implementation QA cannot establish market validation or outcome metrics; MPS-MET-001 through 005 have collection in place but no baseline. Closing this gate is an owner decision."}
 
 validation:
-  outcome_measurement_readiness: defined_not_implemented
-  downstream_synchronization: mds_v1.0_compatible_mts_v0.1_initialized
-  overall_status: awaiting_implementation
+  outcome_measurement_readiness: collection_implemented_baseline_pending
+  downstream_synchronization: mds_v1.0_compatible_mts_v0.6-draft_implemented
+  overall_status: implementation_accepted_awaiting_owner_closeout
+  reviewed_at: "2026-09-14"
+  metric_exclusions: "The single production inquiry-path verification of 2026-09-09 (MTS-OBS-049) is operator test activity and must be excluded from MPS-MET-003 and any conversion figure."

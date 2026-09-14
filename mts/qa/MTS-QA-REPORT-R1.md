@@ -3,7 +3,7 @@
 Protocol: `mts/qa/MTS-QA.md`
 Status: **PASS WITH OPEN OWNER ACTIONS**
 MTS version: v0.6-draft (Gate 6 approved; Gate 7 implementation readiness in progress)
-Date: 2026-09-10
+Date: 2026-09-10 (local QA execution); reconciled 2026-09-14 with merged-tree CI evidence
 Recorded by: Claude (agent execution)
 
 > Each check is recorded as pass, fail, or **not_run**, with command, environment,
@@ -15,7 +15,7 @@ Recorded by: Claude (agent execution)
 
 | Field | Value |
 |---|---|
-| Commit | `slice/s6-measurement-and-release` @ `55b9357` plus this slice's QA additions |
+| Commit | Local QA execution: `slice/s6-measurement-and-release` @ `55b9357` plus the QA additions later committed as `286ed36`. Final merged tree: `fcb30f5` on `main` — see "Merged-tree evidence" |
 | Host | Ubuntu 26.04 LTS, Node v24.17.0, pnpm 12.3.4 |
 | Framework | Next.js 16.3.4 (App Router, Turbopack) |
 | Harness | Playwright 1.63.0 |
@@ -32,11 +32,11 @@ Recorded by: Claude (agent execution)
 | Build | `pnpm build` | local, production, from a deleted `.next` | pass | route table shows all ten routes prerendered; two API routes dynamic |
 | Evidence freshness | `pnpm evidence:check` | local | pass | a stale transcript fails the gate (MTS-RISK-006) |
 | Unit and integration | `pnpm test:unit` | local | pass — **151 passed, 1 skipped** | evidence executor, replay executor, report model, inquiry submission, inquiry boundary, measurement boundary, evidence freshness. The skip is `inquiry-live-delivery.spec.ts`, which sends a real message and runs only under `INQUIRY_LIVE_DELIVERY=1`; it is recorded as skipped, not as passing |
-| Browser, responsive, route, recovery | `pnpm test:e2e --workers=1` | local, production build | pass — **904 passed, 0 failed, 1 skipped**, 18.5 min, exit 0 | five projects: chromium mobile/tablet/desktop/wide, firefox desktop. The skip is the live-delivery test |
+| Browser, responsive, route, recovery | `pnpm test:e2e --workers=1` | local, production build | pass — **904 passed, 0 failed, 1 skipped**, 18.5 min, exit 0 | five projects: chromium mobile/tablet/desktop/wide, firefox desktop. The skip is `e2e/s6-measurement.spec.ts` "printing the report records a print" on Firefox, which runs only where the test runner can trigger `beforeprint` (Chromium). *Corrected 2026-09-14: this row previously named the live-delivery test, which is a unit test and is the skip in the row above* |
 | Supabase migration and RLS allow/deny | `pnpm inquiries:check:hosted` | hosted | pass — **carried, not re-run in this pass** | Last run green 2026-09-10 when migration `20260909000005` was applied (MTS-OBS-052, resolved): RLS on both tables, zero policies, zero table grants to application roles, `anon` holds execute on the two submission-path functions only. It could NOT be re-run here: the script needs a Supabase Management API token, which this environment does not hold. Nothing in this QA pass touched the schema, so the result still describes the current database — but it is a carried result, not a fresh one. |
 | Measurement payload redaction | `tests/unit/measurement-boundary.spec.ts` | local | pass | no payload field can hold free text or an identifier; no credential, session, cookie, or address is read anywhere in measurement |
 | Secret / log / dependency | `tests/unit/inquiry-boundary.spec.ts`, GitHub push protection | local + remote | pass | no service-role key read anywhere; one module constructs a database client; no credential-shaped literal on disk (MTS-OBS-046) |
-| CI verification gate | GitHub Actions `verify` | ubuntu runner | pass — **for commit `18d58d2`, not for this tree** | Run 34475496471 on this branch, green in 10m11s, browsers job at `workers: 1` including WebKit (MTS-EXC-002). The QA additions in this pass have not yet been through CI, so WebKit has not seen them. |
+| CI verification gate | GitHub Actions `verify` | ubuntu runner | pass — **on the final merged tree `fcb30f5`** | At the time of the local pass the latest green run was 34475496471 on `55b9357` (*corrected 2026-09-14: this row previously named `18d58d2`*), which predated the QA additions. They have since been through CI twice, including WebKit — see "Merged-tree evidence". |
 
 ## Required manual checks
 
@@ -60,6 +60,31 @@ Recorded by: Claude (agent execution)
 | MTS-OBS-053 (recorded as a flaky focus assertion) | open, low | **resolved** — it was not a flake. It recurred in this pass at one worker; the cause is a `focus()` call on a `display: none` live region from a `requestAnimationFrame` that beat React's commit. Fixed by moving the focus into a post-commit effect; verified 138/138 at `--repeat-each=6` on the project where it failed. Severity raised low → medium; the prior framing is withdrawn |
 | MTS-DEV-003 (preview/production share one Supabase project) | open | unchanged — owner action; blocks calling the preview environment compliant with approved environment boundaries, not the production release |
 
+## Merged-tree evidence (added 2026-09-14)
+
+The checks above ran locally on the QA tree. Two later commits changed that tree before it reached `main`: `286ed36` committed the QA additions and the MTS-OBS-053 focus fix, and `383c780` added the pillar-hue tokens (MDS-CHG-006). The evidence for the tree that actually shipped is CI, not the local run.
+
+| Run | Tree | Result |
+|---|---|---|
+| `verify` 34842941040 (pull request #13) | `383c780` | checks, evidence, browsers all succeeded. Browsers: 1,083 passed, 1 flaky (a WebKit `page.goto` internal error before any assertion ran, passed on retry), 2 skipped |
+| `verify` 34852162894 (push to `main`) | `fcb30f5` | checks succeeded (151 unit passed, 1 skipped); evidence succeeded (clean-database reproduction); browsers succeeded — 1,086 checks at one worker across six projects including WebKit: **1,084 passed, 0 failed, 0 flaky, 2 skipped** (the Firefox and WebKit instances of the Chromium-only print-event check) |
+| Production check by request | `fcb30f5` | Vercel deployed `fcb30f5`; all ten public routes 200, API routes 405 to GET, six security headers present, and the pillar-hue classes present in the served HTML |
+
+Production inquiry verification (MTS-OBS-049, 2026-09-09): one marked verification inquiry went through the deployed endpoint and was accepted by Resend. It was then redacted through the approved path, `public.redact_inquiry`, so only bounded deduplication and operational metadata remain and the original inquiry content is not stored. It is operator test activity and must be excluded from MPS-MET-003 and any conversion figure.
+
+## Open owner actions (reconciled 2026-09-14)
+
+None of these is recorded as passing, and none may be until it is performed and observed:
+
+- Production rollback drill (`mts/RELEASE-AND-ROLLBACK.md` §3)
+- MTS-DEV-003 — a separate Supabase project for preview
+- Preview-scope environment configuration
+- Preview-safe notification destination
+- Edge request rate limiting (MTS-OBS-037) — carried to S6, never recorded as configured
+- Confirmation of whether the production sender is a verified domain
+- Observation of a production measurement event in the hosted measurement table
+- MDS Gate 2 owner sign-off and formal S6 release approval
+
 ## Result
 
 **PASS WITH OPEN OWNER ACTIONS.**
@@ -69,5 +94,6 @@ ran and passed except the two that need owner access to Vercel: the rollback
 drill and the preview environment configuration. Those are recorded as not_run,
 not as passing, and no promotion or recovery claim is made from them.
 
-The remaining gate on the release is not technical: MDS Gate 2 needs the owner's
-visual sign-off (`mds/qa/MDS-QA-REPORT-R1.md` §4).
+Production already serves the merged build, because Vercel promotes `main` automatically. What is
+outstanding is the **formal** release: the owner S6 checkpoint, which also waits on MDS Gate 2
+sign-off (`mds/qa/MDS-QA-REPORT-R1.md` §4), and the owner actions listed above.

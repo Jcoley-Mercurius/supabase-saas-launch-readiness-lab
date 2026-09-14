@@ -170,7 +170,7 @@ Breakpoints: mobile 0–639; tablet 640–959; desktop 960–1279; wide 1280+.
 - Scenario cards: 4-up wide, 2-up intermediate, 1-up mobile.
 - Wide lab: 240–264 scenario rail, flexible evidence canvas, optional 280–320 context panel.
 - Tablet: rail becomes in-flow selector; context moves before proof.
-- Mobile: scenario selector and step summary, vulnerable proof, remediation, comparison, limitation, retry/report/CTA in reading order.
+- Mobile: scenario selector, synthetic context panel, step summary, vulnerable proof, remediation, comparison, limitation, retry/report/CTA in reading order. The context panel's position is approved by Josh Coley 2026-09-14 (MDS-QA-R1-F006); it follows the tablet rule that context comes before proof.
 - Report index becomes in-flow below desktop.
 - Inquiry becomes one column with expectations before fields.
 - Never hide evidence state, limitations, recovery, report route, or primary CTA for viewport size.

@@ -3,7 +3,7 @@
 Protocol: `mps/qa/MPS-QA.md`
 Status: **PASS**
 MPS version: v1.1
-Date: 2026-09-10
+Date: 2026-09-10 (local QA execution); reconciled 2026-09-14
 Recorded by: Claude (agent execution)
 
 > Implementation QA cannot claim market validation, certification, compliance, or
@@ -115,8 +115,14 @@ landing emitter says so in its own comment.
 
 ### MDS QA and MTS QA
 
-- MDS: `mds/qa/MDS-QA-REPORT-R1.md` — Gate 1 PASS, Gate 3 PASS, Gate 2 review required (owner sign-off).
-- MTS: `mts/qa/MTS-QA-REPORT-R1.md` — required automated checks pass; two manual owner checks outstanding.
+- MDS: `mds/qa/MDS-QA-REPORT-R1.md` — Gate 1 PASS, Gate 3 PASS, Gate 2 review required (owner sign-off withheld pending the recaptured comparison).
+- MTS: `mts/qa/MTS-QA-REPORT-R1.md` — required automated checks pass; owner actions outstanding.
+
+### Merged-tree evidence (added 2026-09-14)
+
+The acceptance checks above ran locally on `55b9357` plus the QA additions. The same spec files ran in CI on the merged tree `fcb30f5` (run 34852162894): 1,084 browser checks passed, 0 failed, 2 skipped, including WebKit, and 151 unit tests passed with 1 skipped. The QA tree was committed as `286ed36`, and the only product-code change between it and `main` is the decorative pillar-icon hue (`383c780`, MDS-CHG-006), which touches no acceptance criterion. The R1 closeout branch later fixes two MDS findings (a checkbox radius and a footer layout shift); neither touches an acceptance criterion either.
+
+The production inquiry-path verification of 2026-09-09 (MTS-OBS-049) wrote one real, marked verification inquiry. It was redacted through the approved path (`public.redact_inquiry`), leaving only bounded deduplication and operational metadata — the original inquiry content is not stored. It is operator test activity and must be excluded from MPS-MET-003 and every conversion figure.
 
 ## Result
 
@@ -126,6 +132,8 @@ This records product acceptance for R1. It does not establish market demand,
 formal security certification, legal compliance, or a real-world outcome, and no
 result above should be read as any of those.
 
-Two things remain outside this record and are tracked where they belong: the
-Gate 2 visual sign-off (MDS), and the preview-environment separation
-(MTS-DEV-003). Neither affects any acceptance criterion above.
+Items remaining outside this record are tracked where they belong: the Gate 2
+visual sign-off (MDS), formal S6 release approval, and the MTS owner actions
+(rollback drill, preview separation MTS-DEV-003 and its configuration, edge rate
+limiting, sending-domain confirmation, production measurement arrival). None
+affects an acceptance criterion above.

@@ -10,7 +10,7 @@ Repository status: greenfield; paths below are approved planned paths, not yet i
 | Inquiry route | src/app/api/inquiries/route.ts | SUPABASE_SERVICE_ROLE_KEY only if approved server operation requires it; RESEND_API_KEY; INQUIRY_NOTIFICATION_TO | Server-only | schema validation, rate-limit, duplicate, delivery-failure tests |
 | Evidence engine | src/lib/evidence/ | No secrets required | Server-side execution preferred; only qualified result crosses to UI | deterministic fixtures, reset/reseed, state transition tests |
 | Resend | src/lib/email/ | RESEND_API_KEY, RESEND_FROM_EMAIL | Server-only | mocked delivery, failure/retry, no-sensitive-log check |
-| Measurement | src/lib/measurement/ | Optional PostHog key only after approval; no private key in browser | Event boundary strips prohibited fields | taxonomy and payload-redaction tests |
+| Measurement | src/lib/measurement/ | No provider key: first-party only, written to the project's own Supabase Postgres (MTS-DEC-016); no private key in browser | Event boundary strips prohibited fields | taxonomy and payload-redaction tests |
 | Playwright | playwright.config.ts, tests/ | Preview URL and test-only values | Test runner only | HTML report, screenshots, traces, responsive matrix |
 | MDS assets | public/, mds/ preserved package | None | Static assets only | asset inventory and visual comparison |
 
@@ -18,6 +18,11 @@ Repository status: greenfield; paths below are approved planned paths, not yet i
 
 - public.inquiries: minimal contact and inquiry metadata, retention timestamp, delivery status, deduplication key.
 - public.inquiry_delivery_events: minimal operational delivery metadata; no message secrets.
+- measurement.events (added by MTS-DEC-016): timestamp, bounded event name, surface, scenario slug, and environment; no inquiry content, identifier, or foreign key to inquiries.
+
+## Implementation reconciliation (2026-09-14)
+
+The table above is the Gate 7 plan and is kept as approved. The implemented paths differ only as recorded: the application is flattened to the repository root under MTS-EXC-001 (`app/`, `components/`, `lib/`, `e2e/` and `tests/unit/` instead of `src/` and `tests/`), and the inquiry route is `app/api/inquiries/route.ts` (MTS-OBS-043). Observed paths: `lib/inquiry/` (store, submission, notification), `lib/measurement/` with `app/api/measurement/route.ts`, `lib/evidence/`, `supabase/migrations` (synthetic fixture) and `supabase/inquiry/migrations` (inquiry and measurement, applied to the hosted project with `pnpm inquiries:migrate:hosted`). No service-role key is read anywhere (`SUPABASE_SERVICE_ROLE_KEY` remains unused). Measurement uses no PostHog key.
 - Synthetic evidence fixtures may use a separate schema or isolated project. They must not share production inquiry tables.
 
 ## External setup still required
