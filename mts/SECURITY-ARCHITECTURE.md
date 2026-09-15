@@ -30,6 +30,7 @@ This is an engineering control plan, not a certification.
 - Keep production inquiry data separate from synthetic fixtures and reset commands.
 - Retain inquiry content for 12 months after latest activity or delete earlier; retain only minimal operational metadata afterward.
 - Use preview-safe notification destinations and separate environment variables.
+  - R1 (MTS-EXC-003): Preview is non-writing and sends no notification, enforced at the single server-client boundary regardless of configuration. The Vercel Preview scope should hold no Supabase or Resend values; the automated browser suite serves a forcibly unconfigured server.
 - Pin/manage dependencies through the repository lockfile and review supply-chain changes.
 
 ## Vulnerable demonstration rule

@@ -46,10 +46,11 @@ import {
  * rather than by anything a caller passes. Production is labelled with nothing,
  * because the unmarked message is the real one.
  *
- * What labelling does NOT do, stated plainly: the preview deployment writes to
- * the same isolated inquiry project as production (there is only one), so a
- * preview submission is a real row under the same retention policy. That is
- * recorded as MTS-OBS-051, not solved here.
+ * Where a non-production message could come from: a Preview deployment never
+ * reaches this function, because it has no store and an unstored inquiry is
+ * never notified (MTS-EXC-003, lib/supabase/server-client.ts). A local build
+ * pointed at a store can, and what it wrote to depends on that workstation's
+ * configuration — which is why the banner claims nothing about the store.
  */
 
 export interface NotificationTransport {
@@ -220,7 +221,7 @@ export function labelForEnvironment(
     subject: `${banner} ${message.subject}`,
     text: [
       `${banner} This notification came from the ${environment} deployment, not from the live site.`,
-      "Treat it as a test submission unless you know otherwise. It was written to the same isolated inquiry store as a live inquiry and is subject to the same retention policy.",
+      "Treat this as a test submission unless you know otherwise.",
       "",
       message.text,
     ].join("\n"),

@@ -15,7 +15,7 @@ P0 Bootstrap → S1 Public Shell → S2 Evidence/RLS → S3 Replay/Recovery → 
 
 Create the standalone Git repository, Vercel project, isolated Supabase environments, verified Resend domain, and private environment values. These actions are not silently performed by the coding agent.
 
-Status as of 2026-09-14: the repository, the Vercel project (connected 2026-09-09), the dedicated hosted inquiry project, and the private environment values are in place, and production delivery of the inquiry notification was verified on 2026-09-09 (`MTS-OBS-049`). Still owner-gated: a second Supabase project for preview (`MTS-DEV-003`), preview-scope environment values and a preview-safe notification destination, confirmation of whether the production sender is a verified domain, and edge request rate limiting (`MTS-OBS-037`).
+Status as of 2026-09-14: the repository, the Vercel project (connected 2026-09-09), the dedicated hosted inquiry project, and the private environment values are in place, and production delivery of the inquiry notification was verified on 2026-09-09 (`MTS-OBS-049`). Still owner-gated: confirming the Vercel variable scopes (Supabase and Resend values in Production only), confirmation of whether the production sender is a verified domain, and edge request rate limiting (`MTS-OBS-037`). A second Supabase project for preview is no longer required: Preview is non-writing in code under `MTS-EXC-003` (2026-09-14), which resolves `MTS-DEV-003`.
 
 Historical status as of 2026-09-08: the repository, the isolated Supabase environments (local fixture plus the dedicated hosted inquiry project), and the private environment values are all in place. Two remain, both S6 and both owner-gated: the **Vercel project**, which blocks preview and production deployment, and a **verified Resend from-domain for production** plus a preview destination that cannot deliver to a real buyer. Neither blocked S5 — a real notification was sent and accepted on 2026-09-08.
 
@@ -137,12 +137,12 @@ Three rules from S5 remain binding on everything that follows:
 
 | Item | Blocking effect |
 |---|---|
-| Production rollback drill (`mts/RELEASE-AND-ROLLBACK.md` §3) | Full MTS closeout; recommended before any promotion push |
-| Second Supabase project for preview (`MTS-DEV-003`) | Preview conformity and MTS closeout. Until it exists, do not submit test inquiries on preview deployments: they write to the production store |
-| Preview-scope environment values | Preview conformity |
-| Preview-safe notification destination | Preview conformity |
+| Production rollback drill (proposed plan in `mts/RELEASE-AND-ROLLBACK.md` §3, count-only non-decreasing data condition) | Full MTS closeout; recommended before any promotion push |
+| Confirm Vercel variable scopes — Supabase and Resend values in Production only (`MTS-EXC-003`) | MTS closeout. The code guard does not depend on it: Preview writes and sends nothing regardless |
 | Edge request rate limiting (`MTS-OBS-037`) | MTS closeout; recommended before promotion |
 | Confirm whether the production sender is a verified domain | MTS closeout (`resend_verified_domain_and_preview_safe_destination`) |
 | Observe a production measurement event in the hosted measurement table | MTS closeout (`MTS-CAP-008`) |
+
+**Resolved 2026-09-14 (`chore/r1-owner-operations`):** the shared preview/production store (`MTS-DEV-003`, `MTS-OBS-051`) through approved exception `MTS-EXC-003` — Preview is non-writing, hosted Preview inquiry and measurement delivery are intentionally untested, and a separate Preview project is reconsidered only for the read-only scanner or sustained post-R1 development.
 
 **Then:** the portfolio-polish slice under `MPS-DEC-008` through `MPS-DEC-013`, its QA, the promotion package after the rollback drill, and — separately and outside R1 — an MPS Gate 1 for any read-only scanner.

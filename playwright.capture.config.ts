@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { HOSTED_SERVICES_UNSET } from "./playwright.config";
 
 /**
  * MDS QA Gate 2 — render capture.
@@ -36,5 +37,8 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: false,
     timeout: 240_000,
+    // Forcibly unconfigured, exactly as the gate suite is: see
+    // HOSTED_SERVICES_UNSET in playwright.config.ts.
+    env: HOSTED_SERVICES_UNSET,
   },
 });

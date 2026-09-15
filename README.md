@@ -32,11 +32,11 @@ released**: the owner S6 checkpoint has not been recorded.
 renders, and status reconciliation. MDS Gate 2 was signed off by the owner on 2026-09-14.
 
 **Still open (owner):** formal S6 release approval · the production rollback
-drill · a separate Supabase project for preview (`MTS-DEV-003`) · preview-scope environment values
-and a preview-safe notification destination · edge request rate limiting (`MTS-OBS-037`) ·
+drill · confirming Vercel variable scopes (Supabase and Resend values in Production only) ·
+edge request rate limiting (`MTS-OBS-037`) ·
 confirming the production sending domain · observing a production measurement event in the hosted
-table. Until preview has its own Supabase project, **do not submit test inquiries on preview
-deployments** — they write to the production store. Details:
+table. **Preview deployments never write** (`MTS-EXC-003`): an inquiry submitted on Preview is
+not recorded and sends no notification, and no measurement event is stored. Details:
 [mts/RELEASE-AND-ROLLBACK.md](mts/RELEASE-AND-ROLLBACK.md) and
 [mts/MERCURIUS-BUILD-ROADMAP.md](mts/MERCURIUS-BUILD-ROADMAP.md).
 
@@ -186,9 +186,9 @@ at every checkpoint. Details in [mts/MERCURIUS-BUILD-ROADMAP.md](mts/MERCURIUS-B
 ## Owner prerequisites (not performed by an agent)
 
 1. Git repository — done: `Jcoley-Mercurius/supabase-saas-launch-readiness-lab`
-2. Vercel project — connected 2026-09-09; **preview-scope values not yet set separately from production**
-3. Isolated Supabase environments — local fixture and the hosted inquiry project exist; **a separate preview project does not** (`MTS-DEV-003`)
-4. Resend — production delivery verified 2026-09-09; **verified sending-domain status unconfirmed**, preview-safe destination not configured
+2. Vercel project — connected 2026-09-09; **variable scopes to be confirmed**: Supabase and Resend values in Production only
+3. Isolated Supabase environments — local fixture and the hosted inquiry project (Production only). No Preview project: Preview is non-writing under `MTS-EXC-003`
+4. Resend — production delivery verified 2026-09-09; **verified sending-domain status unconfirmed**. Preview sends no notification (`MTS-EXC-003`)
 5. Private environment values configured in the dashboards — **never** in source, prompts, logs, or commits
 
 Production promotion, paid upgrades, and secret activation are explicit owner actions and are not

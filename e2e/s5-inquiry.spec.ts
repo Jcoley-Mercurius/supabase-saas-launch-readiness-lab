@@ -89,6 +89,49 @@ function formAlert(page: Page) {
   return page.locator('[role="alert"]:not(#__next-route-announcer__)');
 }
 
+/** Every answer `fillForm` gave is still in the form. */
+async function expectEveryValueKept(page: Page) {
+  for (const [label, value] of Object.entries(FILLED)) {
+    await expect(
+      page.getByLabel(label, { exact: false }).first(),
+      `${label} was cleared`,
+    ).toHaveValue(value);
+  }
+  await expect(page.getByLabel(/What's prompting this review/i)).toHaveValue(
+    "pre-launch",
+  );
+  await expect(
+    page.getByRole("checkbox", { name: "Authorization & RLS" }),
+  ).toBeChecked();
+  await expect(page.getByLabel(/What would you like reviewed/i)).toHaveValue(
+    /RLS policies reviewed/,
+  );
+  await expect(page.getByLabel(/Who can authorize a review/i)).toHaveValue(
+    "authorized-by-me",
+  );
+  await expect(
+    page.getByRole("checkbox", {
+      name: /work on a live system begins only after authorization/i,
+    }),
+  ).toBeChecked();
+}
+
+/**
+ * The recovery message sends nobody to a contact route. R1 has none: no
+ * contact page, no mailto, and the About page is not one.
+ */
+async function expectNoContactDetour(page: Page) {
+  const outcome = page.locator(
+    '[role="alert"]:not(#__next-route-announcer__), [role="status"]',
+  );
+  await expect(outcome.locator('a[href*="about"]')).toHaveCount(0);
+  await expect(outcome.locator('a[href*="contact"]')).toHaveCount(0);
+  await expect(outcome.locator('a[href^="mailto:"]')).toHaveCount(0);
+  await expect(
+    outcome.filter({ hasText: /contact route|About page/i }),
+  ).toHaveCount(0);
+}
+
 async function submit(page: Page) {
   await page.getByRole("button", { name: /Submit review inquiry/i }).click();
 }
@@ -311,40 +354,72 @@ test.describe("the eight required inquiry states", () => {
     await expect(status).not.toContainText(/couldn't submit/i);
   });
 
-  test("submission failed is retryable and keeps every entered value", async ({
+  // Both unconfirmed reasons get the same retryable presentation: to the buyer,
+  // an unreachable store and an absent one are the same fact — nothing was
+  // recorded.
+  for (const reason of ["store", "unconfigured"] as const) {
+    test(`submission failed (${reason}) is retryable and keeps every entered value`, async ({
+      page,
+    }) => {
+      await openInquiry(page);
+      await respondWith(page, 503, { state: "unconfirmed", reason });
+      await fillForm(page);
+      await submit(page);
+
+      const alert = formAlert(page);
+      await expect(alert).toContainText("We couldn't submit the inquiry");
+      await expect(alert).toContainText(
+        "Nothing was recorded. Your answers remain in the form. Please try again later.",
+      );
+      await expectNoContactDetour(page);
+
+      // MPS workflow: "explain that no request was confirmed, and offer a retry".
+      await expect(
+        page.getByRole("button", { name: /Try again/i }),
+      ).toBeVisible();
+      await expectEveryValueKept(page);
+      await expect(
+        page.getByRole("button", { name: /Submit review inquiry/i }),
+      ).toBeVisible();
+    });
+  }
+
+  test("rate limited says nothing was recorded and keeps every entered value", async ({
     page,
   }) => {
-    await openInquiry(page);
-    await respondWith(page, 503, { state: "unconfirmed", reason: "store" });
-    await fillForm(page);
-    await submit(page);
-
-    const alert = formAlert(page);
-    await expect(alert).toContainText(/We couldn't submit the inquiry/i);
-    await expect(alert).toContainText(/Nothing was recorded/i);
-
-    // MPS workflow: "explain that no request was confirmed, and offer a retry".
-    await expect(
-      page.getByRole("button", { name: /Try again/i }),
-    ).toBeVisible();
-    await expect(
-      page.getByLabel("Work email", { exact: false }).first(),
-    ).toHaveValue("alex@acme.dev");
-    await expect(
-      page.getByRole("button", { name: /Submit review inquiry/i }),
-    ).toBeVisible();
-  });
-
-  test("rate limited says nothing was recorded", async ({ page }) => {
     await openInquiry(page);
     await respondWith(page, 429, { state: "rate_limited" });
     await fillForm(page);
     await submit(page);
 
     const alert = formAlert(page);
-    await expect(alert).toContainText(/Too many submissions/i);
-    await expect(alert).toContainText(/has not been recorded/i);
+    await expect(alert).toContainText(
+      "Too many inquiries were submitted recently",
+    );
+    await expect(alert).toContainText(
+      "Nothing was recorded. Your answers remain in the form. Please wait and try again later.",
+    );
     await expect(alert).not.toContainText(/received/i);
+    await expectNoContactDetour(page);
+    await expectEveryValueKept(page);
+  });
+
+  test("a stored inquiry whose alert failed offers no contact detour", async ({
+    page,
+  }) => {
+    await openInquiry(page);
+    await respondWith(page, 201, {
+      state: "acknowledged",
+      delivered: false,
+      authorizationBoundary: false,
+    });
+    await fillForm(page);
+    await submit(page);
+
+    await expect(page.getByRole("status")).toContainText(
+      "Your inquiry is on record; our alert did not go out",
+    );
+    await expectNoContactDetour(page);
   });
 
   test("duplicate links to the original and implies no second engagement", async ({
@@ -533,6 +608,57 @@ test.describe("accessibility", () => {
 
     await submit(page);
     await expect(page.getByRole("status")).toContainText(/Inquiry received/i);
+  });
+});
+
+test.describe("the unmocked route on this machine", () => {
+  /*
+   * The one inquiry test here that reaches the real route handler with a
+   * VALID submission, so it is fenced three ways:
+   *
+   *   - it runs only when the target is this machine, never a Preview or
+   *     Production URL passed through PLAYWRIGHT_BASE_URL;
+   *   - it follows no redirect, so a local target cannot hand it on to another
+   *     origin;
+   *   - the server it reaches is forcibly unconfigured (HOSTED_SERVICES_UNSET in
+   *     playwright.config.ts), which the expected response itself confirms:
+   *     `unconfigured` is only returned when there is no store to write to.
+   */
+  const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+  test("a valid inquiry is unconfirmed because nothing can be stored", async ({
+    request,
+    baseURL,
+  }) => {
+    const target = new URL(baseURL ?? "about:blank");
+    test.skip(
+      target.protocol !== "http:" || !LOCAL_HOSTS.has(target.hostname),
+      "Runs only against a local server; never against Preview or Production.",
+    );
+
+    const response = await request.post("/api/inquiries", {
+      maxRedirects: 0,
+      data: {
+        contactName: "Route check (synthetic)",
+        contactEmail: "route-check@example.invalid",
+        organization: "Launch-Readiness Lab",
+        buyerRole: "Verification harness",
+        stackSummary: "Next.js on Vercel, Supabase Postgres, Resend",
+        launchTrigger: "pre-launch",
+        reviewAreas: ["authorization-and-rls"],
+        reviewRequest:
+          "Synthetic submission from the browser suite, confirming the local route reports an unconfigured store as unconfirmed.",
+        authorizationStatus: "authorized-by-me",
+        authorizationAcknowledged: true,
+      },
+    });
+
+    expect(new URL(response.url()).origin).toBe(target.origin);
+    expect(response.status()).toBe(503);
+    expect(await response.json()).toEqual({
+      state: "unconfirmed",
+      reason: "unconfigured",
+    });
   });
 });
 

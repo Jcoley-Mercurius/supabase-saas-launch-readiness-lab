@@ -1,6 +1,6 @@
 # Supabase SaaS Launch-Readiness Lab — Release and Rollback Record
 
-Status: R1 release record — S6 merged and deployed (`fcb30f5`, 2026-09-14); formal release approval and the rollback drill outstanding\
+Status: R1 release record — S6 merged and deployed (`fcb30f5`, 2026-09-14); Preview non-writing under MTS-EXC-003; formal release approval and the rollback drill outstanding\
 Authority: MTS v0.6-draft — TECHNOLOGY-BLUEPRINT.md ("deployments use preview before
 production and retain a prior deployment for rollback"; "migrations are
 additive/reversible where possible; production migration and rollback are
@@ -18,8 +18,8 @@ promotion, or recovery claim is made from an unexercised step.
 | Environment | Source | Deployed by | Data |
 |---|---|---|---|
 | local | working tree | `pnpm dev`, `pnpm build && pnpm start` | synthetic fixtures only; no application database connection |
-| preview | any branch / pull request | Vercel, automatically on push | isolated inquiry project (**shared with production — see §5**) |
-| production | `main` | Vercel, automatically on merge | isolated inquiry project |
+| preview | any branch / pull request | Vercel, automatically on push | **none** — non-writing by code (MTS-EXC-003, §5) |
+| production | `main` | Vercel, automatically on merge | isolated inquiry project — the only environment that persists |
 
 Vercel project: `supabase-saas-launch-readiness-lab`, connected 2026-09-09
 (MTS-CHG-018). Production URL:
@@ -53,9 +53,9 @@ production deployment, `f7e1f8b`, is the rollback target a drill would promote.
    declared event name is accepted by the target database, so a missed
    migration fails the gate instead — but the order still matters, because the
    gate is what catches it and the gate runs before the deploy.
-5. Environment variables are set per Vercel scope. Preview and production hold
-   **separate** values, and preview points at a preview-safe notification
-   destination (§5).
+5. Environment variables are set per Vercel scope. Supabase and Resend values
+   are in the **Production** scope only; Preview holds none, and would write
+   nothing even if it did (MTS-EXC-003, §5).
 6. Open a pull request. CI runs the same gate. Review the preview deployment
    against the approved MDS references at the four breakpoints.
 7. Merge to `main`. Vercel promotes automatically.
@@ -96,6 +96,38 @@ removes inquiry content.
 corrects it and apply it through the same path. That keeps the migration set an
 append-only history of what the database actually did.
 
+### Proposed rollback drill — not executed
+
+A proposed plan, recorded so it can be reviewed before it is run. Nothing below
+has been performed. It needs Vercel access and is an owner action.
+
+1. Record the current production deployment (`fcb30f5` or its successor) and
+   choose the prior known-good production deployment as the target.
+2. **Immediately before rollback**, record count-only values from the hosted
+   project: `select count(*) from public.inquiries` and
+   `select count(*) from public.inquiry_delivery_events`. Counts only — no
+   column of either table is selected or displayed.
+3. Promote the prior deployment in Vercel. No schema or database operation of
+   any kind is performed during the drill.
+4. Confirm by request that production serves the prior build: public routes
+   answer 200, both API routes answer 405 to GET, and the security headers are
+   present. **The drill does not submit an inquiry.**
+5. Roll forward by promoting the recorded current deployment again, and confirm
+   by request that it is served.
+6. **Immediately after roll-forward**, record the same two counts.
+
+Data-integrity pass condition:
+
+- Neither count is lower after roll-forward than before rollback.
+- An increase is **not** a failure when it is consistent with legitimate
+  production activity — production stays live throughout, so a real inquiry may
+  arrive during the drill. Exact equality is not required.
+- Both tables remain readable before and after.
+- No schema or database operation was performed during the deployment rollback.
+- No inquiry content was inspected or exposed at any point.
+- Measurement counts are expected to change with visits and are **not** used for
+  any equality check.
+
 ---
 
 ## 4. Evidence — what has been exercised
@@ -115,6 +147,8 @@ append-only history of what the database actually did.
 | Migration `20260909000005` applied to the hosted project | run, green | 2026-09-10, `pnpm inquiries:migrate:hosted`; deny paths re-proved after |
 | Production inquiry path end to end (MTS-OBS-049) | run, green | 2026-09-09 on owner instruction: one marked verification inquiry acknowledged with delivery accepted by Resend. It was then redacted through the approved path, `public.redact_inquiry`; only bounded deduplication and operational metadata remain, and the original inquiry content is not stored. This activity must be excluded from MPS-MET-003 and every conversion figure |
 | Production sending domain | **not confirmed** | production delivery was accepted, but whether `RESEND_FROM_EMAIL` is a verified domain or the sandbox sender is not observable from the repository; owner to confirm |
+| Hosted Preview inquiry and measurement delivery | **intentionally untested and unavailable** | MTS-EXC-003: Preview is non-writing in code; a Preview inquiry shows the unconfirmed state and sends nothing |
+| Preview guard and browser-suite isolation | run, green locally | 2026-09-14, `chore/r1-owner-operations`: `tests/unit/deployment-boundary.spec.ts` (network stubbed), inquiry unit and browser suites; CI on the pull request |
 | Production measurement event reaches the hosted table | **not observed** | needs a read-only query with owner access |
 | Edge request rate limiting (MTS-OBS-037) | **not configured / not recorded** | owner action in Vercel; the in-database counters still bound what reaches the store |
 | MDS QA protocol executed and recorded | run | 2026-09-10; `mds/qa/MDS-QA-REPORT-R1.md` — Gate 1 PASS, Gate 3 PASS. Every Gate 2 finding ruled on by the owner 2026-09-14; F001 and F002 fixed and renders recaptured on `chore/r1-closeout` |
@@ -123,52 +157,55 @@ append-only history of what the database actually did.
 | Preview deployment reviewed against MDS references | **not run** | a preview deployment exists for every pull request (for example `383c780`); an owner review has not been recorded |
 | MDS Gate 2 owner sign-off | run, approved | 2026-09-14, Josh Coley, on the comparison recaptured in PR #14 (merged `739b2a7`); MDS compliance PASS WITH APPROVED EXCEPTIONS (`mds/qa/MDS-QA-REPORT-R1.md` §13). Not release approval |
 | Formal S6 release approval | **not run** | owner checkpoint |
-| Preview environment variables set separately from production | **not run** | owner action in the Vercel dashboard |
-| Preview-safe notification destination confirmed | **not run** | owner action; the application-side labelling is in place (§5) |
-| Separate Supabase project for preview (MTS-DEV-003) | **not run** | owner action; the rest is scripted (§5) |
-| Promote a prior deployment (rollback drill) | **not run** | owner action; needs Vercel access |
-| Post-rollback inquiry data intact | **not run** | follows the drill |
+| Vercel variable scopes confirmed (Supabase and Resend values in Production only) | **not run** | owner action in the Vercel dashboard; the code guard does not depend on it (§5) |
+| Separate Supabase project for preview (MTS-DEV-003) | **not required** | resolved through MTS-EXC-003 on 2026-09-14; removed from the R1 blockers |
+| Promote a prior deployment (rollback drill) | **not run** | proposed plan in §3; owner action; needs Vercel access |
+| Post-rollback inquiry data intact | **not run** | follows the drill; count-only, non-decreasing condition in §3 |
 
 ---
 
 ## 5. Preview safety
 
-Two halves, and only one of them is the application's.
+**Preview is non-writing (MTS-EXC-003, approved 2026-09-14).** R1 persists inquiries
+and measurement events in Production only. There is no separate Preview Supabase
+project, and none is required for R1.
 
-**The application's half, in place.** `lib/inquiry/notify.ts` labels every
-notification that did not come from production, in the subject and in the first
-line, using `VERCEL_ENV` as the server actually sees it. An operator can tell at
-a glance that a message came from preview, so a test submission is never
-answered as though a buyer sent it. `lib/deployment.ts` treats any unknown
-environment as local, so nothing is ever mislabelled as production.
+**Enforced in code, at one boundary.** `lib/supabase/server-client.ts` returns no
+client, and reports Supabase as unconfigured, whenever `VERCEL_ENV` is `preview` —
+even if Supabase values are present in the Preview scope by mistake. The
+consequences follow from contracts that already existed:
 
-**The owner's half, outstanding.** The destination itself is configuration:
-`RESEND_API_KEY`, `RESEND_FROM_EMAIL` and `INQUIRY_NOTIFICATION_TO` must be set
-in the Vercel **Preview** scope separately from **Production**, with
-`INQUIRY_NOTIFICATION_TO` pointing at an address that is safe to fill with test
-submissions.
+- an inquiry ends **unconfirmed** (reason `unconfigured`): nothing is recorded, the
+  buyer's answers stay in the form, and no operator notification is sent, because
+  notification only follows a stored record;
+- a measurement event is dropped without affecting what a visitor sees.
 
-**What neither half fixes (MTS-DEV-003).** There is one hosted Supabase project,
-so a preview submission writes a real row to the same inquiry store as a
-production submission, under the same retention policy and the same deduplication
-key — a test submission can occupy a genuine buyer's dedupe key and get their
-real inquiry treated as a duplicate. Labelling makes it visible; it does not make
-it separate.
+Production is unchanged. Local stays configuration-dependent, but the automated
+browser suite and the capture harness serve a forcibly unconfigured server
+(`HOSTED_SERVICES_UNSET` in `playwright.config.ts`), so a workstation `.env.local`
+cannot reach the hosted project or Resend from a test run.
 
-This is a **deviation from approved architecture, not an open question**.
-TECHNOLOGY-BLUEPRINT.md "Environment boundaries" already requires preview to hold
-isolated preview data and an isolated notification destination, and
-INTEGRATION-MANIFEST.md lists creating isolated Supabase *environments* as an
-owner dashboard action. The remedy is therefore specified, not chosen:
+**Verified by** `tests/unit/deployment-boundary.spec.ts`, which stubs `fetch`, uses
+`.example.invalid` hosts only, and fails if the guard is removed.
 
-1. Owner creates a second Supabase project for preview.
-2. Apply both migration sets to it:
-   `pnpm inquiries:migrate:hosted supabase/inquiry/migrations/<file> <new-ref>`
-   for each file in order.
-3. Point the Vercel **Preview** scope at it —
-   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — alongside
-   a preview-safe `INQUIRY_NOTIFICATION_TO`.
-4. `pnpm inquiries:check:hosted <new-ref>` to prove the deny paths and the full
-   taxonomy on the new project.
+**Accepted consequence.** Hosted Preview inquiry and measurement delivery are
+intentionally unavailable and untested. A Preview review covers visual and
+behavioural fidelity over synthetic evidence; submitting the inquiry form on a
+Preview deployment shows the approved unconfirmed state.
 
-Only step 1 needs the dashboard. Production is correct and unaffected either way.
+**Notification labelling stays.** `lib/inquiry/notify.ts` still labels every
+non-production notification in its subject and first line. With Preview unable to
+notify, that label can only appear on a local build pointed at a store, and it
+claims nothing about which store that was.
+
+**Owner configuration.** Keep `NEXT_PUBLIC_SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL` and
+`INQUIRY_NOTIFICATION_TO` in the Vercel **Production** scope only. The guard does
+not depend on this; it removes a value that has no use.
+
+**Reconsider when** the read-only scanner is taken up, or sustained post-R1
+development needs hosted Preview persistence. Either reopens a separate Preview
+Supabase project as an MTS decision.
+
+MTS-DEV-003 and MTS-OBS-051, which recorded the earlier shared-store behaviour, are
+resolved through this exception.
