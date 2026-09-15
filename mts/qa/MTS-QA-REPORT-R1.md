@@ -50,7 +50,7 @@ Recorded by: Claude (agent execution)
 | Vulnerable evidence is bounded; no live reusable exploit path | pass | the lab replays a transcript recorded from an isolated local fixture; the published application holds no database connection and runs no new query against any system; no API route exposes the evidence engine (S2) |
 | Inquiry success, duplicate, validation failure, delivery failure, retry, acknowledgement | pass — **after a defect found and fixed in this pass** | S5 browser suite drives each state against the exact response the server returns; server decision logic proved separately against the real database and against injected stores. Focus did not reliably reach the acknowledgement (MTS-OBS-053); fixed and verified |
 | Production promotion and rollback without deleting inquiry data | **not_run** | owner action — needs Vercel access. Procedure written and reviewed: `mts/RELEASE-AND-ROLLBACK.md` §3 |
-| Preview environment configuration | **not_run** | owner action — separate Vercel Preview scope values and a preview-safe `INQUIRY_NOTIFICATION_TO`: `mts/RELEASE-AND-ROLLBACK.md` §5 |
+| Preview environment configuration | **not_run** | owner action — confirm Supabase and Resend values are in the Vercel Production scope only. Preview is non-writing in code under MTS-EXC-003 (added 2026-09-14): `mts/RELEASE-AND-ROLLBACK.md` §5 |
 
 ## Risk and observation movement in this pass
 
@@ -58,7 +58,7 @@ Recorded by: Claude (agent execution)
 |---|---|---|
 | MTS-RISK-003 (privacy) | open, high | **closed** 2026-09-10 against verified controls on storage, analytics, logs, delivery, and isolation, with two residuals stated: no record has yet aged past 12 months, and MTS-DEV-003 |
 | MTS-OBS-053 (recorded as a flaky focus assertion) | open, low | **resolved** — it was not a flake. It recurred in this pass at one worker; the cause is a `focus()` call on a `display: none` live region from a `requestAnimationFrame` that beat React's commit. Fixed by moving the focus into a post-commit effect; verified 138/138 at `--repeat-each=6` on the project where it failed. Severity raised low → medium; the prior framing is withdrawn |
-| MTS-DEV-003 (preview/production share one Supabase project) | open | unchanged — owner action; blocks calling the preview environment compliant with approved environment boundaries, not the production release |
+| MTS-DEV-003 (preview/production share one Supabase project) | open | unchanged in this pass. **Resolved 2026-09-14** through approved exception MTS-EXC-003 (non-writing Preview), together with MTS-OBS-051 |
 
 ## Merged-tree evidence (added 2026-09-14)
 
@@ -76,10 +76,8 @@ Production inquiry verification (MTS-OBS-049, 2026-09-09): one marked verificati
 
 None of these is recorded as passing, and none may be until it is performed and observed:
 
-- Production rollback drill (`mts/RELEASE-AND-ROLLBACK.md` §3)
-- MTS-DEV-003 — a separate Supabase project for preview
-- Preview-scope environment configuration
-- Preview-safe notification destination
+- Production rollback drill (proposed plan in `mts/RELEASE-AND-ROLLBACK.md` §3)
+- Confirm Vercel variable scopes: Supabase and Resend values in Production only (MTS-EXC-003). MTS-DEV-003 and the preview-safe destination are resolved by that exception; hosted Preview delivery is intentionally untested
 - Edge request rate limiting (MTS-OBS-037) — carried to S6, never recorded as configured
 - Confirmation of whether the production sender is a verified domain
 - Observation of a production measurement event in the hosted measurement table

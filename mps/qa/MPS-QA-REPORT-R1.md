@@ -134,6 +134,7 @@ result above should be read as any of those.
 
 Items remaining outside this record are tracked where they belong: the Gate 2
 visual sign-off (MDS), formal S6 release approval, and the MTS owner actions
-(rollback drill, preview separation MTS-DEV-003 and its configuration, edge rate
+(rollback drill, Vercel variable-scope confirmation under MTS-EXC-003 — which
+resolved preview separation MTS-DEV-003 on 2026-09-14 — edge rate
 limiting, sending-domain confirmation, production measurement arrival). None
 affects an acceptance criterion above.

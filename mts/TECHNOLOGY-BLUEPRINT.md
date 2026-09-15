@@ -22,7 +22,8 @@ Project mode: greenfield
 
 - local: synthetic fixtures only; local or isolated Supabase project; no production secrets.
 - preview: isolated preview data and notification destination; safe synthetic evidence only.
-- production: approved public site and inquiry store; no vulnerable live endpoint; owner-controlled secret configuration.
+  - **R1 exception (MTS-EXC-003, approved 2026-09-14):** Preview is non-writing. It holds no inquiry or measurement store and sends no operator notification; `lib/supabase/server-client.ts` returns no client in Preview even when Supabase values are present. Hosted Preview inquiry and measurement delivery are intentionally unavailable and untested. Reconsider when the read-only scanner or sustained post-R1 development needs hosted Preview persistence.
+- production: approved public site and inquiry store; no vulnerable live endpoint; owner-controlled secret configuration. Under MTS-EXC-003 this is the only environment that persists inquiries or measurement events.
 
 ## Data flows
 
@@ -51,6 +52,6 @@ MDS owns tokens, visual hierarchy, components, responsive behavior, evidence voc
 
 - Standalone Git repository and baseline branch.
 - Vercel project and preview/production configuration.
-- Supabase project separation and migration workflow.
-- Verified Resend domain and preview-safe notification destination.
+- Supabase project separation and migration workflow. (R1: one hosted project, used by Production only — MTS-EXC-003.)
+- Verified Resend domain and preview-safe notification destination. (R1: Preview never notifies under MTS-EXC-003, so only the production sending domain remains.)
 - Owner confirmation of paid-plan/account posture before production activation.

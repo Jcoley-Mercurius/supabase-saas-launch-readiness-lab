@@ -250,13 +250,16 @@ test.describe("submission outcomes", () => {
   });
 
   test("an unreachable store is UNCONFIRMED, never acknowledged", async () => {
-    for (const storeOutcome of ["unavailable", "unconfigured"] as const) {
+    for (const [storeOutcome, reason] of [
+      ["unavailable", "store"],
+      ["unconfigured", "unconfigured"],
+    ] as const) {
       const { store } = fakeStore({ outcome: storeOutcome });
       const { transport, sent } = fakeTransport({ sent: true });
 
       const outcome = await submitInquiry(VALID, { store, transport });
 
-      expect(outcome.state).toBe("unconfirmed");
+      expect(outcome).toEqual({ state: "unconfirmed", reason });
       // Nothing was stored, so nothing may be announced to the operator either.
       expect(sent).toHaveLength(0);
     }
@@ -399,12 +402,12 @@ test.describe("submission outcomes", () => {
 test.describe("a non-production notification is unmistakable", () => {
   /*
    * MTS SECURITY-ARCHITECTURE ("use preview-safe notification destinations and
-   * separate environment variables"); MTS-OBS-051.
+   * separate environment variables"); MTS-EXC-003.
    *
-   * The destination itself is per-environment configuration the owner sets.
-   * These assert the half the application controls: an operator can tell at a
-   * glance which deployment a message came from, so a preview submission is
-   * never answered as though a buyer sent it.
+   * Preview never reaches a notification (it has no store), so in practice the
+   * label marks a local build pointed at a store. These assert that an
+   * operator can tell at a glance which deployment a message came from, and
+   * that the banner claims nothing about where the inquiry was written.
    */
   const MESSAGE = { subject: "New inquiry — Alex Rivera", text: "body" };
 
@@ -420,6 +423,13 @@ test.describe("a non-production notification is unmistakable", () => {
       expect(labelled.subject).toContain(MESSAGE.subject);
       expect(labelled.text.split("\n")[0]).toContain(environment);
       expect(labelled.text).toContain("not from the live site");
+      expect(labelled.text).toContain(
+        "Treat this as a test submission unless you know otherwise.",
+      );
+      // MTS-EXC-003: Preview writes nowhere and local depends on its own
+      // configuration, so the banner claims nothing about a shared store.
+      expect(labelled.text).not.toMatch(/same isolated inquiry store/i);
+      expect(labelled.text).not.toMatch(/retention policy/i);
       // The inquiry itself is never dropped by the labelling.
       expect(labelled.text).toContain(MESSAGE.text);
     });
@@ -494,6 +504,49 @@ test.describe("the buyer-facing copy promises nothing", () => {
       inquiryContent.OUTCOMES.acknowledged.body.toLowerCase();
     expect(acknowledged).toContain("not an accepted engagement");
     expect(acknowledged).toContain("no timeline, price, or outcome");
+  });
+
+  test("no outcome points to a contact route that does not exist", () => {
+    // R1 has no contact page, no mailto, and no reply path; the inquiry form
+    // is the only conversion route (owner decision 2026-09-14).
+    const outcomes = JSON.stringify(inquiryContent.OUTCOMES).toLowerCase();
+    for (const reference of [
+      /contact route/,
+      /contact page/,
+      /about page/,
+      /reply to this page/,
+      /mailto:/,
+      /\bemail us\b/,
+    ]) {
+      expect(outcomes, `outcome copy matches ${reference}`).not.toMatch(
+        reference,
+      );
+    }
+  });
+
+  test("unconfirmed and rate-limited say nothing was recorded", () => {
+    const { unconfirmed, rateLimited } = inquiryContent.OUTCOMES;
+    expect(unconfirmed.title).toBe("We couldn't submit the inquiry");
+    expect(unconfirmed.body).toBe(
+      "Nothing was recorded. Your answers remain in the form. Please try again later.",
+    );
+    expect(unconfirmed.retry).toBe("Try again");
+    expect(rateLimited.title).toBe(
+      "Too many inquiries were submitted recently",
+    );
+    expect(rateLimited.body).toBe(
+      "Nothing was recorded. Your answers remain in the form. Please wait and try again later.",
+    );
+  });
+
+  test("a stored inquiry whose alert failed says it is on record", () => {
+    const { notDelivered } = inquiryContent.OUTCOMES;
+    expect(notDelivered.title).toBe(
+      "Your inquiry is on record; our alert did not go out",
+    );
+    expect(notDelivered.body).toBe(
+      "The inquiry was stored, so nothing is lost and there is no need to send it again. The notification to us failed to send, so we may see it later than usual.",
+    );
   });
 
   test("the duplicate notice does not imply a second engagement (MPS-RULE-006)", () => {

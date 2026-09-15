@@ -28,3 +28,5 @@ The table above is the Gate 7 plan and is kept as approved. The implemented path
 ## External setup still required
 
 Dashboard/account actions are owner-owned: create or select the Git repository, create Vercel project, create isolated Supabase environments, verify Resend domain, configure preview-safe notification destination, and add secrets privately. Values are never committed or pasted into prompts.
+
+R1 reconciliation (MTS-EXC-003, 2026-09-14): no separate Preview Supabase project is created and no Preview notification destination is configured. Preview is non-writing in code; Supabase and Resend values belong in the Vercel Production scope only. The Playwright web server is started with those values forced empty (`HOSTED_SERVICES_UNSET` in `playwright.config.ts`), so a local `.env.local` cannot reach a hosted service from the browser suite.

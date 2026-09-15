@@ -90,7 +90,7 @@ export const OUTCOMES = {
   },
   notDelivered: {
     title: "Your inquiry is on record; our alert did not go out",
-    body: "The inquiry was stored, so nothing is lost and there is no need to send it again. The notification to us failed to send, so we may see it later than usual. If you would rather not wait, reply to this page's contact route directly.",
+    body: "The inquiry was stored, so nothing is lost and there is no need to send it again. The notification to us failed to send, so we may see it later than usual.",
   },
   duplicate: {
     title: "This inquiry is already on record",
@@ -105,12 +105,12 @@ export const OUTCOMES = {
     body: "Your inquiry has not been sent. Correct the fields marked below and submit again — nothing you entered has been lost.",
   },
   rateLimited: {
-    title: "Too many submissions from here",
-    body: "Your inquiry has not been recorded. Wait a little and submit once more. If this keeps happening, use the contact route on the About page instead.",
+    title: "Too many inquiries were submitted recently",
+    body: "Nothing was recorded. Your answers remain in the form. Please wait and try again later.",
   },
   unconfirmed: {
     title: "We couldn't submit the inquiry",
-    body: "Nothing was recorded, so this is not on our end yet. Your answers are still in the form. Try again, and if it keeps failing use the contact route on the About page.",
+    body: "Nothing was recorded. Your answers remain in the form. Please try again later.",
     retry: "Try again",
   },
 } as const;

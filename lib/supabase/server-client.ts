@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { deploymentEnvironment } from "@/lib/deployment";
 
 /*
  * The single database client construction site.
@@ -43,6 +44,17 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  * inquiry store, `unconfigured` and therefore UNCONFIRMED rather than received
  * (MPS-REQ-011); for measurement, a silently dropped event, because a missing
  * count must never affect what a visitor sees.
+ *
+ * PREVIEW NEVER WRITES (MTS-EXC-003).
+ *
+ * R1 persists to one hosted project, and that project is production's. A
+ * Preview deployment is therefore treated as unconfigured here, whatever its
+ * variables say: no client, no inquiry row, no measurement row. The guard sits
+ * in this one factory rather than in each caller so that a Supabase variable
+ * accidentally left in Vercel's Preview scope still cannot make a test
+ * submission a real record. Production is unaffected, and local remains
+ * configuration-dependent. Reconsider when the read-only scanner or sustained
+ * post-R1 development needs a hosted Preview store of its own.
  */
 
 /**
@@ -53,18 +65,24 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 export type ClientPurpose = "inquiry" | "measurement";
 
 export function serverClient(purpose: ClientPurpose): SupabaseClient | null {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return null;
+  if (!supabaseConfigured()) return null;
 
-  return createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { "x-application-name": purpose } },
-  });
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { "x-application-name": purpose } },
+    },
+  );
 }
 
-/** True when the environment can actually reach the database at all. */
+/**
+ * True when the environment may reach the database at all: both values are
+ * present and the deployment is not Preview (MTS-EXC-003).
+ */
 export function supabaseConfigured() {
+  if (deploymentEnvironment() === "preview") return false;
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,

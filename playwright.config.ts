@@ -13,6 +13,15 @@ import { defineConfig, devices } from "@playwright/test";
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 
+/** Application-service variables the browser suite's server must never see. */
+export const HOSTED_SERVICES_UNSET = {
+  NEXT_PUBLIC_SUPABASE_URL: "",
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "",
+  RESEND_API_KEY: "",
+  RESEND_FROM_EMAIL: "",
+  INQUIRY_NOTIFICATION_TO: "",
+};
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -107,5 +116,16 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: false,
     timeout: 240_000,
+    /*
+     * The server under test is forcibly unconfigured.
+     *
+     * Next.js loads `.env.local` but never overrides a variable already present
+     * in the process environment — an empty string included. Setting these to
+     * "" here therefore means a workstation's `.env.local` cannot point the
+     * browser suite at the hosted Supabase project or at Resend, whatever it
+     * contains. Every other variable is inherited unchanged.
+     * `tests/unit/deployment-boundary.spec.ts` fails if one is removed.
+     */
+    env: HOSTED_SERVICES_UNSET,
   },
 });

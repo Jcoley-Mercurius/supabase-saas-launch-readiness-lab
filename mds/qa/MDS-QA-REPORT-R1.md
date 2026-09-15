@@ -453,8 +453,9 @@ was given by the owner on 2026-09-14 after reviewing the recaptured comparison
 (§12, §13).
 
 **Carried from MTS, not raised here:** MTS-DEV-003 (preview and production share
-one Supabase project) blocks calling the preview environment compliant with the
-approved environment boundaries. It does not affect any result in this report:
+one Supabase project) blocked calling the preview environment compliant with the
+approved environment boundaries. It was resolved on 2026-09-14 through MTS-EXC-003
+(Preview is non-writing). It did not affect any result in this report:
 every check ran against a local production build with no hosted database.
 
 ## 10. Recommended MDS updates
