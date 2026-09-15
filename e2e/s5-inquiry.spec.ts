@@ -41,6 +41,20 @@ async function openInquiry(page: Page) {
       name: /Discuss an authorized review/i,
     }),
   ).toBeVisible();
+
+  // A visible heading proves only that server markup arrived. The fields are
+  // controlled inputs, so text typed before hydration is reset to "" when React
+  // attaches — observed on WebKit in CI. Wait for React's props on the field.
+  await expect
+    .poll(() =>
+      page
+        .getByLabel("Name", { exact: false })
+        .first()
+        .evaluate((element) =>
+          Object.keys(element).some((key) => key.startsWith("__reactProps")),
+        ),
+    )
+    .toBe(true);
 }
 
 /** Fills every required field with a valid answer. */
